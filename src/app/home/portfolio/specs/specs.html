@@ -1,0 +1,198 @@
+<!-- specs-container.component.html -->
+<div class="specs-container">
+
+    <!-- ================= GLOBAL BACKGROUND OVERLAY ================= -->
+    <!-- This spans the ENTIRE page (both pages) -->
+    <div class="global-car-blur-bg" [style.backgroundImage]="'url(' + activeImage + ')'"></div>
+  
+    <!-- ================= PAGE 1: HERO ================= -->
+    <section class="hero-page">
+  
+      <!-- TOP NAV BAR (sticky) -->
+      <nav class="top-nav">
+        <button class="nav-cell back-cell" (click)="goBack()"> <span class="back-arrow"> ← </span>BACK TO STORE</button>
+        <div class="nav-cell" (click)="goToMainStore()">MAIN STORE</div>
+        <div class="nav-cell" (click)="goToContact()">CONTACT US</div>
+      </nav>
+  
+      <!-- MAIN GRID: rail | car | sidebar -->
+      <div class="main-grid">
+  
+        <!-- LEFT RAIL -->
+        <aside class="side-rail">
+          <span class="rail-label">INTERIOR</span>
+          <span class="rail-line"></span>
+          <span class="rail-label">EXTERIOR</span>
+          <span class="rail-line short"></span>
+          <span class="rail-label-more">MORE</span>
+          <span class="rail-arrow">↓</span>
+        </aside>
+  
+        <!-- CENTER: CAR (full bleed) + SIDE PREVIEW STACK + VIDEO PREVIEW -->
+        <div class="car-section">
+          <!-- REMOVED: the local .car-blur-bg -->
+  
+          <h1 class="main-title">BMW i4 Series</h1>
+  
+          <!-- CAR STAGE — car fills width & height -->
+          <div class="car-stage">
+  
+            <!-- MAIN CAR — fixed, full-size stage -->
+            <div class="image-wrapper">
+              <img [src]="activeImage" [alt]="carName" class="car-img" />
+            </div>
+  
+            <!-- SIDE PARALLAX SCROLLER + VIDEO THUMB BELOW -->
+            <div class="preview-scroller" (wheel)="onScrollerWheel($event)">
+              <div class="preview-track"
+                   [class.expanded]="stackExpanded"
+                   (click)="toggleStack($event)">
+                <div class="stack-thumb"
+                     *ngFor="let img of previewImages; let i = index"
+                     [class.active]="activeImage === img"
+                     (click)="selectImage(img, $event)">
+                  <img [src]="img" [alt]="'preview ' + (i+1)" />
+                </div>
+              </div>
+  
+              <!-- VIDEO PREVIEW THUMB (placed below preview track) -->
+              <div class="video-thumb-wrapper" (click)="openVideo($event)">
+                <div class="stack-thumb video-thumb">
+                  <video [src]="reviewVid" muted preload="metadata" playsinline></video>
+                  <span class="play-icon">▶</span>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- OVERLAY INFO AT BOTTOM OF STAGE -->
+          <div class="car-info-overlay">
+            <div class="view-indicator">
+              <span class="arrow">←</span>
+              <span class="degrees">{{ carLength }}</span>
+              <span class="arrow">→</span>
+            </div>
+  
+            <div class="car-info">
+              <h2 class="car-name">{{ carName }}</h2>
+              <p class="car-desc">{{ shortDesc }}</p>
+  
+              <div class="car-meta-row">
+                <span class="meta-item">FINANCING AVAILABLE</span>
+                <span class="meta-item">TRADE-IN AVAILABLE</span>
+                <span class="car-price">{{ carPrice }}</span>
+              </div>
+  
+              <button class="interested-btn" (click)="goToContact()">INTERESTED</button>
+            </div>
+          </div>
+        </div>
+  
+        <!-- RIGHT: SPECS SIDEBAR -->
+        <aside class="specs-sidebar">
+          <div class="specs-header-group">
+            <span class="specs-title">Specs</span>
+            <div class="blue-lines-graphic">
+              <span class="b-line"></span>
+              <span class="b-line"></span>
+              <span class="b-line"></span>
+              <span class="b-line"></span>
+            </div>
+          </div>
+  
+          <div class="spec-block">
+            <div class="spec-value">{{ carRange }}</div>
+            <div class="spec-label">Range (est)</div>
+          </div>
+  
+          <div class="spec-block">
+            <div class="spec-value">{{ carTopSpeed }}</div>
+            <div class="spec-label">Top Speed</div>
+          </div>
+  
+          <div class="spec-block">
+            <div class="spec-value">{{ carAcceleration }}</div>
+            <div class="spec-label">0-60 mph</div>
+          </div>
+  
+          <div class="scroll-arrows">
+            <span class="scroll-label">MORE</span>
+            <span class="scroll-down">↓</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+  
+    <!-- ================= PAGE 2: SPECIFICATIONS TABLES ================= -->
+    <section class="more-specs">
+      <div class="specs-section-header">
+        <h2>MORE SPECIFICATIONS <span>{{carName}}</span></h2>
+      </div>
+  
+      <div class="spec-category-group">
+        <h3 class="category-title">Overview</h3>
+        <div class="specs-grid-table">
+          <div class="spec-item" *ngFor="let item of overviewSpecs">
+            <span class="label">{{ item.label }}</span>
+            <span class="val">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+  
+      <div class="spec-category-group">
+        <h3 class="category-title">Comfort &amp; Luxury Features</h3>
+        <div class="comfort-table-grid">
+          <div class="comfort-row-item" *ngFor="let feature of comfortFeatures">
+            <span class="check-dot"></span>
+            <span class="feature-name">{{ feature }}</span>
+          </div>
+        </div>
+      </div>
+  
+      <div class="spec-category-group similar-vehicles-section">
+        <h3 class="category-title">Similar Masterpieces</h3>
+        <div class="similar-cards-row">
+          <div class="similar-card" *ngFor="let simCar of similarVehicles" (click)="goToSpecs()">
+            <div class="sim-img-wrap">
+              <img [src]="simCar.image" [alt]="simCar.name" />
+            </div>
+            <div class="sim-info">
+              <h4>{{ simCar.name }}</h4>
+              <p>{{ simCar.price }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <footer class="specs-footer-table">
+        <div class="footer-cell">
+          <p class="footer-highlight">Showroom Location</p>
+          <p>Along Thika Road Highway, Near Safari Park Hotel</p>
+        </div>
+        <div class="footer-cell">
+          <p class="footer-highlight">Direct Inquiries</p>
+          <p>+254 707 555 666</p>
+          <p>info@aplusmotors.biz</p>
+        </div>
+        <div class="footer-cell financing-cell">
+          <a href="javascript:void(0)" (click)="openFinancing()">
+            <span>Explore Financing</span>
+            <span class="arrow-diag">⟶</span>
+          </a>
+        </div>
+     
+      </footer>
+    </section>
+  
+    <div class="video-overlay" *ngIf="videoFullscreen" (click)="closeVideo($event)">
+      <div class="video-overlay-content" (click)="$event.stopPropagation()">
+        <button class="video-close-btn" (click)="closeVideo($event)">✕</button>
+        <video [src]="reviewVid" autoplay controls playsinline class="fullscreen-video"></video>
+        <div class="video-actions">
+          <a [href]="'https://www.youtube.com/results?search_query=' + carName + '+review'" target="_blank" rel="noopener" class="youtube-link">
+            Watch on YouTube <span class="arrow-diag">⟶</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>

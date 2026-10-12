@@ -1,0 +1,142 @@
+<section class="blogs-container">
+    <nav class="main-nav">
+        <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-12 h-16 items-center text-center divide-x divide-black border-x border-black">
+                <div class="col-span-4 h-full flex items-center justify-center">
+                    <button (click)="setMainTab('blogs')"
+                            [class]="currentMainTab === 'blogs' ? 'font-bold underline underline-offset-4' : 'font-normal'"
+                            class="w-full h-full text-xs sm:text-sm uppercase tracking-wider hover:bg-black hover:text-white transition-colors">
+                        Blogs
+                    </button>
+                </div>
+                <div class="col-span-5 h-full flex items-center justify-center" (click)="goToStore()">
+                    <button (click)="setMainTab('store')"
+                            [class]="currentMainTab === 'store' ? 'font-bold underline underline-offset-4' : 'font-normal'"
+                            class="w-full h-full text-xs sm:text-sm uppercase tracking-wider hover:bg-black hover:text-white transition-colors">
+                        Our Store
+                    </button>
+                </div>
+                <div class="col-span-3 h-full flex items-center justify-center" (click)="goHome()">
+                    <button (click)="setMainTab('home')"
+                            [class]="currentMainTab === 'home' ? 'font-bold underline underline-offset-4' : 'font-normal'"
+                            class="w-full h-full text-xs sm:text-sm uppercase tracking-wider hover:bg-black hover:text-white transition-colors">
+                        Home
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="blogs-nav">
+        <div class="grid grid-cols-4 divide-x divide-black text-center">
+            <button (click)="setFilter('latest')"
+                    [class]="currentFilter === 'latest' ? 'bg-black text-white font-bold' : 'text-black hover:bg-black hover:text-white font-normal'"
+                    class="py-3 px-2 text-[10px] sm:text-xs uppercase tracking-wider transition-all">
+                Latest
+            </button>
+            <button (click)="setFilter('popular')"
+                    [class]="currentFilter === 'popular' ? 'bg-black text-white font-bold' : 'text-black hover:bg-black hover:text-white font-normal'"
+                    class="py-3 px-2 text-[10px] sm:text-xs uppercase tracking-wider transition-all">
+                Popular Blogs
+            </button>
+            <button (click)="setFilter('bookmarked')"
+                    [class]="currentFilter === 'bookmarked' ? 'bg-black text-white font-bold' : 'text-black hover:bg-black hover:text-white font-normal'"
+                    class="py-3 px-2 text-[10px] sm:text-xs uppercase tracking-wider transition-all">
+                Bookmarked Blogs
+            </button>
+            <button (click)="setFilter('all')"
+                    [class]="currentFilter === 'all' ? 'bg-black text-white font-bold' : 'text-black hover:bg-black hover:text-white font-normal'"
+                    class="py-3 px-2 text-[10px] sm:text-xs uppercase tracking-wider transition-all">
+                All
+            </button>
+        </div>
+    </nav>
+
+    <div class="blogs">
+        <div *ngIf="filteredBlogs.length === 0" class="bg-white border border-black p-12 text-center">
+            <h3 class="text-lg font-bold mb-1">No blogs found</h3>
+            <p class="text-sm">There are no posts available in this filter currently.</p>
+        </div>
+
+        <article *ngFor="let blog of filteredBlogs" #blogArticle class="bg-white border border-black will-change-[transform,opacity] mb-6">
+            <div class="grid grid-cols-12 border-b border-black">
+                <div class="col-span-7 p-4 flex flex-col justify-center">
+                    <h2 class="text-base sm:text-lg font-bold tracking-tight">{{ blog.author }}</h2>
+                    <p class="text-xs sm:text-sm font-normal text-black">{{ blog.handle }}</p>
+                </div>
+                <div class="col-span-3 grid grid-cols-2 divide-x divide-black border-l border-black">
+                    <button (click)="toggleLike(blog.id)"
+                            class="flex flex-col items-center justify-center py-3 px-1 hover:bg-black hover:text-white transition-colors group">
+                        <i class="fa-thumbs-up text-base mb-1"
+                           [ngClass]="blog.liked ? 'fa-solid' : 'fa-regular'"></i>
+                        <span class="text-[10px] sm:text-xs uppercase font-bold tracking-tight">Like</span>
+                    </button>
+                    <button (click)="toggleBookmark(blog.id)"
+                            class="flex flex-col items-center justify-center py-3 px-1 hover:bg-black hover:text-white transition-colors group">
+                        <i class="fa-heart text-base mb-1"
+                           [ngClass]="blog.bookmarked ? 'fa-solid' : 'fa-regular'"></i>
+                        <span class="text-[10px] sm:text-xs uppercase font-bold tracking-tight">Bookmark</span>
+                    </button>
+                </div>
+                <div class="col-span-2 border-l border-black flex items-center justify-center">
+                    <button (click)="shareBlog(blog)"
+                            class="w-full h-full flex flex-col items-center justify-center py-3 px-1 hover:bg-black hover:text-white transition-colors">
+                        <img [src]="share" alt="Share" class="share-icon mb-1">
+                        <span class="text-[10px] sm:text-xs uppercase font-bold tracking-tight">Share</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <div class="space-y-4 text-black text-base sm:text-lg leading-relaxed font-normal">
+                    <p *ngFor="let para of blog.content">{{ para }}</p>
+                </div>
+                <div class="border border-black overflow-hidden bg-white">
+                    <img [src]="blog.imageUrl" alt="Classic Green Sports Car" class="w-full h-auto object-cover max-h-[520px]">
+                </div>
+            </div>
+
+            <div class="bg-white border-t border-black p-6 space-y-6">
+                <div class="flex items-center justify-between border-b border-black pb-3">
+                    <h3 class="text-sm font-bold uppercase tracking-wider">
+                        Discussion ({{ blog.comments.length }})
+                    </h3>
+                    <span class="text-xs font-mono">{{ blog.date }}</span>
+                </div>
+
+                <form (submit)="addComment(blog.id, $event)" class="flex gap-2">
+                    <input type="text"
+                           placeholder="Drop your favorite pick in the comments below..."
+                           class="flex-1 bg-white border border-black px-4 py-2.5 text-sm focus:outline-none placeholder:text-neutral-500"
+                           required>
+                    <button type="submit"
+                            class="bg-black text-white px-5 py-2.5 text-xs uppercase font-bold tracking-wider hover:bg-neutral-800 transition-colors">
+                        Post
+                    </button>
+                </form>
+
+                <div class="space-y-3 pt-2">
+                    <div *ngFor="let comment of blog.comments" class="bg-white p-3 border border-black space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-xs uppercase">{{ comment.author }}</span>
+                            <span class="text-[10px] font-mono">{{ comment.time }}</span>
+                        </div>
+                        <p class="text-sm">{{ comment.text }}</p>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <div class="discover-section">
+        <button class="discover-more-btn" type="button">DISCOVER MORE</button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div *ngIf="toastMessage"
+         class="fixed bottom-6 right-6 z-50 bg-black text-white border border-white px-5 py-3 shadow-xl flex items-center space-x-3">
+        <span class="w-2 h-2 bg-white"></span>
+        <span class="text-xs uppercase font-bold tracking-wider">{{ toastMessage }}</span>
+    </div>
+</section>
+<app-nav-2></app-nav-2>

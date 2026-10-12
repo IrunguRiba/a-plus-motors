@@ -1,0 +1,102 @@
+<section class="financing-container">
+    <!-- Top Navigation -->
+    <nav class="main-nav">
+        <a (click)="goToStore()">Our Store</a>
+        <a (click)="goHome()">Home</a>
+    </nav>
+
+    <!-- Sub Navigation -->
+    <nav class="financing-nav">
+        <a href="javascript:void(0)" 
+            [class.active]="activeTab === 'general'" 
+            (click)="setActiveTab('general')">
+            How We Finance Your Dream
+        </a>
+        <a href="javascript:void(0)" 
+            [class.active]="activeTab === 'individual'" 
+            (click)="setActiveTab('individual')">
+            For an Individual
+        </a>
+        <a href="javascript:void(0)" 
+            [class.active]="activeTab === 'company'" 
+            (click)="setActiveTab('company')">
+            For a business / company
+        </a>
+    </nav>
+
+    <div class="content-wrapper" #contentWrapper>
+        <!-- Dynamic Content Area -->
+        @switch (activeTab) {
+            @case ('general') {
+                <div class="section-box">
+                    <h2>How We Finance Your Dream</h2>
+                    <p>We organize financing for our clients in partnership with reputable financial and banking institutions.</p>
+                    <p>The interest rates are competitive starting from 13% per year on a reducing balance, with flexible monthly installments up to 48 months.</p>
+                    <p>For a used saloon car, commercial pick-up and (or) cargo vehicle financing is up to 80% with a maximum repayment period of 48 Months thats 4 years; for a brand new one the financing is up to 80% with a maximum repayment period of 5 years.</p>
+                    <p>The requirements for qualifications :</p>
+                </div>
+                
+                <div class="section-box">
+                    <h2>For an individual</h2>
+                    <ul>
+                        @for (req of individualRequirements; track req) {
+                            <li>{{ req }}</li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="section-box">
+                    <h2>For a business / company:</h2>
+                    <ul>
+                        @for (req of companyRequirements; track req) {
+                            <li>{{ req }}</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @case ('individual') {
+                <div class="section-box">
+                    <h2>For an individual</h2>
+                    <ul>
+                        @for (req of individualRequirements; track req) {
+                            <li>{{ req }}</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @case ('company') {
+                <div class="section-box">
+                    <h2>For a business / company:</h2>
+                    <ul>
+                        @for (req of companyRequirements; track req) {
+                            <li>{{ req }}</li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Bank Logos Footer (Unchanged CSS Drift Rows) -->
+    <div class="banks-footer">
+        <!-- Top Row -->
+        <div class="flow-row drift-row-1">
+            @for (bank of banks1; track bank.name) {
+                <div class="bank-logo">
+                    <img [src]="bank.logo" [alt]="bank.name" />
+                </div>
+            }
+        </div>
+        <!-- Bottom Row -->
+        <div class="flow-row drift-row-2">
+            @for (bank of banks2; track bank.name) {
+                <div class="bank-logo">
+                    <img [src]="bank.logo" [alt]="bank.name" />
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<app-nav-2></app-nav-2>

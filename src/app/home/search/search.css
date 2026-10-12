@@ -1,0 +1,146 @@
+
+
+.search-overlay {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  color: #111111;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.search-container {
+  width: 100%;
+  max-width: 440px;
+  margin-bottom: 120px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #111111;
+  padding-bottom: 8px;
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  color: #111111;
+  flex-shrink: 0;
+}
+
+.input-wrapper input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 300;
+  color: #111111;
+  letter-spacing: 0.3px;
+}
+
+.input-wrapper input::placeholder {
+  color: #777777;
+  font-weight: 300;
+}
+
+.mic-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777777;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.mic-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mic-btn:hover {
+  color: #111111;
+}
+
+.mic-btn.listening {
+  color: #e50914;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.categories {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+}
+
+.category-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 26px;
+  font-weight: 300;
+  color: #111111;
+  text-decoration: none;
+  letter-spacing: 0.2px;
+  transition: opacity 0.2s ease;
+}
+
+.arrow-icon {
+  width: 26px;
+  height: 26px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.category-link:hover .arrow-icon {
+  transform: translate(5px, -5px);
+}
+
+.category-link:hover {
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .close-btn {
+    top: 24px;
+    right: 24px;
+  }
+  .search-container {
+    max-width: 80%;
+    margin-bottom: 80px;
+  }
+  .categories {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .category-link {
+    font-size: 22px;
+  }
+}

@@ -1,0 +1,99 @@
+<div class="about-us-container">
+
+    <nav class="nav-wrapper">
+      <div class="nav-item">PRIVACY & LEGAL</div>
+      <div class="nav-item" (click)="goToStore()">OUR STORE</div>
+      <div class="nav-item" (click)="goToFinance()">FINANCING</div>
+      <div class="nav-item" (click)="goToBlogs()">SUBSIDIARIES</div>
+      <div class="nav-item" (click)="goHome()">HOME</div>
+    </nav>
+  
+    <div class="section-tabs">
+      <div
+        *ngFor="let page of pages; let i = index"
+        class="tab-item"
+        [ngClass]="{'active': i === activeIndex}"
+        (click)="setActivePage(i)">
+        {{ page.navText }}
+      </div>
+    </div>
+  
+    <main class="content-area" #contentArea>
+  
+      <header class="page-header">
+        <h1>{{ pages[activeIndex].title }}</h1>
+        <div class="divider"></div>
+      </header>
+  
+      <div class="page-body">
+        <p>{{ pages[activeIndex].content }}</p>
+  
+        <div class="complaint-address-box">
+          <h3>Official Compliance & Complaint Address:</h3>
+          <p><strong>A-Plus Motors Limited - Data Protection & Legal Compliance Desk</strong></p>
+          <p>P.O. Box 45200 - 00100, Nairobi, Kenya</p>
+          <p>Physical Location: Main Showroom & Executive Offices, Nairobi</p>
+          <p>Email for Formal Complaints: <a href="mailto:compliance@aplusmotors.co.ke">compliance@aplusmotors.co.ke</a> | DPO Direct Line: +254 700 000000</p>
+        </div>
+  
+        <div class="floating-modal-wrapper">
+          <div class="floating-report-box">
+  
+            <h3>Complaint or Inquiry</h3>
+            <p class="form-instructions">Kindly provide your vehicle purchase/inquiry details and specify your compliance issue below:</p>
+  
+            <div class="report-form">
+              <input
+                type="text"
+                class="form-input-field"
+                [(ngModel)]="clientName"
+                placeholder="Full Name (as per ID or Logbook)" />
+  
+              <input
+                type="email"
+                class="form-input-field"
+                [(ngModel)]="userEmail"
+                placeholder="Email Address" />
+  
+              <input
+                type="text"
+                class="form-input-field"
+                [(ngModel)]="vehicleDetails"
+                placeholder="Vehicle Model / Plate Number / File Reference (Optional)" />
+  
+              <select
+                class="form-input-field form-select"
+                [(ngModel)]="complaintCategory"
+                required>
+                <option value="" disabled selected>Select Complaint / Inquiry Category</option>
+                <option value="data-privacy">Data Protection & Privacy Breach</option>
+                <option value="logbook-transfer">NTSA / Logbook Transfer Delay</option>
+                <option value="financing">Asset Financing / Bank Dispute</option>
+                <option value="showroom-service">Showroom Service or Sales Issue</option>
+                <option value="other">Other Legal / Compliance Matter</option>
+              </select>
+  
+              <textarea
+                class="form-input-field"
+                [(ngModel)]="complaintMessage"
+                placeholder="Provide a detailed description of your complaint or violation report..."
+                rows="5"></textarea>
+  
+              <div class="form-footer-action" (click)="submitComplaint()">
+                <span class="next-step-trigger">SUBMIT COMPLAINT</span>
+                <div class="bottom-action-line"></div>
+              </div>
+  
+              <div *ngIf="successMessage" class="success-alert">{{ successMessage }}</div>
+            </div>
+  
+          </div>
+        </div>
+  
+        <div class="commitment-footer-statement">
+          WE ARE COMMITED TO SERVE YOU
+        </div>
+      </div>
+  
+    </main>
+  </div>

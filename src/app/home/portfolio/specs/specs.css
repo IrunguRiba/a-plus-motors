@@ -1,0 +1,1098 @@
+:host {
+    display: block;
+    background: transparent;
+    color: #000000;
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      Helvetica,
+      Arial,
+      sans-serif;
+  }
+  
+  .specs-container {
+    position: relative;
+    background: transparent;
+    color: #000000;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+  
+  .global-car-blur-bg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(48px) saturate(120%);
+    transform: scale(1.25);
+    opacity: 0.42;
+    pointer-events: none;
+    transition: background-image 0.6s ease, opacity 0.6s ease;
+    will-change: background-image;
+  }
+  
+  .hero-page {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: transparent;
+  }
+  
+  .top-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-bottom: 1px solid #000;
+    border-top: 1px solid #000;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: transparent;
+  }
+  
+  .nav-cell {
+    background: transparent;
+    border: none;
+    border-right: 1px solid #000;
+    padding: 13px 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #000;
+    text-align: center;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+  }
+  
+  .back-arrow {
+    font-size: 1.3em;
+  }
+  
+  .nav-cell:last-child {
+    border-right: none;
+  }
+  
+  .nav-cell:hover {
+    opacity: 0.6;
+  }
+  
+  .back-cell {
+    font-weight: 600;
+  }
+  
+  .main-grid {
+    display: grid;
+    grid-template-columns: 110px 1fr 200px;
+    flex: 1;
+    min-height: 0;
+    border-bottom: 1px solid #000;
+  }
+  
+  .side-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 0;
+    border-right: 1px solid #000;
+  }
+  
+  .rail-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #000;
+    font-weight: 500;
+    border: 1px solid black;
+    border-radius: 50%;
+    padding: 1em;
+  }
+  
+  .rail-label-more {
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #000;
+    font-weight: 500;
+    margin-top: 10%;
+  }
+  
+  .rail-line {
+    width: 1px;
+    height: 20%;
+    background: #000;
+  }
+  
+  .rail-line.short {
+    height: 40%;
+  }
+  
+  .rail-arrow {
+    font-size: 1rem;
+    color: #000;
+    margin-top: 1%;
+    display: inline-block;
+    animation: scrollFlow 2s infinite ease-in-out;
+  }
+  
+  .car-section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border-right: 1px solid #000;
+    overflow: hidden;
+    min-height: 0;
+    isolation: isolate;
+    background: transparent;
+  }
+  
+  .main-title {
+    position: absolute;
+    top: 20px;
+    left: 32px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #000;
+    margin: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+  
+  .car-stage {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 130px 180px 40px;
+    box-sizing: border-box;
+    z-index: 5;
+  }
+  
+  .image-wrapper {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 5;
+  }
+  
+  .car-img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transition: opacity 0.35s ease;
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.18));
+  }
+  
+  .preview-scroller {
+    position: absolute;
+    top: 60px;
+    right: 16px;
+    bottom: 180px;
+    width: 130px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 30;
+    padding: 8px 0;
+    scrollbar-width: thin;
+    scrollbar-color: #000 transparent;
+    -webkit-mask-image:
+      linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 40px,
+        #000 calc(100% - 40px),
+        transparent 100%);
+    mask-image:
+      linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 40px,
+        #000 calc(100% - 40px),
+        transparent 100%);
+  }
+  
+  .preview-scroller::-webkit-scrollbar {
+    width: 2px;
+  }
+  
+  .preview-scroller::-webkit-scrollbar-thumb {
+    background: #000;
+  }
+  
+  .preview-track {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+    cursor: pointer;
+    transition: gap 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  
+  .preview-track.expanded {
+    gap: 40px;
+  }
+  
+  .stack-thumb {
+    position: relative;
+    width: 84px;
+    height: 58px;
+    flex-shrink: 0;
+    border-radius: 3px;
+    border: 1px solid #000;
+    background: transparent;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition:
+      transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 0.35s ease,
+      border-color 0.25s ease,
+      width 0.4s ease,
+      height 0.4s ease;
+    will-change: transform;
+  }
+  
+  .stack-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  
+  .stack-thumb:nth-child(odd) {
+    transform: translateX(-4px);
+  }
+  
+  .stack-thumb:nth-child(even) {
+    transform: translateX(4px);
+  }
+  
+  .preview-scroller:hover .stack-thumb:nth-child(odd) {
+    transform: translateX(-8px);
+  }
+  
+  .preview-scroller:hover .stack-thumb:nth-child(even) {
+    transform: translateX(8px);
+  }
+  
+  .preview-track.expanded .stack-thumb {
+    width: 92px;
+    height: 64px;
+  }
+  
+  .preview-track.expanded .stack-thumb:nth-child(odd) {
+    transform: translateX(-6px);
+  }
+  
+  .preview-track.expanded .stack-thumb:nth-child(even) {
+    transform: translateX(6px);
+  }
+  
+  .stack-thumb:hover {
+    border-color: #000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    transform: translateX(0) scale(1.04) !important;
+  }
+  
+  .stack-thumb.active {
+    border-color: #000;
+    box-shadow: 0 0 0 1px #000, 0 8px 24px rgba(0, 0, 0, 0.16);
+    z-index: 5;
+  }
+  
+  .video-thumb-wrapper {
+    flex-shrink: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+    z-index: 25;
+  }
+  
+  .video-thumb {
+    position: relative;
+    width: 100%;
+    max-width: 150px;
+    height: 75px;
+    border-radius: 1px;
+    border: 1px solid #000;
+    background: transparent;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition:
+      transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 0.35s ease,
+      border-color 0.25s ease;
+    will-change: transform;
+    transform: none !important;
+  }
+  
+  .video-thumb video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  
+  .video-thumb .play-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #fff;
+    background: transparent;
+    pointer-events: none;
+    transition: background 0.3s ease;
+  }
+  
+  .video-thumb:hover {
+    border-color: #000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    transform: scale(1.01) !important;
+  }
+  
+  .car-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 15;
+    pointer-events: none;
+    background: transparent;
+  }
+  
+  .car-info-overlay .view-indicator, 
+  .car-info-overlay .car-info, 
+  .car-info-overlay .car-info * {
+    pointer-events: auto;
+  }
+  
+  .view-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #000;
+  }
+  
+  .view-indicator .arrow {
+    font-weight: 300;
+  }
+  
+  .car-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+  }
+  
+  .car-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
+    mix-blend-mode: difference;
+  }
+  
+  .car-desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+    max-width: 80%;
+  }
+  
+  .car-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  
+  .meta-item {
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #000;
+    font-weight: 500;
+  }
+  
+  .car-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+  }
+  
+  .interested-btn {
+    margin-top: 6px;
+    padding: 10px 26px;
+    background: transparent;
+    border: 1px solid #000;
+    color: #000;
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease;
+    align-self: flex-start;
+  }
+  
+  .interested-btn:hover {
+    background: #000;
+    color: #fff;
+  }
+  
+  .specs-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 40px 20px;
+    background: transparent;
+  }
+  
+  .specs-header-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 60%;
+  }
+  
+  .specs-title {
+    font-size: 1.6rem;
+    font-weight: lighter;
+    color: #000;
+    letter-spacing: 5px;
+  }
+  
+  .blue-lines-graphic {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    align-items: center;
+  }
+  
+  .b-line {
+    display: block;
+    height: 1px;
+    background: #000000;
+  }
+  
+  .b-line:nth-child(1) {
+    width: 36px;
+  }
+  
+  .b-line:nth-child(2) {
+    width: 200%;
+  }
+  
+  .b-line:nth-child(3) {
+    width: 36px;
+  }
+  
+  .b-line:nth-child(4) {
+    width: 36px;
+  }
+  
+  .spec-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .spec-value {
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: #000;
+  }
+  
+  .spec-label {
+    font-size: 0.88rem;
+    color: #000;
+    opacity: 0.75;
+  }
+  
+  .scroll-arrows {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 20px;
+    font-size: 1rem;
+  }
+  
+  .scroll-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #000;
+  }
+  
+  .scroll-down {
+    font-size: 1rem;
+    color: #000;
+    animation: scrollFlow 2s infinite ease-in-out;
+  }
+  
+  @keyframes scrollFlow {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(6px);
+    }
+  }
+  
+  .more-specs {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 70px 60px 60px;
+    box-sizing: border-box;
+    color: #000;
+    background: transparent;
+  }
+  
+  .specs-section-header {
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid #000;
+    background: transparent;
+  }
+  
+  .specs-section-header h2 {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #000;
+  }
+  
+  .specs-section-header h2 span {
+    font-size: 1.4rem;
+  }
+  
+  .spec-category-group {
+    margin-bottom: 50px;
+    background: transparent;
+  }
+  
+  .category-title {
+    margin: 0 0 20px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #000;
+  }
+  
+  .specs-grid-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid #000;
+    border-left: 1px solid #000;
+  }
+  
+  .spec-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 52px;
+    padding: 0 24px;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    box-sizing: border-box;
+  }
+  
+  .spec-item .label {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #000;
+    opacity: 0.75;
+  }
+  
+  .spec-item .val {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #000;
+    text-align: right;
+  }
+  
+  .comfort-table-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid #000;
+    border-left: 1px solid #000;
+  }
+  
+  .comfort-row-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 20px;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    box-sizing: border-box;
+  }
+  
+  .check-dot {
+    width: 4px;
+    height: 4px;
+    background: #000;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .feature-name {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #000;
+  }
+  
+  .similar-cards-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid #000;
+    border-left: 1px solid #000;
+  }
+  
+  .similar-card {
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+  
+  .similar-card:hover {
+    opacity: 0.7;
+  }
+  
+  .sim-img-wrap {
+    aspect-ratio: 18 / 10;
+    border-bottom: 1px solid #000;
+    overflow: hidden;
+  }
+  
+  .sim-img-wrap img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .sim-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 16px 18px;
+  }
+  
+  .sim-info h4 {
+    margin: 0;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #000;
+  }
+  
+  .sim-info p {
+    margin: 0;
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: #000;
+    opacity: 0.75;
+  }
+  
+  .specs-footer-table {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 0.9fr;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    border-left: 1px solid #000;
+    background: transparent;
+  }
+  
+  .footer-cell {
+    padding: 30px 26px;
+    border-right: 1px solid #000;
+    box-sizing: border-box;
+  }
+  
+  .footer-cell p {
+    margin: 6px 0;
+    font-size: 2rem;
+    line-height: 1.6;
+    color: #000;
+  }
+  
+  .footer-highlight {
+    margin-bottom: 10px !important;
+    font-size: 0.62rem !important;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #000 !important;
+  }
+  
+  .financing-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  
+  .financing-cell a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 6px;
+    color: #000;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  
+  .financing-cell a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: #000;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s cubic-bezier(.2, .8, .2, 1);
+  }
+  
+  .financing-cell a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  
+  .arrow-diag {
+    display: inline-block;
+    font-size: 1.1rem;
+    transition: transform 0.4s cubic-bezier(.2, .8, .2, 1);
+  }
+  
+  .financing-cell a:hover .arrow-diag {
+    transform: translate(6px, -6px);
+  }
+  
+  .video-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+    animation: videoFadeIn 0.35s ease;
+  }
+  
+  @keyframes videoFadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .video-overlay-content {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .fullscreen-video {
+    width: 100%;
+    max-height: 76vh;
+    background: #000;
+    border: 1px solid #030303;
+    object-fit: contain;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+  }
+  
+  .video-close-btn {
+    position: absolute;
+    top: -46px;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 1px solid #000000;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s ease, color 0.25s ease;
+    font-family: inherit;
+    line-height: 1;
+  }
+  
+  .video-close-btn:hover {
+    background: #fff;
+    color: #000;
+  }
+  
+  .video-actions {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+  
+  .youtube-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 6px;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: opacity 0.25s ease;
+  }
+  
+  .youtube-link:hover {
+    opacity: 0.75;
+  }
+  
+  .youtube-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: #fff;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s cubic-bezier(.2, .8, .2, 1);
+  }
+  
+  .youtube-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  
+  .youtube-link .arrow-diag {
+    display: inline-block;
+    font-size: 1.1rem;
+    transition: transform 0.4s cubic-bezier(.2, .8, .2, 1);
+  }
+  
+  .youtube-link:hover .arrow-diag {
+    transform: translate(6px, -6px);
+  }
+  
+  @media (max-width: 1100px) {
+    .main-grid {
+      grid-template-columns: 70px 1fr 170px;
+    }
+    .similar-cards-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .car-stage {
+      padding: 50px 120px 170px 30px;
+    }
+    .preview-scroller {
+      width: 88px;
+    }
+    .stack-thumb {
+      width: 72px;
+      height: 50px;
+    }
+    .preview-track.expanded .stack-thumb {
+      width: 80px;
+      height: 56px;
+    }
+    .global-car-blur-bg {
+      filter: blur(40px) saturate(120%);
+    }
+    .video-thumb {
+      max-width: 480px;
+      height: 104px;
+    }
+  }
+  
+  @media (max-width: 900px) {
+    .hero-page {
+      height: auto;
+      min-height: 100vh;
+    }
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+    .side-rail, 
+    .car-section {
+      border-right: none;
+      border-bottom: 1px solid #000;
+    }
+    .specs-sidebar {
+      padding: 30px 24px;
+    }
+    .more-specs {
+      padding: 50px 24px 40px;
+    }
+    .specs-grid-table, 
+    .comfort-table-grid, 
+    .similar-cards-row, 
+    .specs-footer-table {
+      grid-template-columns: 1fr;
+    }
+    .car-section {
+      min-height: 80vh;
+    }
+    .car-stage {
+      padding: 60px 110px 200px 20px;
+    }
+    .main-title {
+      font-size: 1.3rem;
+      left: 20px;
+      top: 16px;
+    }
+    .car-info-overlay {
+      padding: 20px 24px 24px;
+    }
+    .preview-scroller {
+      top: 50px;
+      bottom: 200px;
+      right: 10px;
+      width: 84px;
+    }
+    .global-car-blur-bg {
+      filter: blur(32px) saturate(120%);
+    }
+    .video-thumb {
+      max-width: 420px;
+      height: 92px;
+    }
+    .video-overlay {
+      padding: 24px;
+    }
+    .video-close-btn {
+      top: -40px;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .main-title {
+      font-size: 1.1rem;
+    }
+    .view-indicator {
+      font-size: 0.9rem;
+    }
+    .car-name {
+      font-size: 1rem;
+    }
+    .car-desc {
+      font-size: 0.75rem;
+    }
+    .car-meta-row {
+      gap: 12px;
+    }
+    .interested-btn {
+      padding: 9px 24px;
+    }
+    .car-stage {
+      padding: 50px 90px 190px 16px;
+    }
+    .preview-scroller {
+      width: 68px;
+      right: 8px;
+    }
+    .stack-thumb {
+      width: 58px;
+      height: 42px;
+    }
+    .preview-track.expanded .stack-thumb {
+      width: 64px;
+      height: 46px;
+    }
+    .global-car-blur-bg {
+      filter: blur(24px) saturate(120%);
+      opacity: 0.4;
+    }
+    .video-thumb {
+      max-width: 100%;
+      height: 76px;
+    }
+    .video-overlay {
+      padding: 16px;
+    }
+    .video-close-btn {
+      top: -36px;
+      width: 32px;
+      height: 32px;
+    }
+    .fullscreen-video {
+      max-height: 60vh;
+    }
+    .youtube-link {
+      font-size: 0.6rem;
+    }
+  }

@@ -1,0 +1,310 @@
+<div class="nav-container">
+    <div class="nav-items-wrapper"  [class.nav-lifted]="isMenuOpen || scrolled">
+  
+    
+    <!-- Search Trigger Box -->
+    <div class="search-box"
+         (click)="openSearch()"
+         [class.is-open]="searchWindowOpened">
+      <span class="material-symbols-outlined">search</span>
+      <span class="search-tag">Describe it! We got it!</span>
+    </div>
+  
+    <p class="item-1-label">A-PLUS MOTORS LTD</p>
+  
+    <!-- Logo & Slogan -->
+    <div class="logo-wrapper" (click)="goHome()">
+      <img [src]="logoImg" alt="A plus Motors" class="image-icon">
+      <span class="slogan">Driving That Suits You ...</span>
+    </div>
+  
+    <!-- Sidebar Menu & Chat Toggles -->
+    <div class="side-bar item item-3">
+      <div class="sidebar-top">
+        <div class="menu-bar" (click)="toggleMenu()" [class.is-open]="isMenuOpen">
+          <span class="top-bar"></span>
+          <span class="bottom-bar"></span>
+        </div>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="chat-icon" (click)="toggleChat()" [class.is-open]="isChatOpen">
+          <svg class="chat-svg bubble-icon" viewBox="0 0 24 24" width="24" height="24"
+               stroke="currentColor" stroke-width="1.5" fill="none"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <path d="M13 8H7"></path>
+            <path d="M17 12H7"></path>
+          </svg>
+          <svg class="chat-svg cancel-icon" viewBox="0 0 24 24" width="24" height="24"
+               stroke="currentColor" stroke-width="1.5" fill="none"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+    <!-- ============ ROLL-OUT MENU (was <app-menu>) ============ -->
+    <div class="menu-overlay" [class.is-open]="isMenuOpen">
+      <div class="menu-opened" [class.search-active]="searchWindowOpened">
+  
+        <nav class="menu-nav" aria-label="Main navigation">
+          <ul class="menu-list">
+  
+            <!-- HOME -->
+            <li class="has-submenu" [class.active]="activeSubmenu === 'home'">
+              <a (click)="toggleSubmenu('home', $event)" [attr.aria-expanded]="activeSubmenu === 'home'">
+                <span class="nav-label">Home</span>
+                <span class="nav-indicator" aria-hidden="true"><i class="ind-chevron"></i><i class="ind-close"></i></span>
+              </a>
+              <div class="submenu-panel">
+                <div class="submenu-main">
+                  <span class="submenu-label">Home</span>
+                  <ul class="submenu-links">
+                    <li><a (click)="goToStore()">Featured Cars <span class="arrow"></span></a></li>
+                    <li><a (click)="goToStore()">New Arrivals <span class="arrow"></span></a></li>
+                    <li><a (click)="goToStore()">Latest Offers <span class="arrow"></span></a></li>
+                    <li><a (click)="goToBlogs()">Blogs <span class="arrow"></span></a></li>
+                  </ul>
+                </div>
+                <div class="submenu-feature">
+                  <img [src]="car1" alt="Featured">
+                  <div class="feature-text">
+                    <span class="feature-title" (click)="goToBlogs()">Find Your Perfect Ride</span>
+                    <span class="feature-sub" (click)="goToBlogs()">Explore our wide range of vehicles.</span>
+                    <svg class="feature-arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24"
+                         fill="none" stroke="currentColor" stroke-width="1.25"
+                         stroke-linecap="round" stroke-linejoin="round" (click)="goToBlogs()">
+                      <path d="M2 12h30M25 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="submenu-extras">
+                  <div class="extra-link has-dot"><span>Blogs</span></div>
+                  <div class="extra-link" (click)="openSearch()"><span>Search</span><span class="material-symbols-outlined">search</span></div>
+                  <div class="extra-link" (click)="gototContacts()"><span>Contact</span><span class="material-symbols-outlined">mail</span></div>
+                  <div class="extra-link"><span>Login</span><span class="material-symbols-outlined">person</span></div>
+                </div>
+              </div>
+            </li>
+  
+            <!-- BUY CAR -->
+            <li class="has-submenu" [class.active]="activeSubmenu === 'buycar'">
+              <a (click)="toggleSubmenu('buycar', $event)" [attr.aria-expanded]="activeSubmenu === 'buycar'">
+                <span class="nav-label">Buy Car</span>
+                <span class="nav-indicator" aria-hidden="true"><i class="ind-chevron"></i><i class="ind-close"></i></span>
+              </a>
+              <div class="submenu-panel">
+                <div class="submenu-main">
+                  <span class="submenu-label">Buy Car</span>
+                  <ul class="submenu-links">
+                    <li><a (click)="goToStore()">All Cars <span class="arrow"></span></a></li>
+                    <li><a (click)="goToStore()">New Cars <span class="arrow"></span></a></li>
+                    <li><a (click)="goToStore()">Pre-Owned <span class="arrow"></span></a></li>
+                    <li><a (click)="goToStore()">Search by Brand <span class="arrow"></span></a></li>
+                    <li><a (click)="goToStore()">Special Offers <span class="arrow"></span></a></li>
+                    <li><a (click)="goToStore()">Import <span class="arrow"></span></a></li>
+                  </ul>
+                </div>
+                <div class="submenu-feature">
+                  <img [src]="car1" alt="Buy Car">
+                  <div class="feature-text">
+                    <span class="feature-title" (click)="goToBlogs()">Find Your Perfect Ride</span>
+                    <span class="feature-sub" (click)="goToBlogs()">Explore our wide range of vehicles.</span>
+                    <svg class="feature-arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24"
+                         fill="none" stroke="currentColor" stroke-width="1.25"
+                         stroke-linecap="round" stroke-linejoin="round" (click)="goToBlogs()">
+                      <path d="M2 12h30M25 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="submenu-extras">
+                  <div class="extra-link has-dot"><span>Blogs</span></div>
+                  <div class="extra-link" (click)="openSearch()"><span>Search</span><span class="material-symbols-outlined">search</span></div>
+                  <div class="extra-link" (click)="gototContacts()"><span>Contact</span><span class="material-symbols-outlined">mail</span></div>
+                  <div class="extra-link"><span>Login</span><span class="material-symbols-outlined">person</span></div>
+                </div>
+              </div>
+            </li>
+  
+            <!-- ABOUT US -->
+            <li class="has-submenu" [class.active]="activeSubmenu === 'about'">
+              <a (click)="toggleSubmenu('about', $event)" [attr.aria-expanded]="activeSubmenu === 'about'">
+                <span class="nav-label">About Us</span>
+                <span class="nav-indicator" aria-hidden="true"><i class="ind-chevron"></i><i class="ind-close"></i></span>
+              </a>
+              <div class="submenu-panel">
+                <div class="submenu-main">
+                  <span class="submenu-label">About Us</span>
+                  <ul class="submenu-links">
+                    <li><a (click)="goToAbout()">Our Story <span class="arrow"></span></a></li>
+                    <li><a (click)="goToAbout()">Our Team <span class="arrow"></span></a></li>
+                    <li><a (click)="goToAbout()">Careers <span class="arrow"></span></a></li>
+                    <li><a (click)="goToAbout()">News &amp; Media <span class="arrow"></span></a></li>
+                  </ul>
+                </div>
+                <div class="submenu-feature">
+                  <img [src]="car1" alt="About Us">
+                  <div class="feature-text">
+                    <span class="feature-title" (click)="goToBlogs()">Our Values</span>
+                    <span class="feature-sub" (click)="goToBlogs()">Quality. Trust. Performance.</span>
+                    <svg class="feature-arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24"
+                         fill="none" stroke="currentColor" stroke-width="1.25"
+                         stroke-linecap="round" stroke-linejoin="round" (click)="goToBlogs()">
+                      <path d="M2 12h30M25 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="submenu-extras">
+                  <div class="extra-link has-dot"><span>Blogs</span></div>
+                  <div class="extra-link" (click)="openSearch()"><span>Search</span><span class="material-symbols-outlined">search</span></div>
+                  <div class="extra-link" (click)="gototContacts()"><span>Contact</span><span class="material-symbols-outlined">mail</span></div>
+                  <div class="extra-link"><span>Login</span><span class="material-symbols-outlined">person</span></div>
+                </div>
+              </div>
+            </li>
+  
+            <!-- FINANCING -->
+            <li class="has-submenu" [class.active]="activeSubmenu === 'financing'">
+              <a (click)="toggleSubmenu('financing', $event)" [attr.aria-expanded]="activeSubmenu === 'financing'">
+                <span class="nav-label">Financing</span>
+                <span class="nav-indicator" aria-hidden="true"><i class="ind-chevron"></i><i class="ind-close"></i></span>
+              </a>
+              <div class="submenu-panel">
+                <div class="submenu-main">
+                  <span class="submenu-label">Financing</span>
+                  <ul class="submenu-links">
+                    <li><a (click)="goToFinance()">Loan Options <span class="arrow"></span></a></li>
+                    <li><a (click)="goToFinance()">Calculate Payments <span class="arrow"></span></a></li>
+                    <li><a (click)="goToFinance()">Apply Now <span class="arrow"></span></a></li>
+                    <li><a (click)="goToFinance()">Insurance Partners <span class="arrow"></span></a></li>
+                  </ul>
+                </div>
+                <div class="submenu-feature">
+                  <img [src]="car1" alt="Financing" (click)="goToBlogs()">
+                  <div class="feature-text">
+                    <span class="feature-title" (click)="goToBlogs()">Flexible Financing</span>
+                    <span class="feature-sub">Drive your dream with ease.</span>
+                    <svg class="feature-arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24"
+                         fill="none" stroke="currentColor" stroke-width="1.25"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12h30M25 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="submenu-extras">
+                  <div class="extra-link has-dot"><span>Blogs</span></div>
+                  <div class="extra-link" (click)="openSearch()"><span>Search</span><span class="material-symbols-outlined">search</span></div>
+                  <div class="extra-link" (click)="gototContacts()"><span>Contact</span><span class="material-symbols-outlined">mail</span></div>
+                  <div class="extra-link"><span>Login</span><span class="material-symbols-outlined">person</span></div>
+                </div>
+              </div>
+            </li>
+  
+            <!-- CONTACT US -->
+            <li class="has-submenu" [class.active]="activeSubmenu === 'contact'">
+              <a (click)="toggleSubmenu('contact', $event)" [attr.aria-expanded]="activeSubmenu === 'contact'">
+                <span class="nav-label">Contact Us</span>
+                <span class="nav-indicator" aria-hidden="true"><i class="ind-chevron"></i><i class="ind-close"></i></span>
+              </a>
+              <div class="submenu-panel">
+                <div class="submenu-main">
+                  <span class="submenu-label">Contact Us</span>
+                  <ul class="submenu-links">
+                    <li><a (click)="gototContacts()">Our Location <span class="arrow"></span></a></li>
+                    <li><a (click)="gototContacts()">Get in Touch <span class="arrow"></span></a></li>
+                    <li><a (click)="gototContacts()">FAQs <span class="arrow"></span></a></li>
+                    <li><a (click)="gototContacts()">Service Support <span class="arrow"></span></a></li>
+                  </ul>
+                </div>
+                <div class="submenu-feature">
+                  <img [src]="car1" alt="Contact Us">
+                  <div class="feature-text">
+                    <span class="feature-title" (click)="goToBlogs()">Visit Our Showroom</span>
+                    <span class="feature-sub" (click)="goToBlogs()">Find us and experience the best.</span>
+                    <svg class="feature-arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24"
+                         fill="none" stroke="currentColor" stroke-width="1.25"
+                         stroke-linecap="round" stroke-linejoin="round" (click)="goToBlogs()">
+                      <path d="M2 12h30M25 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="submenu-extras">
+                  <div class="extra-link has-dot"><span>Blogs</span></div>
+                  <div class="extra-link" (click)="openSearch()"><span>Search</span><span class="material-symbols-outlined">search</span></div>
+                  <div class="extra-link" (click)="gototContacts()"><span>Contact</span><span class="material-symbols-outlined">mail</span></div>
+                  <div class="extra-link"><span>Login</span><span class="material-symbols-outlined">person</span></div>
+                </div>
+              </div>
+            </li>
+  
+            <!-- SUBSIDIARIES -->
+            <li class="has-submenu" [class.active]="activeSubmenu === 'subsidiaries'">
+              <a (click)="toggleSubmenu('subsidiaries', $event)" [attr.aria-expanded]="activeSubmenu === 'subsidiaries'">
+                <span class="nav-label">Subsidiaries</span>
+                <span class="nav-indicator" aria-hidden="true"><i class="ind-chevron"></i><i class="ind-close"></i></span>
+              </a>
+              <div class="submenu-panel">
+                <div class="submenu-main">
+                  <span class="submenu-label">Our Subsidiaries</span>
+                  <ul class="submenu-links">
+                    <li><a href="#">A Plus Motors <span class="arrow"></span></a></li>
+                    <li><a href="#">A Plus Finance <span class="arrow"></span></a></li>
+                    <li><a href="#">A Plus Insurance <span class="arrow"></span></a></li>
+                    <li><a href="#">A Plus Auto Parts <span class="arrow"></span></a></li>
+                  </ul>
+                </div>
+                <div class="submenu-feature">
+                  <img [src]="car1" alt="Subsidiaries">
+                  <div class="feature-text">
+                    <span class="feature-title">Building a Bigger Future</span>
+                    <span class="feature-sub">Our group, your trusted partner.</span>
+                    <svg class="feature-arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24"
+                         fill="none" stroke="currentColor" stroke-width="1.25"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12h30M25 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="submenu-extras">
+                  <div class="extra-link has-dot"><span>Blogs</span></div>
+                  <div class="extra-link" (click)="openSearch()"><span>Search</span><span class="material-symbols-outlined">search</span></div>
+                  <div class="extra-link" (click)="gototContacts()"><span>Contact</span><span class="material-symbols-outlined">mail</span></div>
+                  <div class="extra-link"><span>Login</span><span class="material-symbols-outlined">person</span></div>
+                </div>
+              </div>
+            </li>
+  
+          </ul>
+        </nav>
+  
+        <div class="menu-footer">
+          <div class="social-icons">
+            <a href="#" aria-label="Phone"><img [src]="phone" alt="Phone"></a>
+            <a href="#" aria-label="Instagram"><img [src]="ig" alt="Instagram"></a>
+            <a href="#" aria-label="Facebook"><img [src]="facebook" alt="Facebook"></a>
+            <a href="#" aria-label="X"><img [src]="twitter" alt="X"></a>
+            <a href="#" aria-label="WhatsApp"><img [src]="whatsapp" alt="WhatsApp"></a>
+            <a href="#" aria-label="Email"><img [src]="email" alt="Email"></a>
+            <a href="#" aria-label="YouTube"><img [src]="youtube" alt="YouTube"></a>
+          </div>
+        </div>
+  
+      </div>
+    </div>
+  
+  <!-- Search Overlay -->
+  <div class="search-overlay" [class.is-open]="searchWindowOpened">
+    <div class="close-search-btn" (click)="closeSearch($event)">
+      <span>Close Search</span>
+      <div class="cross-icon">
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+    <app-search class="search-panel"></app-search>
+  </div>
+  
+  </div>

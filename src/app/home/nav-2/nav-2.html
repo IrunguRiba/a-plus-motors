@@ -1,0 +1,106 @@
+<!-- Material Symbols -->
+<div class="floating-menu-wrapper">
+
+    <!-- Floating menu panel -->
+    <div class="chat-container-box" [class.is-open]="isMenuOpen">
+      <h1>
+        <img [src]="logoImg" alt="A PLUS LTD" class="logo-img">
+        <span class="logo-tagline">Driving that suits you</span>
+      </h1>
+      <!-- Navigation Links -->
+      <nav class="links-section">
+        <a class="link-wrapper" (click)="goHome()">
+          <div class="link-content">
+            <span class="material-symbols-outlined chat-item-icon">home</span>
+            <span class="link-label">Home</span>
+          </div>
+          <span class="material-symbols-outlined link-icon">open_in_new</span>
+        </a>
+  
+        <a class="link-wrapper" (click)="goStore()">
+          <div class="link-content">
+            <span class="material-symbols-outlined chat-item-icon">directions_car</span>
+            <span class="link-label">Buy Car</span>
+          </div>
+          <span class="material-symbols-outlined link-icon">open_in_new</span>
+        </a>
+  
+        <a  class="link-wrapper" (click)="goAbout()">
+          <div class="link-content">
+            <span class="material-symbols-outlined chat-item-icon">info</span>
+            <span class="link-label">About Us</span>
+          </div>
+          <span class="material-symbols-outlined link-icon">open_in_new</span>
+        </a>
+  
+        <a  class="link-wrapper" (click)="goFinancing()">
+          <div class="link-content">
+            <span class="material-symbols-outlined chat-item-icon">payments</span>
+            <span class="link-label">Financing</span>
+          </div>
+          <span class="material-symbols-outlined link-icon">open_in_new</span>
+        </a>
+  
+        <a  class="link-wrapper" (click)="goContact()">
+          <div class="link-content">
+            <span class="material-symbols-outlined chat-item-icon">mail</span>
+            <span class="link-label">Contact Us</span>
+          </div>
+          <span class="material-symbols-outlined link-icon">open_in_new</span>
+        </a>
+  
+        <a  class="link-wrapper" (click)="goSubsidiaries()">
+          <div class="link-content">
+            <span class="material-symbols-outlined chat-item-icon">domain</span>
+            <span class="link-label">Subsidiaries</span>
+          </div>
+          <span class="material-symbols-outlined link-icon">open_in_new</span>
+        </a>
+      </nav>
+  
+      <!-- Socials — PNG icons -->
+      <div class="socials-section">
+        <a href="tel:+254000000000" class="social-icon" aria-label="Phone">
+          <img [src]="phone" alt="Call" class="social-img" />
+        </a>
+  
+        <a href="https://wa.me/254000000000" target="_blank" rel="noopener"
+           class="social-icon" aria-label="WhatsApp">
+          <img [src]="whatsapp" alt="WhatsApp" class="social-img" />
+        </a>
+  
+        <a href="https://youtube.com" target="_blank" rel="noopener"
+           class="social-icon" aria-label="YouTube">
+          <img [src]="youtube" alt="YouTube" class="social-img" />
+        </a>
+      </div>
+    <!-- Tagline -->
+    <footer class="tagline">
+      <span class="tagline-rule"></span>
+      <p class="tagline-text">A Plus Motors Ltd</p>
+      <span class="tagline-rule"></span>
+    </footer>
+  
+    </div>
+  
+    <!-- FAB row -->
+    <div class="fab-row">
+      <button class="fab close-fab"
+              *ngIf="isMenuOpen"
+              (click)="toggleMenu()"
+              aria-label="Close menu">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+  
+      <button class="fab menu-fab"
+              *ngIf="!isMenuOpen"
+              (click)="toggleMenu()"
+              aria-label="Open menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+
+    
+    
+  </div>
+  

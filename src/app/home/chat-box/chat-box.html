@@ -1,0 +1,19 @@
+<div class="chat-container-box" [class.is-open]="isOpen">
+    <div class="chat-header">How can we help?</div>
+    
+    <div class="faq-wrapper" (click)="openFaq()">
+      <div class="faq-content">
+        <span class="material-symbols-outlined chat-item-icon">help</span>
+        <span class="faq">FAQ</span>
+      </div>
+      <span class="material-symbols-outlined faq-link">open_in_new</span>
+    </div>
+  
+    <div class="contact-wrapper" (click)="openContact()">
+      <div class="contact-content">
+        <span class="material-symbols-outlined chat-item-icon">call</span>
+        <span class="contact">Contact</span>
+      </div>
+      <span class="material-symbols-outlined contact-link">open_in_new</span>
+    </div>
+  </div>

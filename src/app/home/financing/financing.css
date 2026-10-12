@@ -1,0 +1,235 @@
+html {
+    scrollbar-gutter: stable both-edges;
+  }
+  
+  .financing-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0;
+    background: #ffffff;
+    border: var(--border-thin) solid var(--border-color);
+    font-family: var(--font-main);
+    color: #000000;
+    position: relative;
+    --border-color: #111111;
+    --border-thin: 0.5px;
+    --font-main:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      Helvetica,
+      Arial,
+      sans-serif;
+  }
+  
+  .main-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: var(--border-thin) solid var(--border-color);
+    background: #ffffff;
+    cursor: pointer;
+  }
+  
+  .main-nav a {
+    text-decoration: none;
+    color: #000000;
+    text-align: center;
+    padding: 16px 0;
+    font-size: 1em;
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  
+  .main-nav a:first-child {
+    border-right: var(--border-thin) solid var(--border-color);
+  }
+  
+  .financing-nav {
+    position: sticky;
+    top: 53px;
+    z-index: 99;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: var(--border-thin) solid var(--border-color);
+    background: #ffffff;
+  }
+  
+  .financing-nav a {
+    text-align: center;
+    padding: 12px 0px;
+    text-decoration: none;
+    color: #000000;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-right: var(--border-thin) solid var(--border-color);
+    background: #ffffff;
+    cursor: pointer;
+  }
+  
+  .financing-nav a:last-child {
+    border-right: none;
+  }
+  
+  .financing-nav a.active {
+    border: var(--border-thin) solid var(--border-color);
+    background-color: #000000;
+    color: #ffffff;
+  }
+  
+  .content-wrapper {
+    padding: 25px;
+    min-height: 520px;
+    padding-bottom: 40px;
+    will-change: transform, opacity;
+  }
+  
+  .section-box {
+    border: var(--border-thin) solid var(--border-color);
+    padding: 25px;
+    margin-bottom: 20px;
+    background: #ffffff;
+    border-radius: 0px;
+  }
+  
+  .section-box:last-child {
+    margin-bottom: 0;
+  }
+  
+  .section-box h2 {
+    font-size: 16px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #000000;
+    margin-bottom: 15px;
+  }
+  
+  .section-box p {
+    line-height: 1.5;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  
+  .section-box p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .section-box ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin: 0;
+  }
+  
+  .section-box li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  .section-box li:last-child {
+    margin-bottom: 0;
+  }
+  
+  .banks-footer {
+    width: 100%;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    padding: 20px 0;
+    border-top: var(--border-thin) solid var(--border-color);
+    background: #ffffff;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow: hidden;
+    perspective: 900px;
+  }
+  
+  .flow-row {
+    display: flex;
+    gap: 15px;
+    margin: 0 auto;
+    transform-style: preserve-3d;
+  }
+  
+  .drift-row-1 {
+    width: 80%;
+    animation: driftRightAnim 12s ease-in-out infinite alternate;
+  }
+  
+  .drift-row-1 .bank-logo {
+    flex: 1;
+  }
+  
+  .drift-row-2 {
+    width: 95%;
+    animation: driftLeftAnim 12s ease-in-out infinite alternate;
+  }
+  
+  .drift-row-2 .bank-logo {
+    flex: 1;
+  }
+  
+  @keyframes driftRightAnim {
+    0% {
+      transform: translateX(-15px) rotateY(-3deg);
+    }
+    100% {
+      transform: translateX(15px) rotateY(3deg);
+    }
+  }
+  
+  @keyframes driftLeftAnim {
+    0% {
+      transform: translateX(15px) rotateY(3deg);
+    }
+    100% {
+      transform: translateX(-15px) rotateY(-3deg);
+    }
+  }
+  
+  .bank-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    background: #ffffff;
+    border-radius: 0px;
+    padding: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .drift-row-1 .bank-logo {
+    border: none;
+  }
+  
+  .drift-row-2 .bank-logo {
+    border: var(--border-thin) solid var(--border-color);
+  }
+  
+  .bank-logo img {
+    width: 97%;
+    height: 97%;
+    object-fit: contain;
+    display: block;
+  }
+  
+  .banks-footer:hover .flow-row {
+    animation-play-state: paused;
+  }
+  
+  .bank-logo:hover {
+    transform: scale(1.05);
+    border-color: #0066ff;
+    box-shadow: none;
+  }

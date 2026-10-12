@@ -1,0 +1,40 @@
+<div class="cookies-container" role="region" aria-label="Cookie consent">
+    <div class="cookies-wrapper">
+      <p>
+ 
+        We, <span>A-PLUS MOTORS LTD</span> use cookies to improve site navigation, understand how our website is used,
+        and support our marketing. Your activities and personal information is handled securely and
+        is never sold to third parties. You stay in control: choose Accept or Reject,
+        and change your preference at any time. Read our
+        
+        <a
+        
+          href="/privacy-policy"
+          (click)="goToPrivacyPolicy(); $event.preventDefault()"
+          (keydown.enter)="goToPrivacyPolicy(); $event.preventDefault()"
+          tabindex="0"
+          role="button"
+        >Privacy Policy</a>
+        for full details.
+        <strong>Your privacy matters to us.</strong>
+      </p>
+    </div>
+  
+    <button
+      type="button"
+      class="reject-btn"
+      (click)="onConsent('rejected')"
+      aria-label="Reject cookies"
+    >
+      <span>Reject</span>
+    </button>
+  
+    <button
+      type="button"
+      class="accept-btn"
+      (click)="onConsent('accepted')"
+      aria-label="Accept cookies"
+    >
+      <span>Accept</span>
+    </button>
+  </div>

@@ -1,0 +1,129 @@
+<div class="recommended" tabindex="0" role="region" aria-label="Featured Vehicles Carousel">
+    <div class="recommended">
+      <div class="recommended-heading">
+        <h1>Recommended For You</h1>
+        <h2>
+          <span>Most Liked</span><span>On Sale</span><span>Most Reviewed Cars</span
+          ><span>Most Reviewed</span>
+        </h2>
+      </div>
+  
+      <div class="belt-track">
+        <ng-container *ngFor="let car of displayCars">
+          <div
+            class="car-card"
+            role="group"
+            [attr.aria-label]="car.model"
+            [style.--car-bg]="'url(' + car.image + ')'"
+          >
+            <div class="car-image-container">
+              <img [src]="car.image" [alt]="car.model" />
+            </div>
+  
+            <div class="car-details">
+              <!-- Header: year + make -->
+              <div class="car-meta-top">
+                <span>{{ car.year }}</span>
+                <span>{{ car.make }}</span>
+                <span>Mileage: {{ car.mileage }}</span>
+              </div>
+  
+              <h2 class="car-title">{{ car.model }}</h2>
+  
+              <p class="car-description">
+                {{ car.description }}
+              </p>
+  
+              <!-- Spec chips -->
+              <div class="car-specs">
+                <span class="spec-chip">{{ car.engineCC }}</span>
+                <span class="spec-chip">{{ car.fuelType }}</span>
+                <span class="spec-chip">{{ car.transmission }}</span>
+                <span class="spec-chip">{{ car.mileage }}</span>
+              </div>
+  
+              <!-- Price + financing -->
+              <div class="car-pricing">
+                <span class="starting-label">Starting From</span>
+                <span class="car-price">{{ car.price }}</span>
+                <span class="car-finance">Financing available</span>
+              </div>
+  
+              <!-- Thin-bordered inquire button -->
+              <button class="inquire-btn" type="button" (click)="openSpecs()">INQUIRE</button>
+            </div>
+          </div>
+          <div class="bridge-line"></div>
+        </ng-container>
+      </div>
+    </div>
+  
+    <div class="cars-store">
+      <div class="main-store">
+        <h1>Main Store</h1>
+        <h2>
+          <span>FINANCING AVAILABLE</span><span>TRADE IN</span><span>IMPORTING SUPPORTED</span
+          ><span>TEST DRIVES AT PHYSICAL STORES</span>
+        </h2>
+      </div>
+  
+      <div class="car-rows-container" *ngFor="let rowIndex of [0, 1, 2]">
+        <div class="store-row">
+          <ng-container *ngFor="let car of displayCars">
+            <!-- Triggers the specs pop-up on store cards -->
+            <div class="store-car-card" role="group" [attr.aria-label]="car.model">
+              <div class="store-image-container" (click)="openSpecs()">
+                <img [src]="car.image" [alt]="car.model" />
+              </div>
+  
+              <div class="store-car-details">
+                <!-- Title row -->
+                <div class="store-car-header">
+                  <span class="store-car-year">{{ car.year }}</span>
+                  <span class="store-car-model">{{ car.make }} {{ car.model }}</span>
+                </div>
+  
+                <!-- Spec chips -->
+                <div class="store-car-specs">
+                  <span class="spec-chip">{{ car.engineCC }}</span>
+                  <span class="spec-chip">{{ car.fuelType }}</span>
+                  <span class="spec-chip">{{ car.transmission }}</span>
+                  <span class="spec-chip">{{ car.mileage }}</span>
+                </div>
+  
+                <div class="store-car-pricing">
+                  <div class="store-car-price">{{ car.price }}</div>
+                  <div class="store-car-finance">Financing available</div>
+                </div>
+  
+                <!-- Thin-bordered inquire button -->
+                <button class="inquire-btn" type="button" (click)="openSpecs()">INQUIRE</button>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+  
+      <div class="discover-section">
+        <button class="discover-more-btn" type="button">DISCOVER MORE</button>
+      </div>
+    </div>
+  
+    <div class="brand-display">
+      <div class="brand-rows-container" *ngFor="let rowIndex of [0, 1, 2]">
+        <div class="brand-row">
+          <ng-container *ngFor="let brand of displayBrands">
+            <div class="brand-card" role="group" [attr.aria-label]="brand.name">
+              <div class="brand-logo-container">
+                <img [src]="brand.logo" [alt]="brand.name" />
+              </div>
+              <div class="brand-name">{{ brand.name }}</div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <app-specs *ngIf="openedSpecs" (close)="openSpecs()"></app-specs>
+  

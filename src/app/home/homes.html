@@ -1,0 +1,99 @@
+@if (!cookiesClicked) {
+    <app-cookies class="cookies" (consentGiven)="hideCookies()"></app-cookies>
+  }
+  <app-nav
+    [cookiesClicked]="cookiesClicked"
+    [searchWindowOpened]="searchWindowOpened"
+    [isChatOpen]="isChatOpen"
+    [isMenuOpen]="isMenuOpen"
+    [logoImg]="logoImg"
+    (openSearchEvent)="openSearch()"
+    (closeSearchEvent)="closeSearch($event)"
+    (goHomeEvent)="goHome()"
+    (toggleMenuEvent)="toggleMenu()"
+    (toggleChatEvent)="toggleChat()">
+  </app-nav>
+  
+  <div id="smooth-wrapper">
+    <div id="smooth-content">
+  
+      <section class="hero-container" id="hero">
+        <div class="logo item item-2">
+          <div class="logo-wrapper-spacer"></div>
+  
+          <div class="experience-container">
+            <div class="circle-0"></div>
+            <div class="circle-1"></div>
+            <div class="circle-2">
+              <p>15+ YEARS OF <br><span>EXCELLENCE</span></p>
+            </div>
+          </div>
+  
+          <div class="search" (click)="$event.stopPropagation()">
+  <div class="search-segment make"
+       [class.active]="activeDropdown === 'brand'"
+       [class.has-value]="selectedBrand"
+       (click)="toggleDropdown('brand', $event)">
+    <span class="material-symbols-outlined" *ngIf="!selectedBrand">directions_car</span>
+    <span class="segment-label">{{ selectedBrand || 'Brand' }}</span>
+    <span class="material-symbols-outlined arrow"
+          [class.rotated]="activeDropdown === 'brand'">arrow_drop_down</span>
+    <div class="dropdown" *ngIf="activeDropdown === 'brand'" (click)="$event.stopPropagation()">
+      <div class="dropdown-list">
+        <div class="dropdown-item" *ngFor="let b of brands"
+             [class.selected]="b === selectedBrand"
+             (click)="selectOption('brand', b, $event)">{{ b }}</div>
+      </div>
+    </div>
+  </div>
+            <div class="search-segment model"
+                 [class.active]="activeDropdown === 'model'"
+                 (click)="toggleDropdown('model', $event)">
+              <span class="material-symbols-outlined" *ngIf="!selectedModel">category</span>
+              <span class="segment-label">{{ selectedModel || 'Model' }}</span>
+              <span class="material-symbols-outlined arrow"
+                    [class.rotated]="activeDropdown === 'model'">arrow_drop_down</span>
+              <div class="dropdown" *ngIf="activeDropdown === 'model'" (click)="$event.stopPropagation()">
+                <div class="dropdown-list">
+                  <div class="dropdown-item" *ngFor="let m of filteredModels"
+                       [class.selected]="m === selectedModel"
+                       (click)="selectOption('model', m, $event)">{{ m }}</div>
+                </div>
+              </div>
+            </div>
+  
+            <!-- YEAR -->
+            <div class="search-segment year"
+                 [class.active]="activeDropdown === 'year'"
+                 (click)="toggleDropdown('year', $event)">
+              <span class="material-symbols-outlined" *ngIf="!selectedYear">calendar_month</span>
+              <span class="segment-label">{{ selectedYear || 'Year' }}</span>
+              <span class="material-symbols-outlined arrow"
+                    [class.rotated]="activeDropdown === 'year'">arrow_drop_down</span>
+              <div class="dropdown" *ngIf="activeDropdown === 'year'" (click)="$event.stopPropagation()">
+                <div class="dropdown-list">
+                  <div class="dropdown-item" *ngFor="let y of years"
+                       [class.selected]="y === selectedYear"
+                       (click)="selectOption('year', y, $event)">{{ y }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="find-car" (click)="findCar($event)">
+              <span class="material-symbols-outlined">search</span>
+              <span>Find Car</span>
+            </div>
+          </div>
+  
+          <div class="describe"></div>
+        </div>
+  
+        <div class="side-bar-spacer item item-3"></div>
+      </section>
+  
+      <div class="portfolio-section"><app-portfolio></app-portfolio></div>
+      <div class="footer-section"><app-footer></app-footer></div>
+    </div>
+  </div>
+  
+  <app-chat-box [isOpen]="isChatOpen"></app-chat-box>
+  <router-outlet></router-outlet>

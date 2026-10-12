@@ -1,0 +1,81 @@
+<div class="about-us-container">
+  
+    <!-- Top Navigation Bar -->
+    <nav class="nav-wrapper">
+      <div class="nav-item">Why Us</div>
+      <div class="nav-item" (click)="goToStore()">OUR STORE</div>
+      <div class="nav-item" (click)="goToFinance()">FINANCING</div>
+      <div class="nav-item" (click)="goToBlogs()">SUBSIDIARIES</div>
+      <div class="nav-item" (click)="goHome()">HOME</div>
+    </nav>
+  
+    <!-- Section Navigation Tabs -->
+    <div class="section-tabs">
+      <div 
+        *ngFor="let page of pages; let i = index"
+        class="tab-item"
+        [ngClass]="{'active': i === activeIndex}"
+        (click)="setActivePage(i)"
+      >
+        {{ page.navText }}
+      </div>
+    </div>
+  
+    <!-- Main Content Area (Animated via GSAP) -->
+    <main class="content-area" #contentArea>
+      
+      <!-- Header Section -->
+      <header class="page-header">
+        <h1>{{ pages[activeIndex].title }}</h1>
+        <div class="divider"></div>
+      </header>
+  
+      <!-- Body Text -->
+      <div class="page-body">
+        <p>{{ pages[activeIndex].content }}</p>
+      </div>
+  
+      <!-- Review Section Marquee controlled by GSAP -->
+      <div class="comments-wrapper" *ngIf="pages[activeIndex].reviews && pages[activeIndex].reviews.length > 0">
+        <div class="connecting-line"></div>
+    
+        <div class="marquee-container">
+          <div class="marquee-track" #marqueeTrack (mouseenter)="pauseMarquee()" (mouseleave)="resumeMarquee()">
+            
+            <!-- First set of 5 reviews -->
+            <div class="comment-card" *ngFor="let rev of pages[activeIndex].reviews">
+              <div class="rating">
+                <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                <span class="verified-badge">Verified Buyer</span>
+              </div>
+              <p class="quote">{{ rev.quote }}</p>
+              <p class="body-text">{{ rev.body }}</p>
+              <div class="client-meta">
+                <span class="author">{{ rev.author }}</span>
+                <span class="purchase-info">{{ rev.purchase }}</span>
+                <span class="review-date">{{ rev.date }}</span>
+              </div>
+            </div>
+  
+            <!-- Duplicate set for seamless looping -->
+            <div class="comment-card" *ngFor="let rev of pages[activeIndex].reviews">
+              <div class="rating">
+                <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                <span class="verified-badge">Verified Buyer</span>
+              </div>
+              <p class="quote">{{ rev.quote }}</p>
+              <p class="body-text">{{ rev.body }}</p>
+              <div class="client-meta">
+                <span class="author">{{ rev.author }}</span>
+                <span class="purchase-info">{{ rev.purchase }}</span>
+                <span class="review-date">{{ rev.date }}</span>
+              </div>
+            </div>
+  
+          </div>
+        </div>
+      </div>
+  
+    </main>
+  </div>
+  <app-nav-2></app-nav-2>

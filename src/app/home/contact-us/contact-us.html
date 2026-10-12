@@ -1,0 +1,70 @@
+<div class="contact-container">
+    <!-- Top Navigation Bar (NOT animated) -->
+    <div class="nav-wrapper">
+      <div class="nav-item active">CONTACT US</div>
+      <div class="nav-item" (click)="goToStore()">OUR STORE</div>
+      <div class="nav-item empty"></div>
+      <div class="nav-item" (click)="goToFinance()">FINANCING</div>
+      <div class="nav-item" (click)="goToBlogs()">SUBSIDIARIES</div>
+      <div class="nav-item" (click)="goHome()">HOME</div>
+    </div>
+  
+    <!-- Main Content Area -->
+    <div class="contacts-message-wrapper">
+      <!-- Left Column: Contact Details (Animated) -->
+      <div class="contacts" #contactDetails>
+        <div class="contact-details">
+          <p class="loc-address">Along Thika Road Highway,<br><br>Near Safari Park Hotel</p>
+          <p class="loc-contact">+254707555666<br><br>info@aplusmotors.biz</p>
+        </div>
+      </div>
+  
+      <!-- Right Column: Message Form (Animated) -->
+      <div class="message" >
+        <h3 class="section-title">
+          <span class="title-item" [class.active]="selectedCategory === 'REQUEST'" (click)="selectCategory('REQUEST')">REQUEST</span>
+          <span class="title-item" [class.active]="selectedCategory === 'COMMENT'" (click)="selectCategory('COMMENT')">COMMENT</span>
+          <span class="title-item" [class.active]="selectedCategory === 'FEEDBACK'" (click)="selectCategory('FEEDBACK')">FEEDBACK</span>
+          <span class="title-item" [class.active]="selectedCategory === 'COMPLAINT'" (click)="selectCategory('COMPLAINT')">COMPLAINT</span>
+          <span class="title-item" [class.active]="selectedCategory === 'ETC'" (click)="selectCategory('ETC')">ETC</span>
+        </h3>        
+        
+        <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form" #messageForm>
+          <div class="form-group">
+            <label for="name">NAME</label>
+            <input type="text" id="name" formControlName="name">
+          </div>
+          
+          <div class="form-group">
+            <label for="email">EMAIL</label>
+            <input type="email" id="email" formControlName="email">
+          </div>
+          
+          <div class="form-group">
+            <label for="message">MESSAGE</label>
+            <textarea id="message" formControlName="message" rows="4"></textarea>
+          </div>
+  
+          <button type="submit" class="submit-btn">SEND</button>
+        </form>
+        
+        <p class="footer-note">WE ARE COMMITTED TO SERVING YOU</p>
+      </div>
+    </div>
+  
+    <!-- Bottom Map Section (NOT animated) -->
+    <div class="navigations-map">
+        <div class="map-container">
+          <!-- Google Maps Embed -->
+          <iframe 
+            class="google-map"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15955.51235678!2d36.885!3d-1.222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f146955555555%3A0x5555555555555555!2sThika%20Rd%2C%20Nairobi!5e0!3m2!1sen!2ske!4v1650000000000!5m2!1sen!2ske" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+    </div>
+  </div>
+  
+  <app-nav-2></app-nav-2>
