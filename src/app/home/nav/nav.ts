@@ -65,6 +65,17 @@ this.isMenuOpen=!this.isMenuOpen
   
   
   }
+  goToImport(): void {
+    this.router.navigate(['/imported-trade-in'], {
+      queryParams: { tab: 'import' }
+    });
+  }
+  
+  goToTradeIn(): void {
+    this.router.navigate(['/imported-trade-in'], {
+      queryParams: { tab: 'trade-in' }
+    });
+  }
   toggleMenu(): void { this.toggleMenuEvent.emit(); }
   toggleChat(): void { this.toggleChatEvent.emit(); }
 
