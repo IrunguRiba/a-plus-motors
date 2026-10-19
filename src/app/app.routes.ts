@@ -13,20 +13,25 @@ import { TradeIn } from './home/trade-in-imported/trade-in/trade-in';
 import { Imported } from './home/trade-in-imported/imported/imported';
 import { TradeInImported } from './home/trade-in-imported/trade-in-imported';
 
-
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: Home },
- {path:'nav', component:Nav},
+  { path: 'nav', component: Nav },
   { path: 'about-us', component: AboutUs },
   { path: 'contact', component: ContactUs },
   { path: 'blogs', component: Blog },
   { path: 'store', component: Store },
   { path: 'financing', component: Financing },
   { path: 'specs', component: Specs, canDeactivate: [specsLeaveGuard] },
-  {path:'privacy-policy', component:PrivacyPolicy},
-  {path: 'floating-nav', component:Nav2},
-  { path: 'import', component: Imported },
-  { path: 'trade-in', component: TradeIn },
-  { path:'imported-trade-in', component: TradeInImported},
+  { path: 'privacy-policy', component: PrivacyPolicy },
+  { path: 'floating-nav', component: Nav2 },
+  {
+    path: 'imported-trade-in',
+    component: TradeInImported,
+    children: [
+      { path: 'import', component: Imported },
+      { path: 'trade-in', component: TradeIn },
+      { path: 'imported-trade-in', component: TradeInImported },
+    ],
+  },
 ];
