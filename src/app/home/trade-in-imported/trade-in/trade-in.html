@@ -2,32 +2,39 @@
 
 
 <section class="hero">
-    <div class="hero-main">
-      <p class="eyebrow"><i></i><b>02</b><span>Trade in</span></p>
-      <h1>Your car.<br />Our <em>next</em><br />one.</h1>
-      <p class="lede">Get an instant range for your current car, book a short inspection, and drive away in the next one, with the paperwork handled.</p>
-      <button class="btn" type="button" (click)="toForm()">Value my car <span>→</span></button>
-    </div>
-    <div class="hero-side">
-      <div class="hero-visual"></div>
-      <dl class="specs">
-        @for (s of specs; track s.k) {
-          <div><dt>{{ s.k }}</dt><dd>{{ s.v }}</dd></div>
-        }
-      </dl>
-    </div>
-  </section>
-  
-  <div class="marquee">
-    <div class="track">
-      @for (r of [0, 1, 2]; track r) {
-        @for (f of features; track f) {
-          <span>{{ f }}</span><i>/</i>
-        }
-      }
-    </div>
+  <div class="hero-main">
+    <p class="eyebrow"><span>Trade-In Program</span></p>
+    <h1>Your car. Our <em>next</em>one.</h1>
+    <p class="lede">Get an instant valuation range for your current vehicle, book a quick inspection, and seamlessly drive away in your next car with all paperwork handled.</p>
+    <button class="btn" type="button" (click)="toForm()">
+      <span>Value my car</span> <span>→</span>
+    </button>
   </div>
   
+  <div class="hero-side">
+    <div class="hero-visual">
+    </div>
+    <dl class="specs">
+      @for (s of specs; track s.k) {
+        <div>
+          <dt>{{ s.k }}</dt>
+          <dd>{{ s.v }}</dd>
+        </div>
+      }
+    </dl>
+  </div>
+</section>
+
+<div class="marquee">
+  <div class="track">
+    @for (r of [0, 1, 2]; track r) {
+      @for (f of features; track f) {
+        <span>{{ f }}</span><i></i>
+      }
+    }
+  </div>
+</div>
+
   <section class="steps">
     @for (s of steps; track s.n) {
       <article><b>{{ s.n }}</b><h3>{{ s.t }}</h3><p>{{ s.d }}</p><small>{{ s.m }}</small></article>
