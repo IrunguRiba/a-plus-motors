@@ -20,11 +20,11 @@ export class TradeInImported {
   );
 
   cells = [
-    { label: 'Why Us', path: '/about-us', x: 3, y: 3.95 },
+    { label: 'WHY US', path: '/about-us', x: 3, y: 3.95 },
     { label: 'OUR STORE', path: '/store', x: 5.2, y: 4.2 },
     { label: '', path: null, x: 0, y: 0 },
     { label: 'FINANCING', path: '/financing', x: 1.7, y: 3.85 },
-    { label: 'SUBSIDIARIES', path: '/blogs', x: 2.2, y: 3.85 },
+    { label: 'BLOGS', path: '/blogs', x: 2.2, y: 3.85 },
     { label: 'HOME', path: '/', x: 7, y: 3.9 },
   ];
 
