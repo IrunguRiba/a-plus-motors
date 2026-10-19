@@ -1,0 +1,197 @@
+
+
+
+<section class="hero">
+    <div class="hero-main">
+      <p class="eyebrow"><i></i><b>02</b><span>Trade in</span></p>
+      <h1>Your car.<br />Our <em>next</em><br />one.</h1>
+      <p class="lede">Get an instant range for your current car, book a short inspection, and drive away in the next one, with the paperwork handled.</p>
+      <button class="btn" type="button" (click)="toForm()">Value my car <span>→</span></button>
+    </div>
+    <div class="hero-side">
+      <div class="hero-visual"></div>
+      <dl class="specs">
+        @for (s of specs; track s.k) {
+          <div><dt>{{ s.k }}</dt><dd>{{ s.v }}</dd></div>
+        }
+      </dl>
+    </div>
+  </section>
+  
+  <div class="marquee">
+    <div class="track">
+      @for (r of [0, 1, 2]; track r) {
+        @for (f of features; track f) {
+          <span>{{ f }}</span><i>/</i>
+        }
+      }
+    </div>
+  </div>
+  
+  <section class="steps">
+    @for (s of steps; track s.n) {
+      <article><b>{{ s.n }}</b><h3>{{ s.t }}</h3><p>{{ s.d }}</p><small>{{ s.m }}</small></article>
+    }
+  </section>
+  
+  <section class="quote" id="value">
+    <form class="form" #f="ngForm" (ngSubmit)="f.valid && submit()">
+      <h2>Value your car</h2>
+  
+      <div class="sec"><b>01</b><strong>Your car</strong></div>
+      <div class="grid-3">
+        <label class="field">
+          <span class="label">Make</span>
+          <select class="input" name="make" [(ngModel)]="make" (ngModelChange)="onMake()">
+            @for (m of makes; track m) { <option [value]="m">{{ m }}</option> }
+          </select>
+        </label>
+        <label class="field">
+          <span class="label">Model</span>
+          <select class="input" name="model" [(ngModel)]="model">
+            @for (m of modelsForMake; track m) { <option [value]="m">{{ m }}</option> }
+          </select>
+        </label>
+        <label class="field">
+          <span class="label">Year</span>
+          <select class="input" name="year" [(ngModel)]="year">
+            @for (y of years; track y) { <option [ngValue]="y">{{ y }}</option> }
+          </select>
+        </label>
+      </div>
+  
+      <div class="grid-2 end">
+        <label class="field">
+          <span class="label">Mileage (km)</span>
+          <input class="input" name="mileage" [ngModel]="mileageText" (ngModelChange)="onMileage($event)" inputmode="numeric" autocomplete="off" />
+        </label>
+        <div class="field">
+          <span class="label">Transmission</span>
+          <div class="seg">
+            @for (t of transmissions; track t) {
+              <button type="button" [class.on]="transmission === t" (click)="transmission = t">{{ t }}</button>
+            }
+          </div>
+        </div>
+      </div>
+  
+      <div class="field block">
+        <span class="label">Fuel</span>
+        <div class="seg">
+          @for (x of fuels; track x) {
+            <button type="button" [class.on]="fuel === x" (click)="fuel = x">{{ x }}</button>
+          }
+        </div>
+      </div>
+  
+      <div class="field block">
+        <span class="label">Condition</span>
+        <div class="seg tall">
+          @for (c of conditions; track c.name) {
+            <button type="button" [class.on]="condition === c.name" (click)="condition = c.name"><span>{{ c.name }}</span><small>{{ c.hint }}</small></button>
+          }
+        </div>
+      </div>
+  
+      <div class="divider"></div>
+  
+      <div class="sec"><b>02</b><strong>Photos</strong><span class="hint">Optional · up to 6</span></div>
+      <div class="photos">
+        @for (p of photos; track $index; let i = $index) {
+          <label class="photo" [style.background-image]="p ? 'url(' + p + ')' : null">
+            @if (!p) { <span>+</span> }
+            <input type="file" accept="image/*" hidden (change)="onPhoto(i, $event)" />
+          </label>
+        }
+      </div>
+  
+      <div class="divider"></div>
+  
+      <div class="sec"><b>03</b><strong>Upgrade to</strong><span class="hint">Optional</span></div>
+      <label class="field">
+        <span class="label">Car you have in mind</span>
+        <select class="input" name="upgrade" [(ngModel)]="upgrade">
+          <option value="">No upgrade car selected</option>
+          @for (u of upgrades; track u.name) { <option [value]="u.name">{{ u.name }} · KES {{ u.price | number }}</option> }
+        </select>
+        <small class="help">Pick one and we will show your balance in the estimate.</small>
+      </label>
+  
+      <div class="divider"></div>
+  
+      <div class="sec"><b>04</b><strong>Book your inspection</strong></div>
+      <div class="field">
+        <span class="label">Day</span>
+        <div class="chips">
+          @for (d of days; track d.date; let i = $index) {
+            <button type="button" class="chip" [class.on]="dayIndex === i" (click)="dayIndex = i"><small>{{ d.weekday }}</small><span>{{ d.date }}</span></button>
+          }
+        </div>
+      </div>
+      <div class="field block">
+        <span class="label">Time</span>
+        <div class="chips">
+          @for (t of times; track t) {
+            <button type="button" class="chip single" [class.on]="time === t" (click)="time = t"><span>{{ t }}</span></button>
+          }
+        </div>
+      </div>
+      <div class="grid-2 block">
+        <label class="field">
+          <span class="label">Full name</span>
+          <input class="input" name="name" [(ngModel)]="name" required autocomplete="name" />
+        </label>
+        <label class="field">
+          <span class="label">Phone / WhatsApp</span>
+          <input class="input" name="phone" [(ngModel)]="phone" required type="tel" placeholder="07xx xxx xxx" autocomplete="tel" />
+        </label>
+      </div>
+  
+      <div class="submit">
+        <button class="btn" type="submit">Book inspection <span>→</span></button>
+        <p>{{ submitted ? 'Booked. We will confirm shortly.' : 'Free, with no obligation to trade in or buy.' }}</p>
+      </div>
+    </form>
+  
+    <aside class="panel">
+      <p class="panel-label">Indicative offer</p>
+      <p class="panel-amount"><small>KES</small>{{ millions(low) }} – {{ millions(high) }}<small class="unit">M</small></p>
+      <p class="panel-route">{{ year }} {{ make }} {{ model }} · {{ condition }}</p>
+      <div class="range">
+        <div class="range-line"><i></i></div>
+        <div class="range-labels"><span>Low</span><span>Mid · {{ millions(offer) }}M</span><span>High</span></div>
+      </div>
+      <div class="panel-rows">
+        <div class="prow"><span>Market value · {{ age }} yrs old</span><span>KES {{ market | number }}</span></div>
+        <div class="prow"><span>Mileage · {{ pct(mileagePct) }}</span><span>{{ signed(mileageAmount) }}</span></div>
+        <div class="prow"><span>Condition · {{ pct(conditionPct) }}</span><span>{{ signed(conditionAmount) }}</span></div>
+        <div class="prow strong"><span>Estimated offer</span><span>KES {{ offer | number }}</span></div>
+        @if (selectedUpgrade) {
+          <div class="prow"><span>{{ selectedUpgrade.name }}</span><span>KES {{ selectedUpgrade.price | number }}</span></div>
+          <div class="prow strong"><span>{{ balance >= 0 ? 'Balance to pay' : 'Balance to receive' }}</span><span>KES {{ (balance < 0 ? -balance : balance) | number }}</span></div>
+        }
+      </div>
+      <p class="panel-note">Indicative only. The final offer is confirmed after an in-person inspection and depends on the car's real condition and the market on the day.</p>
+    </aside>
+  </section>
+  
+  <section class="benefits">
+    @for (b of benefits; track b.n) {
+      <article><b>{{ b.n }}</b><h3>{{ b.t }}</h3><p>{{ b.d }}</p></article>
+    }
+  </section>
+  
+  <section class="know">
+    <div class="know-head">
+      <h2>Good to know</h2>
+      <p>What people ask before they trade in.</p>
+    </div>
+    <div class="faq">
+      @for (f of faqs; track f.q; let i = $index) {
+        <div class="faq-item">
+          <button type="button" (click)="openFaq = openFaq === i ? -1 : i"><span>{{ f.q }}</span><i>{{ openFaq === i ? '−' : '+' }}</i></button>
+          @if (openFaq === i) { <p>{{ f.a }}</p> }
+        </div>
+      }
+    </div>
+  </section>

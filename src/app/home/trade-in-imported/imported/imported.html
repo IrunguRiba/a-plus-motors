@@ -1,0 +1,155 @@
+
+<section class="hero">
+  <div class="hero-main">
+    <div class="hero-kicker">
+      <span class="dot"></span> Global Vehicle Sourcing
+    </div>
+    
+    <h1>Import. Any car. Any port.<br><em>Nairobi</em> delivered.</h1>
+    
+    <p class="lede">Tell us what you want. We source it overseas, ship it, clear it through KRA and KEBS, and hand you the keys.</p>
+    
+    <button class="btn" type="button" (click)="toForm()">
+      <span>Request a quote</span>
+      <span class="arrow">→</span>
+    </button>
+  </div>
+    <div class="hero-side">
+      <div class="hero-visual"></div>
+      <dl class="specs">
+        @for (s of specs; track s.k) {
+          <div><dt>{{ s.k }}</dt><dd>{{ s.v }}</dd></div>
+        }
+      </dl>
+    </div>
+  </section>
+  
+  <div class="marquee">
+    <div class="track">
+      @for (r of [0, 1, 2, 3]; track r) {
+        @for (c of countries; track c) {
+          <div class="item">
+            <img [src]="getFlag(c)" [alt]="c + ' flag'" class="flag" />
+            <span>{{ c }}</span>
+          </div>
+          <i></i> 
+        }
+      }
+    </div>
+  </div>
+  
+  <section class="steps">
+    @for (s of steps; track s.n) {
+      <article><b>{{ s.n }}</b><h3>{{ s.t }}</h3><p>{{ s.d }}</p><small>{{ s.m }}</small></article>
+    }
+  </section>
+  
+  <section class="quote" id="request">
+    <form class="form" #f="ngForm" (ngSubmit)="f.valid && submit()">
+      <h2>Request an import</h2>
+  
+      <div class="sec"><b>01</b><strong>Where from</strong></div>
+      <div class="seg">
+        @for (c of countries; track c) {
+          <button type="button" [class.on]="origin === c" (click)="origin = c">{{ c }}</button>
+        }
+      </div>
+  
+      <div class="divider"></div>
+  
+      <div class="sec"><b>02</b><strong>The car</strong><span class="hint">Up to 8 years old</span></div>
+      <div class="grid-3">
+        <label class="field">
+          <span class="label">Make</span>
+          <select class="input" name="make" [(ngModel)]="make">
+            @for (m of makes; track m) { <option [value]="m">{{ m }}</option> }
+          </select>
+        </label>
+        <label class="field">
+          <span class="label">Model</span>
+          <input class="input" name="model" [(ngModel)]="model" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span class="label">Year</span>
+          <select class="input" name="year" [(ngModel)]="year">
+            @for (y of years; track y) { <option [ngValue]="y">{{ y }}</option> }
+          </select>
+        </label>
+      </div>
+  
+      <div class="grid-2 end">
+        <div class="field">
+          <span class="label">Fuel</span>
+          <div class="seg">
+            @for (x of fuels; track x) {
+              <button type="button" [class.on]="fuel === x" (click)="fuel = x">{{ x }}</button>
+            }
+          </div>
+        </div>
+        <label class="field">
+          <span class="label">Engine (cc) · optional</span>
+          <input class="input" name="engine" [(ngModel)]="engine" inputmode="numeric" autocomplete="off" />
+        </label>
+      </div>
+  
+      <label class="field block">
+        <span class="label">Vehicle price at source · FOB (KES)</span>
+        <input class="input" name="price" [ngModel]="priceText" (ngModelChange)="onPrice($event)" inputmode="numeric" autocomplete="off" />
+        <small class="help">The car's price before shipping and duty. Drives the estimate on the right.</small>
+      </label>
+  
+      <div class="divider"></div>
+  
+      <div class="sec"><b>03</b><strong>You</strong></div>
+      <div class="grid-2">
+        <label class="field">
+          <span class="label">Full name</span>
+          <input class="input" name="name" [(ngModel)]="name" required autocomplete="name" />
+        </label>
+        <label class="field">
+          <span class="label">Phone / WhatsApp</span>
+          <input class="input" name="phone" [(ngModel)]="phone" required type="tel" placeholder="07xx xxx xxx" autocomplete="tel" />
+        </label>
+      </div>
+      <label class="field block">
+        <span class="label">Email · optional</span>
+        <input class="input" name="email" [(ngModel)]="email" type="email" autocomplete="email" />
+      </label>
+      <label class="field block">
+        <span class="label">Anything specific? · optional</span>
+        <textarea class="input area" name="notes" [(ngModel)]="notes" rows="2" placeholder="Colour, trim, must-have features..."></textarea>
+      </label>
+  
+      <div class="submit">
+        <button class="btn" type="submit">Request a quote <span>→</span></button>
+        <p>{{ submitted ? 'Thank you. We will reply shortly.' : 'No payment now. We only use your details to reply about this request.' }}</p>
+      </div>
+    </form>
+  
+    <aside class="panel">
+      <p class="panel-label">Indicative landed cost</p>
+      <p class="panel-amount"><small>KES</small>{{ total | number }}</p>
+      <p class="panel-route">{{ origin }} → Mombasa → Nairobi</p>
+      <div class="panel-rows">
+        @for (r of rows; track r.label) {
+          <div class="prow" [class.strong]="r.strong"><span>{{ r.label }}</span><span>{{ r.value | number }}</span></div>
+        }
+      </div>
+      <p class="panel-note">Indicative only. Final duty is based on the KRA valuation and the rates in force when the car is entered, so your formal quote may differ.</p>
+    </aside>
+  </section>
+  
+  <section class="know">
+    <div class="know-head">
+      <h2>Good to know</h2>
+      <p>The questions we hear most before an import.</p>
+    </div>
+    <div class="faq">
+      @for (f of faqs; track f.q; let i = $index) {
+        <div class="faq-item">
+          <button type="button" (click)="openFaq = openFaq === i ? -1 : i"><span>{{ f.q }}</span><i>{{ openFaq === i ? '−' : '+' }}</i></button>
+          @if (openFaq === i) { <p>{{ f.a }}</p> }
+        </div>
+      }
+    </div>
+  </section>

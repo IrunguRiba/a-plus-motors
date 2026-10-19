@@ -158,4 +158,7 @@ export class Store implements AfterViewInit, OnDestroy {
   goHome(): void {
     this.router.navigate(['']);
   }
+  goToTradein():void{
+this.router.navigate(['/imported-trade-in'])
+  }
 }

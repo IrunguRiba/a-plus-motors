@@ -1,0 +1,25 @@
+<div class="trade-in-imported-container">
+    <header class="nav">
+      @for (c of cells; track $index) {
+        @if (c.path) {
+          <a class="cell" [routerLink]="c.path">{{ c.label }}</a>
+        } @else {
+          <div class="cell"></div>
+        }
+      }
+    </header>
+ 
+    <nav class="tabs">
+      @for (t of tabs; track t.key) {
+        <a class="tab" routerLink="/imported-trade-in" [queryParams]="{ tab: t.key }" [class.active]="active() === t.key"><sup>{{ t.n }}</sup><span>{{ t.label }}</span></a>
+      }
+    </nav>
+ 
+    <main>
+      @if (active() === 'import') {
+        <app-imported />
+      } @else {
+        <app-trade-in />
+      }
+    </main>
+  </div>
