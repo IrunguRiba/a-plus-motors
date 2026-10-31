@@ -1,7 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, OnDestroy } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 
 const REFERENCE_YEAR = 2021;
 const ANNUAL_DEPRECIATION = 0.08;
@@ -26,7 +25,7 @@ const round10k = (n: number): number => Math.round(n / 10000) * 10000;
   templateUrl: './trade-in.html',
   styleUrl: './trade-in.css',
 })
-export class TradeIn {
+export class TradeIn implements OnDestroy {
   makes = Object.keys(CATALOGUE);
   years = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i);
   transmissions = ['Automatic', 'Manual', 'CVT'];
@@ -53,19 +52,24 @@ export class TradeIn {
   });
 
   specs = [
-    { k: 'Offer basis', v: 'Year, mileage, condition and market demand' },
-    { k: 'Inspection', v: 'A short in-person check at our yard' },
-    { k: 'Car on loan?', v: 'We can settle the balance for you' },
-    { k: 'Paperwork', v: 'Logbook transfer handled by us' },
+    { k: 'Offer basis', v: 'Year, mileage, condition and market demand', tag: 'Instant range.' },
+    { k: 'Inspection', v: 'A short in-person check at our yard', tag: 'Free inspection.' },
+    { k: 'Car on loan?', v: 'We can settle the balance for you', tag: '' },
+    { k: 'Paperwork', v: 'Logbook transfer handled by us', tag: 'Same-day swap' },
   ];
 
-  features = ['Instant range', 'Free inspection', 'Logbook transfer', 'Loan settlement', 'Same-day swap'];
+  videoOpen = false;
+  videoSrc = 'assets/trade-in.mp4';
+  videoThumb = 'assets/trade-in-thumb.jpg';
+  activeSrc = this.videoSrc;
+  activeThumb = this.videoThumb;
+  openStep = -1;
 
   steps = [
-    { n: '01', t: 'Describe', d: 'Tell us about your car in two minutes.', m: '2 min' },
-    { n: '02', t: 'Get a range', d: 'See an indicative offer instantly, no sign-up.', m: 'Instant' },
-    { n: '03', t: 'Inspect', d: 'Book a slot. We check the car and confirm the number.', m: 'At our yard' },
-    { n: '04', t: 'Swap', d: 'Pick your next car. We handle the paperwork.', m: 'Same day' },
+    { n: '01', t: 'Describe', d: 'Tell us about your car in two minutes.', m: '2 min', thumb: 'assets/steps/describe.jpg', video: 'assets/steps/describe.mp4' },
+    { n: '02', t: 'Get a range', d: 'See an indicative offer instantly, no sign-up.', m: 'Instant', thumb: 'assets/steps/range.jpg', video: 'assets/steps/range.mp4' },
+    { n: '03', t: 'Inspect', d: 'Book a slot. We check the car and confirm the number.', m: 'At our yard', thumb: 'assets/steps/inspect.jpg', video: 'assets/steps/inspect.mp4' },
+    { n: '04', t: 'Swap', d: 'Pick your next car. We handle the paperwork.', m: 'Same day', thumb: 'assets/steps/swap.jpg', video: 'assets/steps/swap.mp4' },
   ];
 
   benefits = [
@@ -151,6 +155,29 @@ export class TradeIn {
 
   toForm(): void {
     document.getElementById('value')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  openVideo(src: string = this.videoSrc, thumb: string = this.videoThumb): void {
+    this.activeSrc = src;
+    this.activeThumb = thumb;
+    this.videoOpen = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeVideo(): void {
+    this.videoOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.videoOpen) {
+      this.closeVideo();
+    }
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   submit(): void {

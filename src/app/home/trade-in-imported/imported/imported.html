@@ -1,63 +1,95 @@
-
 <section class="hero">
+ 
   <div class="hero-main">
-    <div class="hero-kicker">
-      <span class="dot"></span> Global Vehicle Sourcing
-    </div>
-    
-    <h1>Import. Any car.<br><em>Nairobi</em> delivered.</h1>
-    
+    <h1>IMPORT </h1>
+
+    <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()">
+      <span class="video-frame">
+        <span class="video-media">
+          <img [src]="videoThumb" alt="Featured import" />
+          <span class="play" aria-hidden="true"></span>
+        </span>
+      </span>
+    </button>
+
     <p class="lede">Tell us what you want. We source it overseas, ship it, clear it through KRA and KEBS, and hand you the keys.</p>
-    
-    <button class="btn" type="button" (click)="toForm()">
-      <span>Request a quote</span>
-      <span class="arrow">→</span>
+
+    <button class="btn hover-flip" type="button" (click)="toForm()">
+      <span class="flip">
+        <span class="face front">
+          <span>Request a quote</span>
+        </span>
+        <span class="face back">
+          <span>Request a quote</span>
+        </span>
+      </span>
     </button>
   </div>
-    <div class="hero-side">
-      <div class="hero-visual"></div>
-      <dl class="specs">
-        @for (s of specs; track s.k) {
-          <div><dt>{{ s.k }}</dt><dd>{{ s.v }}</dd></div>
-        }
-      </dl>
-    </div>
-  </section>
-  
-  <div class="marquee">
-    <div class="track">
-      @for (r of [0, 1, 2, 3]; track r) {
-        @for (c of countries; track c) {
-          <div class="item">
-            <img [src]="getFlag(c)" [alt]="c + ' flag'" class="flag" />
-            <span>{{ c }}</span>
-          </div>
-          <i></i> 
-        }
+
+  <div class="hero-side">
+    <dl class="specs">
+      @for (s of specs; track s.k) {
+        <div>
+          <dt>{{ s.k }}</dt>
+          <dd>{{ s.v }}</dd>
+          @if (s.tag) { <span class="tag">{{ s.tag }}</span> }
+        </div>
       }
+    </dl>
+  </div>
+</section>
+
+<section class="steps">
+  <div class="steps-row">
+    @for (s of steps; track s.n; let i = $index) {
+      <article class="step">
+        <div class="step-top">
+          <span class="step-link">
+            <button class="step-num" type="button" [class.on]="openStep === i" [attr.aria-expanded]="openStep === i" [attr.aria-label]="'Step ' + s.n + ' details'" (click)="openStep = openStep === i ? -1 : i"><span>{{ s.n }}</span></button>
+          </span>
+          <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)">
+            <span class="step-media">
+              <img [src]="s.thumb" [alt]="s.t" />
+              <span class="play" aria-hidden="true"></span>
+            </span>
+          </button>
+        </div>
+        <h3>{{ s.t }}</h3>
+        <div class="step-more" [class.open]="openStep === i">
+          <div>
+            <p>{{ s.d }}</p>
+            <small>{{ s.m }}</small>
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+</section>
+
+@if (videoOpen) {
+  <div class="lightbox" (click)="closeVideo()">
+    <div class="lightbox-box" (click)="$event.stopPropagation()">
+      <button class="lightbox-close" type="button" (click)="closeVideo()">Close</button>
+      <video [src]="activeSrc" [poster]="activeThumb" controls autoplay playsinline></video>
     </div>
   </div>
-  
-  <section class="steps">
-    @for (s of steps; track s.n) {
-      <article><b>{{ s.n }}</b><h3>{{ s.t }}</h3><p>{{ s.d }}</p><small>{{ s.m }}</small></article>
-    }
-  </section>
-  
-  <section class="quote" id="request">
-    <form class="form" #f="ngForm" (ngSubmit)="f.valid && submit()">
+}
+
+<section class="quote" id="request">
+  <form class="form" #f="ngForm" [class.tried]="tried" (ngSubmit)="attempt(f.valid)">
+    <div class="form-inner">
       <h2>Request an import</h2>
-  
-      <div class="sec"><b>01</b><strong>Where from</strong></div>
+
+      <div class="sec"><strong>Where from</strong></div>
       <div class="seg">
         @for (c of countries; track c) {
-          <button type="button" [class.on]="origin === c" (click)="origin = c">{{ c }}</button>
+          <button type="button" [class.on]="origin === c" (click)="origin = c"><span>{{ c }}</span></button>
         }
       </div>
-  
+
       <div class="divider"></div>
-  
-      <div class="sec"><b>02</b><strong>The car</strong><span class="hint">Up to 8 years old</span></div>
+
+      <div class="sec"><strong>The car</strong><span class="hint">Up to 8 years old</span></div>
       <div class="grid-3">
         <label class="field">
           <span class="label">Make</span>
@@ -76,31 +108,31 @@
           </select>
         </label>
       </div>
-  
+
       <div class="grid-2 end">
         <div class="field">
           <span class="label">Fuel</span>
           <div class="seg">
             @for (x of fuels; track x) {
-              <button type="button" [class.on]="fuel === x" (click)="fuel = x">{{ x }}</button>
+              <button type="button" [class.on]="fuel === x" (click)="fuel = x"><span>{{ x }}</span></button>
             }
           </div>
         </div>
         <label class="field">
-          <span class="label">Engine (cc) · optional</span>
+          <span class="label">Engine (cc), optional</span>
           <input class="input" name="engine" [(ngModel)]="engine" inputmode="numeric" autocomplete="off" />
         </label>
       </div>
-  
+
       <label class="field block">
-        <span class="label">Vehicle price at source · FOB (KES)</span>
+        <span class="label">Vehicle price at source, FOB (KES)</span>
         <input class="input" name="price" [ngModel]="priceText" (ngModelChange)="onPrice($event)" inputmode="numeric" autocomplete="off" />
         <small class="help">The car's price before shipping and duty. Drives the estimate on the right.</small>
       </label>
-  
+
       <div class="divider"></div>
-  
-      <div class="sec"><b>03</b><strong>You</strong></div>
+
+      <div class="sec"><strong>Your details</strong></div>
       <div class="grid-2">
         <label class="field">
           <span class="label">Full name</span>
@@ -112,44 +144,61 @@
         </label>
       </div>
       <label class="field block">
-        <span class="label">Email · optional</span>
+        <span class="label">Email, optional</span>
         <input class="input" name="email" [(ngModel)]="email" type="email" autocomplete="email" />
       </label>
       <label class="field block">
-        <span class="label">Anything specific? · optional</span>
+        <span class="label">Anything specific? Optional</span>
         <textarea class="input area" name="notes" [(ngModel)]="notes" rows="2" placeholder="Colour, trim, must-have features..."></textarea>
       </label>
-  
+
       <div class="submit">
-        <button class="btn" type="submit">Request a quote <span>→</span></button>
-        <p>{{ submitted ? 'Thank you. We will reply shortly.' : 'No payment now. We only use your details to reply about this request.' }}</p>
+        <button class="btn hover-flip" type="submit">
+          <span class="flip">
+            <span class="face front">
+              <span>{{ submitted ? 'Request sent' : 'Request a quote' }}</span>
+            </span>
+            <span class="face back">
+              <span>{{ submitted ? 'Request sent' : 'Request a quote' }}</span>
+            </span>
+          </span>
+        </button>
+        <p aria-live="polite" [class.err]="tried && !f.valid">
+          {{ submitted ? 'Thank you. We will reply shortly.' : (tried && !f.valid ? 'Please add your name and phone number so we can reply.' : 'No payment now. We only use your details to reply about this request.') }}
+        </p>
       </div>
-    </form>
-  
-    <aside class="panel">
+    </div>
+  </form>
+
+  <aside class="panel">
+    <div class="panel-sticky">
       <p class="panel-label">Indicative landed cost</p>
       <p class="panel-amount"><small>KES</small>{{ total | number }}</p>
-      <p class="panel-route">{{ origin }} → Mombasa → Nairobi</p>
+      <p class="panel-route">{{ origin }} to Mombasa to Nairobi</p>
       <div class="panel-rows">
         @for (r of rows; track r.label) {
           <div class="prow" [class.strong]="r.strong"><span>{{ r.label }}</span><span>{{ r.value | number }}</span></div>
         }
       </div>
       <p class="panel-note">Indicative only. Final duty is based on the KRA valuation and the rates in force when the car is entered, so your formal quote may differ.</p>
-    </aside>
-  </section>
-  
-  <section class="know">
-    <div class="know-head">
-      <h2>Good to know</h2>
-      <p>The questions we hear most before an import.</p>
     </div>
-    <div class="faq">
-      @for (f of faqs; track f.q; let i = $index) {
-        <div class="faq-item">
-          <button type="button" (click)="openFaq = openFaq === i ? -1 : i"><span>{{ f.q }}</span><i>{{ openFaq === i ? '−' : '+' }}</i></button>
-          @if (openFaq === i) { <p>{{ f.a }}</p> }
-        </div>
-      }
-    </div>
-  </section>
+  </aside>
+</section>
+
+<section class="know">
+  <div class="know-head">
+    <h2>Good to know</h2>
+    <p>The questions we hear most before an import.</p>
+  </div>
+  <div class="faq">
+    @for (f of faqs; track f.q; let i = $index) {
+      <div class="faq-item" [class.open]="openFaq === i">
+        <button type="button" [attr.aria-expanded]="openFaq === i" (click)="openFaq = openFaq === i ? -1 : i">
+          <span>{{ f.q }}</span>
+          <i class="ico" aria-hidden="true"></i>
+        </button>
+        @if (openFaq === i) { <p>{{ f.a }}</p> }
+      </div>
+    }
+  </div>
+</section>

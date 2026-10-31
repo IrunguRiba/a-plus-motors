@@ -1,7 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, OnDestroy } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 
 interface Row {
   label: string;
@@ -22,41 +21,33 @@ const RDL = 0.02;
   templateUrl: './imported.html',
   styleUrl: './imported.css',
 })
-export class Imported {
+export class Imported implements OnDestroy {
+  countries = ['Japan', 'United Kingdom', 'UAE', 'South Africa'];
 
- 
-// Keep countries as strings so line 54 doesn't break
-countries = ['Japan', 'United Kingdom', 'UAE', 'South Africa'];
-
-// Map country names to their flag CDN URLs
-private flagMap: { [key: string]: string } = {
-  'Japan': 'https://flagcdn.com/w40/jp.png',
-  'United Kingdom': 'https://flagcdn.com/w40/gb.png',
-  'UAE': 'https://flagcdn.com/w40/ae.png',
-  'South Africa': 'https://flagcdn.com/w40/za.png'
-};
-
-getFlag(country: string): string {
-  return this.flagMap[country] || '';
-}
   fuels = ['Petrol', 'Diesel', 'Hybrid'];
   makes = ['Toyota', 'Nissan', 'Honda', 'Mazda', 'Subaru', 'Mitsubishi', 'Suzuki', 'Isuzu', 'Volkswagen', 'Mercedes-Benz', 'BMW', 'Land Rover', 'Audi', 'Ford'];
   years = Array.from({ length: 9 }, (_, i) => new Date().getFullYear() - i);
 
   specs = [
-    { k: 'Sourcing', v: 'Japan · UK · UAE · South Africa' },
-    { k: 'Vehicle age', v: 'Up to 8 years from manufacture' },
-    { k: 'We handle', v: 'Shipping, KRA duty, KEBS, registration' },
-    { k: 'You get', v: 'An inspection report before you commit' },
+    { k: 'Sourcing', v: 'Japan · UK · UAE · South Africa', tag: 'Transportation supported' },
+    { k: 'Vehicle age', v: 'Up to 8 years from manufacture', tag: '' },
+    { k: 'We handle', v: 'Shipping, KRA duty, KEBS, registration', tag: 'Timely delivery.' },
+    { k: 'You get', v: 'An inspection report before you commit', tag: 'Free inspection.' },
   ];
 
   steps = [
-    { n: '01', t: 'Brief', d: 'Tell us the car, spec and budget.', m: 'Day 0' },
-    { n: '02', t: 'Source & inspect', d: 'We find verified stock and send a full inspection report.', m: 'Aprox. Week 1' },
-    { n: '03', t: 'Ship', d: 'Booked, insured and tracked to Mombasa.', m: 'Aprox. Weeks 2–6' },
-    { n: '04', t: 'Clear', d: 'KRA duty, KEBS inspection and registration, handled.', m: 'Aprox. Week 7' },
-    { n: '05', t: 'Deliver', d: 'Plated and delivered to your yard or door.', m: 'Aprox. Week 8' },
+    { n: '01', t: 'Brief', d: 'Tell us the car you want and we confirm it is eligible.', m: 'Approx. 1  Week', thumb: 'assets/steps/brief.jpg', video: 'assets/steps/brief.mp4' },
+    { n: '02', t: 'Source & inspect', d: 'We find the car overseas and send an inspection report before you commit.', m: ' Approx. 1  Week', thumb: 'assets/steps/source.jpg', video: 'assets/steps/source.mp4' },
+    { n: '03', t: 'Ship', d: 'Your car is shipped to Mombasa.', m: 'Approx.  2–6  Weeks', thumb: 'assets/steps/ship.jpg', video: 'assets/steps/ship.mp4' },
+    { n: '04', t: 'Clear & deliver', d: 'We clear it through KRA and KEBS, register it and hand you the keys.', m: 'Approx. 7–8  Weeks', thumb: 'assets/steps/deliver.jpg', video: 'assets/steps/deliver.mp4' },
   ];
+
+  videoOpen = false;
+  videoSrc = 'assets/hero.mp4';
+  videoThumb = 'assets/hero-thumb.jpg';
+  activeSrc = this.videoSrc;
+  activeThumb = this.videoThumb;
+  openStep = -1;
 
   faqs = [
     { q: 'How old can an imported car be?', a: 'Kenya generally allows used vehicles up to 8 years from the year of manufacture. We confirm eligibility for the exact car before you commit to anything.' },
@@ -79,6 +70,7 @@ getFlag(country: string): string {
   notes = '';
   openFaq = 0;
   submitted = false;
+  tried = false;
 
   get shipping(): number { return Math.round(this.price * SHIPPING_RATE); }
   get cif(): number { return this.price + this.shipping; }
@@ -110,6 +102,36 @@ getFlag(country: string): string {
 
   toForm(): void {
     document.getElementById('request')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  openVideo(src: string = this.videoSrc, thumb: string = this.videoThumb): void {
+    this.activeSrc = src;
+    this.activeThumb = thumb;
+    this.videoOpen = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeVideo(): void {
+    this.videoOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.videoOpen) {
+      this.closeVideo();
+    }
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
+  }
+
+  attempt(valid: boolean | null): void {
+    this.tried = true;
+    if (valid) {
+      this.submit();
+    }
   }
 
   submit(): void {
