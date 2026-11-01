@@ -206,31 +206,27 @@
   </form>
 
   <aside class="panel">
-    <p class="panel-label">Indicative offer</p>
-    <p class="panel-amount"><small>KES</small>{{ millions(low) }} – {{ millions(high) }}<small class="unit">M</small></p>
-    <p class="panel-route">{{ year }} {{ make }} {{ model }} · {{ condition }}</p>
-    <div class="range">
-      <div class="range-line"><i></i></div>
-      <div class="range-labels"><span>Low</span><span>Mid · {{ millions(offer) }}M</span><span>High</span></div>
+    <div class="panel-sticky">
+      <p class="panel-label">Indicative offer</p>
+      <p class="panel-amount"><small>KES</small>{{ millions(low) }} – {{ millions(high) }}<small class="unit">M</small></p>
+      <p class="panel-route">{{ year }} {{ make }} {{ model }} · {{ condition }}</p>
+      <div class="range">
+        <div class="range-line"><i></i></div>
+        <div class="range-labels"><span>Low</span><span>Mid · {{ millions(offer) }}M</span><span>High</span></div>
+      </div>
+      <div class="panel-rows">
+        <div class="prow"><span>Market value · {{ age }} yrs old</span><span>KES {{ market | number }}</span></div>
+        <div class="prow"><span>Mileage · {{ pct(mileagePct) }}</span><span>{{ signed(mileageAmount) }}</span></div>
+        <div class="prow"><span>Condition · {{ pct(conditionPct) }}</span><span>{{ signed(conditionAmount) }}</span></div>
+        <div class="prow strong"><span>Estimated offer</span><span>KES {{ offer | number }}</span></div>
+        @if (selectedUpgrade) {
+          <div class="prow"><span>{{ selectedUpgrade.name }}</span><span>KES {{ selectedUpgrade.price | number }}</span></div>
+          <div class="prow strong"><span>{{ balance >= 0 ? 'Balance to pay' : 'Balance to receive' }}</span><span>KES {{ (balance < 0 ? -balance : balance) | number }}</span></div>
+        }
+      </div>
+      <p class="panel-note">Indicative only. The final offer is confirmed after an in-person inspection and depends on the car's real condition and the market on the day.</p>
     </div>
-    <div class="panel-rows">
-      <div class="prow"><span>Market value · {{ age }} yrs old</span><span>KES {{ market | number }}</span></div>
-      <div class="prow"><span>Mileage · {{ pct(mileagePct) }}</span><span>{{ signed(mileageAmount) }}</span></div>
-      <div class="prow"><span>Condition · {{ pct(conditionPct) }}</span><span>{{ signed(conditionAmount) }}</span></div>
-      <div class="prow strong"><span>Estimated offer</span><span>KES {{ offer | number }}</span></div>
-      @if (selectedUpgrade) {
-        <div class="prow"><span>{{ selectedUpgrade.name }}</span><span>KES {{ selectedUpgrade.price | number }}</span></div>
-        <div class="prow strong"><span>{{ balance >= 0 ? 'Balance to pay' : 'Balance to receive' }}</span><span>KES {{ (balance < 0 ? -balance : balance) | number }}</span></div>
-      }
-    </div>
-    <p class="panel-note">Indicative only. The final offer is confirmed after an in-person inspection and depends on the car's real condition and the market on the day.</p>
   </aside>
-</section>
-
-<section class="benefits">
-  @for (b of benefits; track b.n) {
-    <article><b>{{ b.n }}</b><h3>{{ b.t }}</h3><p>{{ b.d }}</p></article>
-  }
 </section>
 
 <section class="know">

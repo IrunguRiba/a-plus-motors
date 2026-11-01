@@ -66,7 +66,7 @@ export class TradeIn implements OnDestroy {
   openStep = -1;
 
   steps = [
-    { n: '01', t: 'Describe', d: 'Tell us about your car in two minutes.', m: '2 min', thumb: 'assets/steps/describe.jpg', video: 'assets/steps/describe.mp4' },
+    { n: '01', t: 'Describe', d: 'Tell us about your car.', m: 'Briefly', thumb: 'assets/steps/describe.jpg', video: 'assets/steps/describe.mp4' },
     { n: '02', t: 'Get a range', d: 'See an indicative offer instantly, no sign-up.', m: 'Instant', thumb: 'assets/steps/range.jpg', video: 'assets/steps/range.mp4' },
     { n: '03', t: 'Inspect', d: 'Book a slot. We check the car and confirm the number.', m: 'At our yard', thumb: 'assets/steps/inspect.jpg', video: 'assets/steps/inspect.mp4' },
     { n: '04', t: 'Swap', d: 'Pick your next car. We handle the paperwork.', m: 'Same day', thumb: 'assets/steps/swap.jpg', video: 'assets/steps/swap.mp4' },

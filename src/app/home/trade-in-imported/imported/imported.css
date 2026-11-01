@@ -95,7 +95,6 @@ button:focus-visible {
   -webkit-backface-visibility: hidden;
 }
 .btn .front {
-  background: #000;
   color: #fff;
   transform: translateZ(var(--half));
 }
@@ -104,20 +103,20 @@ button:focus-visible {
   color: #000;
   transform: rotateX(90deg) translateZ(var(--half));
 }
-.btn .arrow {
+.btn  {
   font-size: 14px;
   letter-spacing: 0;
   transition: transform 0.3s ease;
+  
 }
 .btn.hover-flip:hover .flip,
 .btn.hover-flip:focus-visible .flip,
 .btn.flipped .flip {
   transform: translateZ(calc(-1 * var(--half))) rotateX(-90deg);
 }
-.btn.hover-flip:hover .arrow,
-.btn.hover-flip:focus-visible .arrow,
-.btn.flipped .arrow {
+.btn.flipped  {
   transform: translateX(4px);
+
 }
 
 .hero {
@@ -260,7 +259,7 @@ button:focus-visible {
   flex-direction: column;
   flex: 1;
   gap: 8px;
-  padding: 12px 12px 8px;
+  padding: 12px 2px 8px;
 }
 .specs div {
   display: flex;
@@ -269,7 +268,7 @@ button:focus-visible {
   gap: 6px;
   align-items: center;
   align-content: center;
-  padding: 0 16px;
+  padding: 0 10px;
   border: var(--border-thin) solid var(--border-color);
   font-size: 13.5px;
 }
@@ -341,7 +340,7 @@ button:focus-visible {
 .steps-row {
   display: flex;
   gap: 64px;
-  padding: 32px 48px 48px;
+  padding: 32px 48px 1px;
 }
 .step {
   position: relative;
@@ -445,19 +444,20 @@ button:focus-visible {
 .step h3 {
   order: -1;
   align-self: flex-start;
-  margin-bottom: 24px;
-  padding: 6px 14px;
-  border: var(--border-thin) solid var(--border-color);
-  font-size: 15px;
+  margin-bottom: 5px;
+  padding: 0px 10px;
+color:#092635;
+  font-size: 19px;
   font-weight: 500;
   letter-spacing: -0.01em;
+
 }
 .step-more {
-  min-height: 112px;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  pointer-events: none;
+  min-height: 170px;
+ 
+}
+.step-more.open {
+  max-height: 320px;
 }
 .step-more.open,
 .step:hover .step-more,
@@ -468,28 +468,30 @@ button:focus-visible {
 }
 .step-more p {
   margin: 10px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #666;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #000000;
 
 }
 .step-more small {
   display: block;
   margin-top: 10px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #666;
-  margin: 10px;
+  color: #12372A;
+  margin-left: 20px;
 }
 
 .quote {
   display: grid;
   grid-template-columns: 58% 1fr;
+  align-items: stretch;   /* explicit — full-height columns */
   width: 100%;
   border-bottom: var(--border-thin) solid var(--border-color);
   background: #fff;
+  overflow: visible;      /* never clip sticky */
 }
 .form {
   padding: 72px 48px 88px;
@@ -672,16 +674,19 @@ select.input {
 }
 
 .panel {
-  background: #000;
+  background: #092635;
   color: #fff;
 }
+
 .panel-sticky {
   position: sticky;
   top: 0;
-  padding: 72px 48px 56px;
+  padding: 32px 30px 26px;   
+
+  align-self: start;    
 }
 .panel-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -700,7 +705,7 @@ select.input {
   white-space: nowrap;
 }
 .panel-amount small {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.18em;
   color: #fff;
@@ -714,7 +719,7 @@ select.input {
   color: rgba(255, 255, 255, 0.7);
 }
 .panel-rows {
-  margin-top: 36px;
+  margin-top: 26px;
 }
 .prow {
   display: flex;
@@ -742,7 +747,7 @@ select.input {
   margin-top: 24px;
   font-size: 12px;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .know {
@@ -753,11 +758,11 @@ select.input {
 }
 .know-head {
   padding: 72px 48px;
-  background: #000;
-  color: #fff;
+  background: #092635;
+  color: #FAEEE0;
 }
 .know-head p {
-  max-width: 280px;
+  max-width: 380px;
   margin-top: 16px;
   font-size: 14px;
   line-height: 1.7;
