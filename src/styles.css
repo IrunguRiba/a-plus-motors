@@ -1,7 +1,66 @@
+body {
+
+}
+
 * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(225, 220, 201, 0.5) #171818;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+body:has(.search-active) .menu-bar {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+html:has(.search-overlay.is-open),
+html:has(.menu-overlay.is-open),
+body:has(.search-overlay.is-open),
+body:has(.menu-overlay.is-open) {
+  overflow: hidden;
+  transition: 1ms;
+}
+
+#smooth-wrapper:has(~ .search-overlay.is-open),
+#smooth-wrapper:has(~ .menu-overlay.is-open) {
+  overflow: hidden;
+  padding-right: var(--scrollbar-width, 0px);
+}
+
+body.modal-open .search-box,
+body.modal-open .logo-wrapper,
+body.modal-open .side-bar,
+body.modal-open .nav-background {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+::selection {
+  background-color: #191a1b;
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: #1b1c1d;
+  color: #ffffff;
+}
+
+.dark-theme ::selection,
+.dark-background ::selection {
+  background-color: #ffcc00;
+  color: #000000;
+}
+
+.dark-theme ::-moz-selection,
+.dark-background ::-moz-selection {
+  background-color: #ffcc00;
+  color: #000000;
 }
 
 /* Firefox only (in Chrome these would override the webkit rules) */
@@ -19,17 +78,24 @@
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  border-left: 1px solid rgba(225, 220, 201, 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
-  min-height: 36px;
   background: #ffcc00;
   background-clip: padding-box;
-  border: 4px solid transparent;   /* shrinks the visible bean to ~6px wide */
+  border: 4px solid transparent;
   border-radius: 999px;
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12); /* subtle bean depth */
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
   transition: background-color 0.3s ease;
 }
 
-::-webkit-scrollbar-thumb:hover  { background: #ffd93d; background-clip: padding-box; }
-::-webkit-scrollbar-thumb:active { background: #e6b800; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover {
+  background: #ffd93d;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #e6b800;
+  background-clip: padding-box;
+}
