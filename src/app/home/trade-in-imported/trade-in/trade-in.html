@@ -230,19 +230,33 @@
 </section>
 
 <section class="know">
-  <div class="know-head">
+  <header class="know-head">
     <h2>Good to know</h2>
     <p>What people ask before they trade in.</p>
-  </div>
-  <div class="faq">
-    @for (f of faqs; track f.q; let i = $index) {
-      <div class="faq-item" [class.open]="openFaq === i">
-        <button type="button" [attr.aria-expanded]="openFaq === i" (click)="openFaq = openFaq === i ? -1 : i">
-          <span>{{ f.q }}</span>
-          <i class="ico" aria-hidden="true"></i>
-        </button>
-        @if (openFaq === i) { <p>{{ f.a }}</p> }
-      </div>
-    }
+  </header>
+
+  <div class="know-body">
+    <ul class="faq-q" role="tablist" aria-label="Trade-in questions">
+      @for (f of faqs; track f.q; let i = $index) {
+        <li>
+          <button type="button" role="tab" [class.on]="openFaq === i"
+                  [attr.aria-selected]="openFaq === i" (click)="openFaq = i">
+            <span>{{ f.q }}</span>
+            <i class="arrow" aria-hidden="true"></i>
+          </button>
+        </li>
+      }
+    </ul>
+
+    <div class="faq-a" role="tabpanel" aria-live="polite">
+      @for (f of faqs; track f.q; let i = $index) {
+        @if (openFaq === i) {
+          <article class="answer">
+            <h3>{{ f.q }}</h3>
+            <p>{{ f.a }}</p>
+          </article>
+        }
+      }
+    </div>
   </div>
 </section>

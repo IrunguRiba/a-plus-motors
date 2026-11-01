@@ -1,18 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :host {
   display: block;
   --border-color: #111111;
   --border-thin: 0.5px;
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --panel-bg: #092635;
 
   font-family: var(--font-main);
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 400;
   line-height: 1.6;
   color: #000;
   background: #fff;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 :host *,
@@ -60,18 +64,18 @@ button:focus-visible {
 
 /* ============ FLIP BUTTON ============ */
 .btn {
-  --h: 48px;
+  --h: 52px;
   display: inline-block;
   height: var(--h);
   padding: 0;
   overflow: hidden;
   perspective: 700px;
-  border: var(--border-thin) solid #000;
-  background: #000;
+  border: var(--border-thin) solid var(--panel-bg);
+  background: var(--panel-bg);
   color: #fff;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
   align-items: end;
@@ -90,7 +94,7 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  padding: 0 22px;
+  padding: 0 24px;
   white-space: nowrap;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -101,11 +105,11 @@ button:focus-visible {
 }
 .btn .back {
   background: #fff;
-  color: #000;
+  color: var(--panel-bg);
   transform: rotateX(90deg) translateZ(var(--half));
 }
 .btn .arrow {
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0;
   transition: transform 0.3s ease;
 }
@@ -134,7 +138,7 @@ button:focus-visible {
 .hero-main {
   display: grid;
   grid-template-columns: 340px 1fr;
-  grid-template-rows: auto 1fr auto 48px;
+  grid-template-rows: auto 1fr auto 52px;
   column-gap: 56px;
   align-items: end;
   min-height: auto;
@@ -155,10 +159,12 @@ button:focus-visible {
   grid-row: 1;
   align-self: flex-end;
   text-align: right;
+  margin-bottom: 20px;
   font-family: var(--font-main);
-  font-weight: 100;
-  line-height: 1.05;
-  letter-spacing: 0.03em;
+  font-size: clamp(38px, 5vw, 64px);
+  font-weight: 200;
+  line-height: 1.02;
+  letter-spacing: 0.02em;
   color: #000;
 }
 
@@ -173,8 +179,11 @@ button:focus-visible {
 }
 .video-frame {
   position: relative;
-  display: block;
-  padding: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 5%;
   border: 1px dotted var(--border-color);
 }
 .video-frame::before {
@@ -193,6 +202,7 @@ button:focus-visible {
   position: relative;
   display: block;
   overflow: hidden;
+  width: 90%;
   aspect-ratio: 16 / 10;
   background: #000;
 }
@@ -238,11 +248,13 @@ button:focus-visible {
   grid-column: 2;
   grid-row: 3;
   align-self: end;
-  max-width: 380px;
+  max-width: 400px;
   margin-bottom: 24px;
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 300;
   line-height: 1.7;
   color: #444;
+  letter-spacing: 0.005em;
 }
 .hero-main .btn {
   grid-column: 2;
@@ -268,12 +280,14 @@ button:focus-visible {
   display: flex;
   flex: 1;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   align-content: center;
-  padding: 0 10px;
+  padding: 0 12px;
   border: var(--border-thin) solid var(--border-color);
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 0.005em;
 }
 .specs dt {
   font-weight: 500;
@@ -288,7 +302,7 @@ button:focus-visible {
   border: 1px dotted var(--border-color);
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -321,11 +335,11 @@ button:focus-visible {
   position: absolute;
   top: -44px;
   right: 0;
-  height: 32px;
-  padding: 0 14px;
+  height: 34px;
+  padding: 0 16px;
   border: var(--border-thin) solid #fff;
   color: #fff;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -371,26 +385,26 @@ button:focus-visible {
   top: 0;
   left: 50%;
   z-index: 2;
-  width: 32px;
-  height: 32px;
-  border: var(--border-thin) solid var(--border-color);
+  width: 34px;
+  height: 34px;
+  border: var(--border-thin) solid #000;
   border-radius: 50%;
-  background: #000;
-  color: #fff;
+  background: #fff;
+  color: #000;
   transform: translate(-50%, -50%);
   transition: background 0.2s ease, color 0.2s ease;
 }
 .step-num span {
   display: inline-block;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
   line-height: 1.2;
 }
 .step-num:hover,
 .step-num.on {
-  background: #fff;
-  color: #000;
+  background: #000;
+  color: #fff;
 }
 .step-box {
   position: relative;
@@ -451,12 +465,12 @@ button:focus-visible {
   margin-bottom: 5px;
   padding: 0 10px;
   color: #092635;
-  font-size: 19px;
-  font-weight: 500;
+  font-size: 22px;
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 .step-more {
-  min-height: 150px;
+  min-height: 170px;
 }
 .step-more.open {
   max-height: 320px;
@@ -470,8 +484,10 @@ button:focus-visible {
 }
 .step-more p {
   margin: 10px;
-  font-size: 17px;
+  font-size: 18px;
+  font-weight: 300;
   line-height: 1.7;
+  color: #000000;
 }
 .step-more small {
   display: block;
@@ -500,9 +516,9 @@ button:focus-visible {
 .form h2,
 .know-head h2 {
   font-family: var(--font-main);
-  font-size: clamp(22px, 2.4vw, 32px);
-  font-weight: 600;
-  line-height: 1.15;
+  font-size: clamp(26px, 2.8vw, 38px);
+  font-weight: 400;
+  line-height: 1.12;
   letter-spacing: -0.02em;
 }
 .form h2 {
@@ -518,14 +534,15 @@ button:focus-visible {
   border-bottom: var(--border-thin) solid var(--border-color);
 }
 .sec strong {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 .sec .hint {
   margin-left: auto;
-  font-size: 12.5px;
+  font-size: 13px;
+  font-weight: 300;
   color: #666;
 }
 .divider {
@@ -558,7 +575,7 @@ button:focus-visible {
   min-width: 0;
 }
 .label {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -567,13 +584,13 @@ button:focus-visible {
 
 .input {
   width: 100%;
-  height: 44px;
-  padding: 0 12px;
+  height: 48px;
+  padding: 0 14px;
   background: #fff;
   border: var(--border-thin) solid var(--border-color);
   border-radius: 0;
-  font-size: 15px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 300;
   color: #000;
   transition: border-color 0.2s ease;
 }
@@ -586,6 +603,7 @@ button:focus-visible {
 }
 .input::placeholder {
   color: #999;
+  font-weight: 300;
 }
 
 select.input {
@@ -593,19 +611,20 @@ select.input {
   padding-right: 30px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23000' stroke-width='1.2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
+  background-position: right 14px center;
 }
 
 .area {
-  height: 80px;
-  padding: 10px 12px;
+  height: 84px;
+  padding: 12px 14px;
   line-height: 1.6;
   resize: vertical;
 }
 
 .help {
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 12.5px;
+  font-weight: 300;
   color: #666;
 }
 
@@ -625,13 +644,13 @@ select.input {
 .seg button {
   flex: 1 1 auto;
   min-width: 92px;
-  height: 44px;
+  height: 48px;
   padding: 0 16px;
   margin-left: -0.5px;
   border: var(--border-thin) solid var(--border-color);
   background: #fff;
   color: #000;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -660,7 +679,7 @@ select.input {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 60px;
+  height: 64px;
   padding: 0 16px;
 }
 .seg.tall small {
@@ -685,13 +704,13 @@ select.input {
   justify-content: center;
   gap: 3px;
   min-width: 64px;
-  height: 48px;
+  height: 52px;
   padding: 0 14px;
   margin-left: -0.5px;
   border: var(--border-thin) solid var(--border-color);
   background: #fff;
   color: #000;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
   transition: background 0.2s ease, color 0.2s ease;
 }
@@ -753,8 +772,9 @@ select.input {
   border-top: var(--border-thin) solid var(--border-color);
 }
 .submit p {
-  max-width: 300px;
-  font-size: 12.5px;
+  max-width: 320px;
+  font-size: 13px;
+  font-weight: 300;
   line-height: 1.6;
   color: #666;
 }
@@ -765,18 +785,18 @@ select.input {
 
 /* ============ VALUATION PANEL ============ */
 .panel {
-  background: #092635;
+  background: var(--panel-bg);
   color: #fff;
 }
 .panel-sticky {
   position: sticky;
   top: 0;
+  padding: 32px 30px 26px;
   align-self: start;
-  padding: 30px 30px 46px;
 }
 .panel-label {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #fff;
@@ -787,22 +807,22 @@ select.input {
   gap: 10px;
   margin-top: 16px;
   font-family: var(--font-main);
-  font-size: clamp(30px, 3.4vw, 48px);
-  font-weight: 600;
+  font-size: clamp(34px, 3.8vw, 54px);
+  font-weight: 300;
   letter-spacing: -0.02em;
   line-height: 1;
   white-space: nowrap;
 }
 .panel-amount small {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 400;
   letter-spacing: 0.18em;
   color: #fff;
 }
 .panel-route {
   margin-top: 14px;
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 400;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.7);
@@ -816,7 +836,8 @@ select.input {
   gap: 16px;
   padding: 12px 0;
   border-top: var(--border-thin) solid rgba(255, 255, 255, 0.25);
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 300;
   font-variant-numeric: tabular-nums;
   color: rgba(255, 255, 255, 0.78);
 }
@@ -824,17 +845,18 @@ select.input {
   border-bottom: var(--border-thin) solid rgba(255, 255, 255, 0.25);
 }
 .prow.strong {
-  font-weight: 600;
+  font-weight: 500;
   color: #fff;
 }
 .prow.strong:last-child {
   padding: 16px 0;
   border-top: var(--border-thin) solid #fff;
-  font-size: 15px;
+  font-size: 16px;
 }
 .panel-note {
   margin-top: 24px;
-  font-size: 12px;
+  font-size: 12.5px;
+  font-weight: 300;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.8);
 }
@@ -902,102 +924,181 @@ select.input {
 }
 .benefits h3 {
   margin-top: 16px;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 500;
   letter-spacing: -0.01em;
 }
 .benefits p {
   margin-top: 10px;
   max-width: 280px;
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 300;
   line-height: 1.6;
   color: #666;
 }
 
-/* ============ FAQ ============ */
+/* ============ FAQ — questions left, answers right ============ */
 .know {
-  display: grid;
-  grid-template-columns: 38% 1fr;
   width: 100%;
   border-bottom: var(--border-thin) solid var(--border-color);
+  background: #fff;
+  color: #000;
 }
 .know-head {
-  padding: 72px 48px;
-  background: #092635;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 48px;
+  border-bottom: var(--border-thin) solid var(--border-color);
+  background: var(--panel-bg);
+  color: #FAEEE0;
+}
+.know-head h2 {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1.15;
   color: #FAEEE0;
 }
 .know-head p {
-  max-width: 380px;
-  margin-top: 16px;
-  font-size: 14px;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
 }
-.faq {
-  padding: 0 48px;
-  background: #fff;
+
+.know-body {
+  display: grid;
+  grid-template-columns: 40% 1fr;
 }
-.faq-item {
+
+.faq-q {
+  list-style: none;
+  border-right: var(--border-thin) solid var(--border-color);
+}
+.faq-q li {
   border-bottom: var(--border-thin) solid var(--border-color);
 }
-.faq-item:last-child {
+.faq-q li:last-child {
   border-bottom: 0;
 }
-.faq-item button {
+.faq-q button {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
   width: 100%;
-  padding: 26px 0;
+  min-height: 80px;
+  padding: 22px 48px;
   text-align: left;
   font-family: var(--font-main);
-  font-size: 16px;
+  font-size: 12.5px;
   font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.35;
+  line-height: 1.6;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: #000;
-  transition: color 0.2s ease;
+  transition: color 0.25s ease, padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.25s ease;
 }
-.faq-item button:hover {
-  color: #555;
+.faq-q button:hover {
+  color: #000;
 }
-.ico {
+.faq-q button.on {
+  padding-left: 60px;
+  color: #fff;
+  background: var(--panel-bg);
+}
+.faq-q button:focus-visible {
+  outline: 1px solid #000;
+  outline-offset: -4px;
+}
+.faq-q .arrow {
   position: relative;
   flex: none;
-  width: 12px;
-  height: 12px;
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.25s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.ico::before,
-.ico::after {
+.faq-q .arrow::after {
   content: '';
   position: absolute;
-  background: currentColor;
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.ico::before {
-  left: 0;
   right: 0;
-  top: 50%;
-  height: 1px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
 }
-.ico::after {
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
+.faq-q button.on .arrow,
+.faq-q button:hover .arrow {
+  opacity: 1;
+  transform: none;
 }
-.faq-item.open .ico::after {
-  transform: rotate(90deg);
-}
-.faq-item p {
-  max-width: 560px;
-  padding-bottom: 28px;
-  font-size: 14px;
-  line-height: 1.75;
-  color: #444;
+
+.faq-a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 460px;
+  padding: 64px 48px;
+  background: #fff;
   overflow: hidden;
-  animation: faqOpen 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.answer {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  padding: 40px;
+  border: 1px dotted var(--border-color);
+  background: #fff;
+  animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.answer::before,
+.answer::after {
+  content: '';
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  opacity: 0.8;
+  pointer-events: none;
+}
+.answer::before {
+  top: -25px;
+  right: -24px;
+  background:
+    repeating-linear-gradient(90deg, var(--border-color) 0 1px, transparent 1px 4px) 24px 24px / 24px 1px no-repeat,
+    repeating-linear-gradient(180deg, var(--border-color) 0 1px, transparent 1px 4px) 24px 0 / 1px 24px no-repeat;
+}
+.answer::after {
+  bottom: -24px;
+  left: -25px;
+  background:
+    repeating-linear-gradient(90deg, var(--border-color) 0 1px, transparent 1px 4px) 0 24px / 24px 1px no-repeat,
+    repeating-linear-gradient(180deg, var(--border-color) 0 1px, transparent 1px 4px) 24px 24px / 1px 24px no-repeat;
+}
+.answer h3 {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: var(--border-thin) dashed var(--border-color);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #000;
+}
+.answer p {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.8;
+  color: #444;
 }
 
 /* ============ RESPONSIVE ============ */
@@ -1075,14 +1176,34 @@ select.input {
     gap: 16px;
   }
   .know-head {
-    padding: 48px 24px;
+    flex-direction: column;
+    gap: 10px;
+    padding: 28px 24px;
   }
-  .faq {
-    padding: 0 24px;
+  .know-body {
+    grid-template-columns: 1fr;
   }
-  .faq-item button {
-    font-size: 15px;
-    padding: 22px 0;
+  .faq-q {
+    border-right: 0;
+    border-bottom: var(--border-thin) solid var(--border-color);
+  }
+  .faq-q button {
+    min-height: 0;
+    padding: 20px 24px;
+  }
+  .faq-q button.on {
+    padding-left: 24px;
+  }
+  .faq-a {
+    min-height: 0;
+    padding: 40px 24px;
+  }
+  .answer {
+    padding: 28px 24px;
+  }
+  .answer::before,
+  .answer::after {
+    display: none;
   }
   .photos {
     grid-template-columns: repeat(3, 1fr);
