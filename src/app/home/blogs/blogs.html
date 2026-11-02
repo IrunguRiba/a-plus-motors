@@ -34,50 +34,51 @@
     </div>
 </ng-template>
 
-<ng-template #adTpl let-ad>
-    <div class="ad" [ngClass]="'ad-' + ad.type" role="link" tabindex="0" (click)="onAdClick(ad)" (keydown.enter)="onAdClick(ad)">
-        <div class="ad-media">
-            <img [src]="ad.imageUrl" [alt]="ad.title">
+<ng-template #sideInfoTpl let-sideInfo>
+    <div class="side-info" [ngClass]="'side-info-' + sideInfo.type" role="link" tabindex="0" (click)="onSideInfoClick(sideInfo)" (keydown.enter)="onSideInfoClick(sideInfo)">
+        <div class="side-info-media">
+            <video *ngIf="sideInfo.videoUrl" [src]="sideInfo.videoUrl" [poster]="sideInfo.imageUrl" [muted]="true" autoplay loop playsinline preload="metadata"></video>
+            <img *ngIf="!sideInfo.videoUrl" [src]="sideInfo.imageUrl" [alt]="sideInfo.title">
         </div>
-        <div class="ad-shade"></div>
+        <div class="side-info-shade"></div>
 
-        <div class="ad-top">
-            <span class="ad-tag"><i class="ad-dot"></i>{{ ad.tag }}</span>
-            <span class="ad-label">Sponsored</span>
+        <div class="side-info-top">
+            <span class="side-info-tag"><i class="side-info-dot"></i>{{ sideInfo.tag }}</span>
+            <span class="side-info-label">Sponsored</span>
         </div>
 
-        <div class="ad-ticker" aria-hidden="true">
-            <div class="ad-ticker-track">
-                <span>{{ ad.ticker }}</span>
-                <span>{{ ad.ticker }}</span>
+        <div class="side-info-ticker" aria-hidden="true">
+            <div class="side-info-ticker-track">
+                <span>{{ sideInfo.ticker }}</span>
+                <span>{{ sideInfo.ticker }}</span>
             </div>
         </div>
 
-        <div class="ad-content">
-            <p class="ad-kicker">{{ ad.kicker }}</p>
-            <h4 class="ad-title">{{ ad.title }}</h4>
-            <p class="ad-text">{{ ad.text }}</p>
+        <div class="side-info-content">
+            <p class="side-info-kicker">{{ sideInfo.kicker }}</p>
+            <h4 class="side-info-title">{{ sideInfo.title }}</h4>
+            <p class="side-info-text">{{ sideInfo.text }}</p>
 
-            <div class="ad-specs" *ngIf="ad.specs?.length">
-                <span *ngFor="let s of ad.specs">{{ s }}</span>
+            <div class="side-info-specs" *ngIf="sideInfo.specs?.length">
+                <span *ngFor="let s of sideInfo.specs">{{ s }}</span>
             </div>
 
-            <div class="ad-price" *ngIf="ad.price">
-                <span class="ad-price-label">{{ ad.priceLabel }}</span>
-                <span class="ad-price-value">{{ ad.price }}</span>
+            <div class="side-info-price" *ngIf="sideInfo.price">
+                <span class="side-info-price-label">{{ sideInfo.priceLabel }}</span>
+                <span class="side-info-price-value">{{ sideInfo.price }}</span>
             </div>
 
-            <div class="ad-calc" *ngIf="ad.type === 'finance'" (click)="$event.stopPropagation()">
-                <span class="ad-price-label">Estimated monthly</span>
-                <span class="ad-price-value">KES {{ monthly(ad) }}</span>
-                <label class="ad-range">
-                    <span>{{ ad.months }} months</span>
-                    <input type="range" min="12" max="72" step="6" [value]="ad.months" (input)="setMonths(ad, $event)">
+            <div class="side-info-calc" *ngIf="sideInfo.type === 'finance'" (click)="$event.stopPropagation()">
+                <span class="side-info-price-label">Estimated monthly</span>
+                <span class="side-info-price-value">KES {{ monthly(sideInfo) }}</span>
+                <label class="side-info-range">
+                    <span>{{ sideInfo.months }} months</span>
+                    <input type="range" min="12" max="72" step="6" [value]="sideInfo.months" (input)="setMonths(sideInfo, $event)">
                 </label>
-                <span class="ad-fine">Indicative only. On KES {{ formatKes(ad.carPrice) }} with 20% deposit at {{ ad.rate }}% a year.</span>
+                <span class="side-info-fine">Indicative only. On KES {{ formatKes(sideInfo.carPrice) }} with 20% deposit at {{ sideInfo.rate }}% a year.</span>
             </div>
 
-            <button class="ad-cta" type="button">{{ ad.cta }}</button>
+            <button class="side-info-cta" type="button">{{ sideInfo.cta }}</button>
         </div>
     </div>
 </ng-template>
@@ -202,8 +203,8 @@
 
     <div class="modal-layout" (click)="onBackdropClick($event)">
 
-        <aside class="modal-rail rail-left" *ngIf="wideScreen && adLeft">
-            <ng-container *ngTemplateOutlet="adTpl; context: { $implicit: adLeft }"></ng-container>
+        <aside class="modal-rail rail-left" *ngIf="wideScreen && sideInfoLeft">
+            <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoLeft }"></ng-container>
         </aside>
 
         <article class="modal-panel" role="dialog" aria-modal="true" [attr.aria-label]="blog.title">
@@ -255,8 +256,8 @@
                     </ng-container>
                 </section>
 
-                <div class="ad-inline" *ngIf="!wideScreen && adLeft">
-                    <ng-container *ngTemplateOutlet="adTpl; context: { $implicit: adLeft }"></ng-container>
+                <div class="side-info-inline" *ngIf="!wideScreen && sideInfoLeft">
+                    <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoLeft }"></ng-container>
                 </div>
 
                 <div class="modal-actions">
@@ -322,8 +323,8 @@
             </footer>
         </article>
 
-        <aside class="modal-rail rail-right" *ngIf="wideScreen && adRight">
-            <ng-container *ngTemplateOutlet="adTpl; context: { $implicit: adRight }"></ng-container>
+        <aside class="modal-rail rail-right" *ngIf="wideScreen && sideInfoRight">
+            <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoRight }"></ng-container>
         </aside>
     </div>
 </div>

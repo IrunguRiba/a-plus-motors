@@ -71,7 +71,7 @@ svg {
 button:focus-visible,
 input:focus-visible,
 a:focus-visible,
-.ad:focus-visible {
+.side-info:focus-visible {
   outline: 1px dotted var(--dotted-hover);
   outline-offset: 3px;
 }
@@ -742,7 +742,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 
 /* =====================================================
    Story modal: full screen. Sticky bar on top, story in the
-   middle, ad rails on both sides.
+   middle, side-information rails on both sides.
    ===================================================== */
 
 .modal-backdrop {
@@ -1193,10 +1193,10 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 }
 
 /* =====================================================
-   Ads: full-bleed media, thin border, text over a dark shade
+   Side information: full-bleed media, thin border, text over a dark shade
    ===================================================== */
 
-.ad {
+.side-info {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1214,27 +1214,28 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   transition: border-color 0.2s ease, box-shadow 0.3s ease;
 }
 
-.ad:hover {
+.side-info:hover {
   border-color: var(--dotted);
   box-shadow: 0 0 0 0.5px var(--dotted), 0 18px 40px -20px rgba(28, 28, 27, 0.7);
 }
 
-.ad-media {
+.side-info-media {
   position: absolute;
   inset: 0;
 }
 
-.ad-media img {
+.side-info-media img,
+.side-info-media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.ad-media img {
-  animation: ad-drift 22s ease-in-out infinite alternate;
+.side-info-media img {
+  animation: side-info-drift 22s ease-in-out infinite alternate;
 }
 
-.ad-shade {
+.side-info-shade {
   position: absolute;
   inset: 0;
   background:
@@ -1242,7 +1243,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   pointer-events: none;
 }
 
-.ad-top {
+.side-info-top {
   position: absolute;
   top: 0;
   left: 0;
@@ -1258,26 +1259,26 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   text-transform: uppercase;
 }
 
-.ad-tag {
+.side-info-tag {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   color: #ffffff;
 }
 
-.ad-dot {
+.side-info-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background-color: #0b07e7;
-  animation: ad-pulse 1.6s ease-in-out infinite;
+  animation: side-info-pulse 1.6s ease-in-out infinite;
 }
 
-.ad-label {
+.side-info-label {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.ad-ticker {
+.side-info-ticker {
   position: absolute;
   top: 36px;
   left: 0;
@@ -1290,13 +1291,13 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   -webkit-backdrop-filter: blur(4px);
 }
 
-.ad-ticker-track {
+.side-info-ticker-track {
   display: flex;
   width: max-content;
-  animation: ad-marquee 26s linear infinite;
+  animation: side-info-marquee 26s linear infinite;
 }
 
-.ad-ticker-track span {
+.side-info-ticker-track span {
   padding: 6px 0 6px 24px;
   font-family: var(--font-mono);
   font-size: 10px;
@@ -1307,13 +1308,13 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   color: rgba(255, 255, 255, 0.85);
 }
 
-.ad-content {
+.side-info-content {
   position: relative;
   z-index: 2;
   padding: 18px 16px 16px;
 }
 
-.ad-kicker {
+.side-info-kicker {
   margin: 0 0 8px;
   font-family: var(--font-mono);
   font-size: 10px;
@@ -1323,7 +1324,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   color: rgba(255, 255, 255, 0.65);
 }
 
-.ad-title {
+.side-info-title {
   margin: 0 0 8px;
   font-size: 26px;
   line-height: 30px;
@@ -1332,7 +1333,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   color: #ffffff;
 }
 
-.ad-text {
+.side-info-text {
   margin: 0 0 14px;
   font-size: 14px;
   line-height: 21px;
@@ -1341,14 +1342,14 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   color: rgba(255, 255, 255, 0.86);
 }
 
-.ad-specs {
+.side-info-specs {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 14px;
 }
 
-.ad-specs span {
+.side-info-specs span {
   padding: 3px 8px;
   border: var(--border-thin) solid rgba(255, 255, 255, 0.7);
   font-family: var(--font-mono);
@@ -1358,22 +1359,22 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   text-transform: uppercase;
 }
 
-.ad-price,
-.ad-calc {
+.side-info-price,
+.side-info-calc {
   display: flex;
   flex-direction: column;
   gap: 2px;
   margin-bottom: 14px;
 }
 
-.ad-calc {
+.side-info-calc {
   padding: 12px;
   border: var(--border-thin) solid rgba(255, 255, 255, 0.6);
   background-color: rgba(10, 10, 10, 0.45);
   cursor: default;
 }
 
-.ad-price-label {
+.side-info-price-label {
   font-family: var(--font-mono);
   font-size: 10px;
   line-height: 12px;
@@ -1382,7 +1383,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   color: rgba(255, 255, 255, 0.65);
 }
 
-.ad-price-value {
+.side-info-price-value {
   font-size: 24px;
   line-height: 30px;
   font-weight: 500;
@@ -1390,7 +1391,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-variant-numeric: tabular-nums;
 }
 
-.ad-range {
+.side-info-range {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1402,13 +1403,13 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   color: rgba(255, 255, 255, 0.85);
 }
 
-.ad-range input {
+.side-info-range input {
   width: 100%;
   accent-color: #ffffff;
   cursor: pointer;
 }
 
-.ad-fine {
+.side-info-fine {
   margin-top: 8px;
   font-size: 10.5px;
   line-height: 15px;
@@ -1416,7 +1417,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.ad-cta {
+.side-info-cta {
   width: 100%;
   height: 42px;
   border: var(--border-thin) solid #ffffff;
@@ -1429,35 +1430,35 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.ad:hover .ad-cta,
-.ad-cta:hover {
+.side-info:hover .side-info-cta,
+.side-info-cta:hover {
   background-color: #ffffff;
   color: var(--ink);
 }
 
-.ad-inline {
+.side-info-inline {
   display: none;
 }
 
-@keyframes ad-drift {
+@keyframes side-info-drift {
   from { transform: scale(1) translate3d(0, 0, 0); }
   to { transform: scale(1.12) translate3d(-2%, -1%, 0); }
 }
 
-@keyframes ad-pulse {
+@keyframes side-info-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.35; transform: scale(0.7); }
 }
 
-@keyframes ad-marquee {
+@keyframes side-info-marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ad-media img,
-  .ad-dot,
-  .ad-ticker-track {
+  .side-info-media img,
+  .side-info-dot,
+  .side-info-ticker-track {
     animation: none;
   }
 }
@@ -1471,7 +1472,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
     padding: 16px;
   }
 
-  .ad-inline {
+  .side-info-inline {
     display: block;
     height: 460px;
     margin: 8px 0 24px;

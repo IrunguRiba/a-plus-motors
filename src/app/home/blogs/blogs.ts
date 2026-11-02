@@ -43,8 +43,8 @@ interface BlogPost {
   comments: Comment[];
 }
 
-/** An advert shown in the side rails of the story modal. */
-interface Ad {
+/** A piece of side information shown in the side rails of the story modal. */
+interface SideInformation {
   id: string;
   type: 'car' | 'video' | 'finance' | 'service';
   tag: string;
@@ -81,7 +81,7 @@ const VIDEO = {
   road: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
 };
 
-// The modal switches to a single column and an inline ad below this width.
+// The modal switches to a single column and inline side information below this width.
 const WIDE_SCREEN_MIN = 1240;
 
 @Component({
@@ -100,9 +100,9 @@ export class Blog implements AfterViewInit, OnDestroy {
 
   selectedBlog: BlogPost | null = null;
 
-  // Two random ads picked every time the modal opens
-  adLeft: Ad | null = null;
-  adRight: Ad | null = null;
+  // Two random side-information items picked every time the modal opens
+  sideInfoLeft: SideInformation | null = null;
+  sideInfoRight: SideInformation | null = null;
   wideScreen = typeof window !== 'undefined' ? window.innerWidth >= WIDE_SCREEN_MIN : true;
 
   @ViewChildren('blogArticle') blogArticles!: QueryList<ElementRef>;
@@ -173,10 +173,10 @@ export class Blog implements AfterViewInit, OnDestroy {
     this.router.navigate(['/store']);
   }
 
-  /* ---------- Adverts (side rails of the modal) ---------- */
+  /* ---------- Side information (side rails of the modal) ---------- */
 
   // Placeholder cars, prices and finance terms. Replace with your real stock and partner terms.
-  private adPool: Ad[] = [
+  private sideInfoPool: SideInformation[] = [
     {
       id: 'car-harrier',
       type: 'car',
@@ -260,26 +260,26 @@ export class Blog implements AfterViewInit, OnDestroy {
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  /** Left ad is always a random video. Right ad is a random different ad, preferring a non-video. */
-  private pickAds(): void {
-    const videos = this.adPool.filter(a => a.type === 'video');
-    const left = this.randomOf(videos.length ? videos : this.adPool);
-    const others = this.adPool.filter(a => a.id !== left.id);
+  /** Left side info is always a random video. Right side info is a random different item, preferring a non-video. */
+  private pickSideInformations(): void {
+    const videos = this.sideInfoPool.filter(a => a.type === 'video');
+    const left = this.randomOf(videos.length ? videos : this.sideInfoPool);
+    const others = this.sideInfoPool.filter(a => a.id !== left.id);
     const nonVideo = others.filter(a => a.type !== 'video');
-    this.adLeft = left;
-    this.adRight = this.randomOf(nonVideo.length ? nonVideo : others);
+    this.sideInfoLeft = left;
+    this.sideInfoRight = this.randomOf(nonVideo.length ? nonVideo : others);
   }
 
-  onAdClick(ad: Ad): void {
+  onSideInfoClick(sideInfo: SideInformation): void {
     this.closeBlog();
     this.goToStore();
   }
 
   /** Indicative monthly payment: 20% deposit, fixed rate, equal instalments. */
-  monthly(ad: Ad): string {
-    const price = ad.carPrice || 0;
-    const months = ad.months || 48;
-    const rate = (ad.rate || 0) / 1200;
+  monthly(sideInfo: SideInformation): string {
+    const price = sideInfo.carPrice || 0;
+    const months = sideInfo.months || 48;
+    const rate = (sideInfo.rate || 0) / 1200;
     const principal = price * 0.8;
     const payment = rate === 0
       ? principal / months
@@ -287,8 +287,8 @@ export class Blog implements AfterViewInit, OnDestroy {
     return this.formatKes(payment);
   }
 
-  setMonths(ad: Ad, event: Event): void {
-    ad.months = Number((event.target as HTMLInputElement).value);
+  setMonths(sideInfo: SideInformation, event: Event): void {
+    sideInfo.months = Number((event.target as HTMLInputElement).value);
   }
 
   formatKes(value?: number): string {
@@ -572,7 +572,7 @@ export class Blog implements AfterViewInit, OnDestroy {
   /* ---------- Modal ---------- */
 
   openBlog(post: BlogPost, scrollToReplies = false): void {
-    this.pickAds();
+    this.pickSideInformations();
     this.selectedBlog = post;
     document.body.style.overflow = 'hidden';
     this.cdr.detectChanges();
@@ -585,10 +585,10 @@ export class Blog implements AfterViewInit, OnDestroy {
       gsap.fromTo(panel, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', clearProps: 'opacity,transform' });
     }
 
-    const ads = root.querySelectorAll('.modal-rail .ad');
-    if (ads.length) {
+    const sideInfos = root.querySelectorAll('.modal-rail .side-info');
+    if (sideInfos.length) {
       gsap.fromTo(
-        ads,
+        sideInfos,
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0, duration: 0.6, delay: 0.15, stagger: 0.15, ease: 'power2.out', clearProps: 'opacity,transform' }
       );
