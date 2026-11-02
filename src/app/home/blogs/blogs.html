@@ -37,8 +37,7 @@
 <ng-template #adTpl let-ad>
     <div class="ad" [ngClass]="'ad-' + ad.type" role="link" tabindex="0" (click)="onAdClick(ad)" (keydown.enter)="onAdClick(ad)">
         <div class="ad-media">
-            <video *ngIf="ad.videoUrl" [src]="ad.videoUrl" [poster]="ad.imageUrl" [muted]="true" autoplay loop playsinline preload="metadata"></video>
-            <img *ngIf="!ad.videoUrl" [src]="ad.imageUrl" [alt]="ad.title">
+            <img [src]="ad.imageUrl" [alt]="ad.title">
         </div>
         <div class="ad-shade"></div>
 

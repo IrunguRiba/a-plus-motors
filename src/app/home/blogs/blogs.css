@@ -1224,8 +1224,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   inset: 0;
 }
 
-.ad-media img,
-.ad-media video {
+.ad-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
