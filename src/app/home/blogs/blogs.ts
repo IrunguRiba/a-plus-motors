@@ -9,6 +9,7 @@ interface Comment {
   author: string;
   time: string;
   text: string;
+  verified: boolean;
 }
 
 interface BlogPost {
@@ -41,6 +42,8 @@ export class Blog implements AfterViewInit {
 
   currentMainTab: 'blogs' | 'store' | 'home' = 'blogs';
   currentFilter: 'latest' | 'popular' | 'bookmarked' | 'all' = 'latest';
+  // Set to true once the logged-in user is confirmed as a verified customer.
+  isVerifiedCustomer = false;
   toastMessage: string | null = null;
   private toastTimeout: any;
 
@@ -65,7 +68,7 @@ export class Blog implements AfterViewInit {
   goHome() {
     this.router.navigate(['']);
   }
-  
+
   goToStore() {
     this.router.navigate(['/store']);
   }
@@ -86,8 +89,8 @@ export class Blog implements AfterViewInit {
       liked: false,
       bookmarked: false,
       comments: [
-        { id: 101, author: 'Marcus V.', time: '2h ago', text: 'Jaguar E-Type Lightweight forever! Nothing beats that British racing green curve.' },
-        { id: 102, author: 'Sarah Jenkins', time: '45m ago', text: 'Give me a classic Porsche 911 Singer restomod any day of the week!' }
+        { id: 101, author: 'Marcus V.', time: '2h ago', text: 'Jaguar E-Type Lightweight forever! Nothing beats that British racing green curve.', verified: true },
+        { id: 102, author: 'Sarah Jenkins', time: '45m ago', text: 'Give me a classic Porsche 911 Singer restomod any day of the week!', verified: true }
       ]
     },
     {
@@ -105,7 +108,7 @@ export class Blog implements AfterViewInit {
       liked: true,
       bookmarked: true,
       comments: [
-        { id: 201, author: 'David K.', time: '1d ago', text: 'Purist all the way! Keep the original matching numbers intact.' }
+        { id: 201, author: 'David K.', time: '1d ago', text: 'Purist all the way! Keep the original matching numbers intact.', verified: true }
       ]
     },
     {
@@ -123,7 +126,7 @@ export class Blog implements AfterViewInit {
       liked: false,
       bookmarked: false,
       comments: [
-        { id: 301, author: 'Elena Rostova', time: '3d ago', text: 'Stelvio Pass in Italy! Absolute bucket list perfection.' }
+        { id: 301, author: 'Elena Rostova', time: '3d ago', text: 'Stelvio Pass in Italy! Absolute bucket list perfection.', verified: true }
       ]
     }
   ];
@@ -145,20 +148,16 @@ export class Blog implements AfterViewInit {
   setFilter(filter: 'latest' | 'popular' | 'bookmarked' | 'all'): void {
     if (this.currentFilter === filter) return;
 
-    // Fade out slightly before switching filters
+    // Apply the filter straight away so a single click always shows the content,
+    // then play the entrance animation once the new list has rendered.
+    this.currentFilter = filter;
+    this.cdr.detectChanges();
+
     if (this.blogArticles && this.blogArticles.length > 0) {
-      gsap.to(this.blogArticles.map(el => el.nativeElement), {
-        opacity: 0,
-        y: -10,
-        duration: 0.15,
-        onComplete: () => {
-          this.currentFilter = filter;
-          this.cdr.detectChanges();
-          this.animateBlogsIn();
-        }
-      });
-    } else {
-      this.currentFilter = filter;
+      const els = this.blogArticles.map(el => el.nativeElement);
+      gsap.killTweensOf(els);
+      gsap.set(els, { clearProps: 'opacity,transform' });
+      this.animateBlogsIn();
     }
   }
 
@@ -194,6 +193,10 @@ export class Blog implements AfterViewInit {
 
   addComment(blogId: number, event: Event): void {
     event.preventDefault();
+    if (!this.isVerifiedCustomer) {
+      this.showToast('Only verified customers can reply');
+      return;
+    }
     const form = event.target as HTMLFormElement;
     const input = form.querySelector('input') as HTMLInputElement;
     const text = input.value.trim();
@@ -205,7 +208,8 @@ export class Blog implements AfterViewInit {
         id: Date.now(),
         author: 'You',
         time: 'Just now',
-        text: text
+        text: text,
+        verified: true
       });
       input.value = '';
       this.showToast('Comment posted!');
