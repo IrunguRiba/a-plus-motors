@@ -8,7 +8,7 @@
   --muted: #536471;
   --panel: #f7f9f9;
   --green: #4A943E;
-  --red: #D9361E;
+  --red: #790D16;
   --reply: #091540;
   --dotted: #930031;
   --dotted-hover: #FF0000;
@@ -446,7 +446,7 @@ svg {
 }
 .more[open] summary::before {
   content: "Minimize";
-  color: #000; 
+  color: var(--muted);
   position: absolute;
   left: 0;
   top: 0;
