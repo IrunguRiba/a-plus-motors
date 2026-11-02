@@ -441,6 +441,15 @@ svg {
 
 .more[open] summary {
   margin-bottom: 4px;
+  color: transparent; 
+  position: relative;
+}
+.more[open] summary::before {
+  content: "read less";
+  color: #000; 
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
 .post-actions {
