@@ -1,4 +1,3 @@
-<!-- Icon row shared by every post card (blogs and "Did you know") -->
 <ng-template #actionsTpl let-post>
     <div class="post-actions">
         <button class="action reply" type="button" aria-label="Replies" (click)="openBlog(post, true)">
@@ -35,6 +34,55 @@
     </div>
 </ng-template>
 
+<ng-template #adTpl let-ad>
+    <div class="ad" [ngClass]="'ad-' + ad.type" role="link" tabindex="0" (click)="onAdClick(ad)" (keydown.enter)="onAdClick(ad)">
+        <div class="ad-media">
+            <video *ngIf="ad.videoUrl" [src]="ad.videoUrl" [poster]="ad.imageUrl" [muted]="true" autoplay loop playsinline preload="metadata"></video>
+            <img *ngIf="!ad.videoUrl" [src]="ad.imageUrl" [alt]="ad.title">
+        </div>
+        <div class="ad-shade"></div>
+
+        <div class="ad-top">
+            <span class="ad-tag"><i class="ad-dot"></i>{{ ad.tag }}</span>
+            <span class="ad-label">Sponsored</span>
+        </div>
+
+        <div class="ad-ticker" aria-hidden="true">
+            <div class="ad-ticker-track">
+                <span>{{ ad.ticker }}</span>
+                <span>{{ ad.ticker }}</span>
+            </div>
+        </div>
+
+        <div class="ad-content">
+            <p class="ad-kicker">{{ ad.kicker }}</p>
+            <h4 class="ad-title">{{ ad.title }}</h4>
+            <p class="ad-text">{{ ad.text }}</p>
+
+            <div class="ad-specs" *ngIf="ad.specs?.length">
+                <span *ngFor="let s of ad.specs">{{ s }}</span>
+            </div>
+
+            <div class="ad-price" *ngIf="ad.price">
+                <span class="ad-price-label">{{ ad.priceLabel }}</span>
+                <span class="ad-price-value">{{ ad.price }}</span>
+            </div>
+
+            <div class="ad-calc" *ngIf="ad.type === 'finance'" (click)="$event.stopPropagation()">
+                <span class="ad-price-label">Estimated monthly</span>
+                <span class="ad-price-value">KES {{ monthly(ad) }}</span>
+                <label class="ad-range">
+                    <span>{{ ad.months }} months</span>
+                    <input type="range" min="12" max="72" step="6" [value]="ad.months" (input)="setMonths(ad, $event)">
+                </label>
+                <span class="ad-fine">Indicative only. On KES {{ formatKes(ad.carPrice) }} with 20% deposit at {{ ad.rate }}% a year.</span>
+            </div>
+
+            <button class="ad-cta" type="button">{{ ad.cta }}</button>
+        </div>
+    </div>
+</ng-template>
+
 <div class="top-navs">
     <nav class="main-nav">
         <button type="button" [class.active]="currentMainTab === 'blogs'" (click)="setMainTab('blogs')">Blogs</button>
@@ -51,7 +99,6 @@
 </div>
 
 <div class="layout">
-    <!-- Left: "Did you know" posts. This list scrolls on its own. -->
     <aside class="sidebar-left">
         <div class="sidebar-inner">
             <section class="side-card first">
@@ -86,7 +133,6 @@
         </div>
     </aside>
 
-    <!-- Right: posts scroll here, the footer below stays put. -->
     <main class="feed">
         <div class="blogs">
             <div class="blogs-cols">
@@ -122,135 +168,164 @@
                 </article>
             </div>
 
-            <!-- Discover more: at the end of the blogs, inside the scrolling area -->
             <div class="discover-section">
                 <button class="discover-more-btn" type="button">Discover more</button>
             </div>
         </div>
+
         <footer class="site-footer">
             <div class="footer-top">
                 <div class="footer-actions">
                     <button class="footer-btn" type="button">Explore our financing</button>
                     <button class="footer-btn" type="button">Import a car</button>
                     <button class="footer-btn" type="button">Trade in</button>
-          
                     <button class="footer-btn" type="button">Contact Us</button>
                     <button class="footer-btn" type="button">Sell your car</button>
                     <button class="footer-btn" type="button">Book a test drive</button>
                 </div>
+
                 <div class="footer-contacts">
                     <span>contact&#64;aplusltd.com</span>
                     <span>+254 700 000 000</span>
                     <span>Nairobi, Kenya</span>
-                    <span>contact&#64;aplusltd.com</span>
-                    <span>+254 700 000 000</span>
-                    <span>Nairobi, Kenya</span>
                 </div>
             </div>
-           
         </footer>
     </main>
-
-    <!-- Pinned footer: not part of any scroll. Posts and facts scroll above it. -->
-   
 </div>
 
-<!-- ================= Story modal (blogs and "Did you know") ================= -->
 <div class="modal-backdrop" *ngIf="selectedBlog as blog" (click)="onBackdropClick($event)">
-    <div class="modal-panel" role="dialog" aria-modal="true" [attr.aria-label]="blog.title">
 
-        <div class="modal-bar">
-            <button type="button" (click)="closeBlog()">Back</button>
-            <span class="modal-bar-id">{{ blog.kind === 'fact' ? 'Did you know' : 'A-Plus Motors' }}</span>
-            <button type="button" (click)="closeBlog()">Close</button>
-        </div>
+    <div class="modal-bar">
+        <button type="button" (click)="closeBlog()">Back</button>
+        <button type="button" (click)="closeBlog()">Close</button>
+    </div>
 
-        <header class="modal-head">
-            <p class="modal-kicker">{{ blog.category }}</p>
-            <h2 class="modal-title">{{ blog.title }}</h2>
-        </header>
+    <div class="modal-layout" (click)="onBackdropClick($event)">
 
-        <figure class="modal-hero">
-            <img [src]="blog.imageUrl" [alt]="blog.imageCaption">
-            <figcaption>
-                <span>{{ blog.imageCaption }}</span>
-                <em>{{ blog.imageCredit }}</em>
-            </figcaption>
-        </figure>
+        <aside class="modal-rail rail-left" *ngIf="wideScreen && adLeft">
+            <ng-container *ngTemplateOutlet="adTpl; context: { $implicit: adLeft }"></ng-container>
+        </aside>
 
-        <dl class="credits">
-            <div><dt>Published</dt><dd>{{ blog.date }}</dd></div>
-            <div><dt>Posted by</dt><dd>{{ blog.author }}</dd></div>
-            <div><dt>Reading time</dt><dd>{{ blog.readTime }}</dd></div>
-            <div><dt>Topics</dt><dd>{{ blog.tags.join(', ') }}</dd></div>
-        </dl>
+        <article class="modal-panel" role="dialog" aria-modal="true" [attr.aria-label]="blog.title">
 
-        <!-- The story: paragraphs, pull quotes and photos, in reading order -->
-        <section class="modal-body">
-            <ng-container *ngFor="let b of blog.body; let i = index">
-                <p *ngIf="b.type === 'p'" [class.lead]="i === 0">{{ b.text }}</p>
+            <figure class="modal-hero">
+                <img [src]="blog.imageUrl" [alt]="blog.imageCaption">
+                <figcaption>
+                    <span>{{ blog.imageCaption }}</span>
+                    <em>{{ blog.imageCredit }}</em>
+                </figcaption>
+            </figure>
 
-                <blockquote *ngIf="b.type === 'quote'" class="pull">{{ b.text }}</blockquote>
-
-                <figure *ngIf="b.type === 'img'" class="story-fig" [class.wide]="b.wide">
-                    <img [src]="b.url" [alt]="b.caption" loading="lazy">
-                    <figcaption>
-                        <span>{{ b.caption }}</span>
-                        <em>{{ b.credit }}</em>
-                    </figcaption>
-                </figure>
-            </ng-container>
-        </section>
-
-        <div class="modal-actions">
-            <button type="button" [class.on]="blog.liked" (click)="toggleLike(blog.id)">
-                <svg viewBox="0 0 24 24">
-                    <path *ngIf="!blog.liked" d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91zm4.187 7.69c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"/>
-                    <path *ngIf="blog.liked" d="M20.884 13.19c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"/>
-                </svg>
-                <span>{{ blog.liked ? 'Liked' : 'Like' }} {{ blog.likes }}</span>
-            </button>
-            <button type="button" [class.on]="blog.bookmarked" (click)="toggleBookmark(blog.id)">
-                <svg viewBox="0 0 24 24">
-                    <path *ngIf="!blog.bookmarked" d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"/>
-                    <path *ngIf="blog.bookmarked" d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5z"/>
-                </svg>
-                <span>{{ blog.bookmarked ? 'Saved' : 'Save' }}</span>
-            </button>
-            <button type="button" (click)="shareBlog(blog)">
-                <svg viewBox="0 0 24 24"><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z"/></svg>
-                <span>Share</span>
-            </button>
-        </div>
-
-        <section class="modal-replies" id="replies">
-            <h3 class="modal-label">Replies ({{ blog.comments.length }})</h3>
-
-            <form class="composer" *ngIf="isVerifiedCustomer" (submit)="addComment(blog.id, $event)">
-                <input type="text" placeholder="Write a reply" required>
-                <button class="reply-btn" type="submit">Post reply</button>
-            </form>
-            <p class="reply-note" *ngIf="!isVerifiedCustomer">Only verified customers can reply.</p>
-
-            <p class="reply-note" *ngIf="blog.comments.length === 0">No replies yet.</p>
-
-            <div class="reply-item" *ngFor="let comment of blog.comments">
-                <div class="avatar muted-avatar">{{ comment.author.charAt(0) }}</div>
-                <div class="reply-main">
-                    <div class="reply-head">
-                        <span class="post-name">{{ comment.author }}</span>
-                        <span class="verified-tag" *ngIf="comment.verified">Verified customer</span>
-                        <span class="post-date">{{ comment.time }}</span>
-                    </div>
-                    <p class="reply-text">{{ comment.text }}</p>
+            <div class="modal-main">
+                <div class="post-meta">
+                    <span>{{ blog.category }}</span>
+                    <span>{{ blog.date }}</span>
                 </div>
-            </div>
-        </section>
 
-        <footer class="modal-foot">
-            <button type="button" (click)="closeBlog(); goToStore()">Visit our store</button>
-            <button type="button" (click)="closeBlog()">Back to blogs</button>
-        </footer>
+                <h2 class="modal-title">{{ blog.title }}</h2>
+
+                <div class="byline">
+                    <div class="avatar">{{ blog.author.charAt(0) }}</div>
+                    <div class="byline-text">
+                        <span class="post-name">{{ blog.author }}</span>
+                        <span class="byline-handle">{{ blog.handle }}</span>
+                    </div>
+                    <span class="byline-read">{{ blog.readTime }}</span>
+                </div>
+
+                <div class="chips">
+                    <span class="chip" *ngFor="let tag of blog.tags">{{ tag }}</span>
+                </div>
+
+                <p class="modal-excerpt">{{ blog.excerpt }}</p>
+
+                <section class="modal-body">
+                    <ng-container *ngFor="let b of blog.body; let i = index">
+                        <p *ngIf="b.type === 'p'">{{ b.text }}</p>
+
+                        <blockquote *ngIf="b.type === 'quote'" class="pull">{{ b.text }}</blockquote>
+
+                        <figure *ngIf="b.type === 'img'" class="story-fig" [class.wide]="b.wide">
+                            <img [src]="b.url" [alt]="b.caption" loading="lazy">
+                            <figcaption>
+                                <span>{{ b.caption }}</span>
+                                <em>{{ b.credit }}</em>
+                            </figcaption>
+                        </figure>
+                    </ng-container>
+                </section>
+
+                <div class="ad-inline" *ngIf="!wideScreen && adLeft">
+                    <ng-container *ngTemplateOutlet="adTpl; context: { $implicit: adLeft }"></ng-container>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" [class.on]="blog.liked" (click)="toggleLike(blog.id)">
+                        <svg viewBox="0 0 24 24">
+                            <path *ngIf="!blog.liked" d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91zm4.187 7.69c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"/>
+                            <path *ngIf="blog.liked" d="M20.884 13.19c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"/>
+                        </svg>
+                        <span>{{ blog.liked ? 'Liked' : 'Like' }} {{ blog.likes }}</span>
+                    </button>
+                    <button type="button" [class.on]="blog.bookmarked" (click)="toggleBookmark(blog.id)">
+                        <svg viewBox="0 0 24 24">
+                            <path *ngIf="!blog.bookmarked" d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"/>
+                            <path *ngIf="blog.bookmarked" d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5z"/>
+                        </svg>
+                        <span>{{ blog.bookmarked ? 'Saved' : 'Save' }}</span>
+                    </button>
+                    <button type="button" (click)="shareBlog(blog)">
+                        <svg viewBox="0 0 24 24"><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z"/></svg>
+                        <span>Share</span>
+                    </button>
+                </div>
+
+                <section class="modal-replies" id="replies">
+                    <h3 class="modal-label">Replies ({{ blog.comments.length }})</h3>
+
+                    <form class="composer" *ngIf="isVerifiedCustomer" (submit)="addComment(blog.id, $event)">
+                        <input type="text" placeholder="Write a reply" required>
+                        <button class="reply-btn" type="submit">Post reply</button>
+                    </form>
+                    <p class="reply-note" *ngIf="!isVerifiedCustomer">Only verified customers can reply.</p>
+
+                    <p class="reply-note" *ngIf="blog.comments.length === 0">No replies yet.</p>
+
+                    <div class="reply-item" *ngFor="let comment of blog.comments">
+                        <div class="avatar">{{ comment.author.charAt(0) }}</div>
+                        <div class="reply-main">
+                            <div class="reply-head">
+                                <span class="post-name">{{ comment.author }}</span>
+                                <span class="verified-tag" *ngIf="comment.verified">Verified customer</span>
+                                <span class="post-date">{{ comment.time }}</span>
+                            </div>
+                            <p class="reply-text">{{ comment.text }}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="related" *ngIf="relatedPosts(blog).length">
+                    <h3 class="modal-label">More like this</h3>
+                    <button class="related-item" type="button" *ngFor="let r of relatedPosts(blog)" (click)="openBlog(r)">
+                        <img [src]="r.imageUrl" [alt]="r.title">
+                        <span class="related-text">
+                            <span class="related-meta">{{ r.category }} / {{ r.readTime }}</span>
+                            <span class="related-title">{{ r.title }}</span>
+                        </span>
+                    </button>
+                </section>
+            </div>
+
+            <footer class="modal-foot">
+                <button type="button" (click)="closeBlog(); goToStore()">Visit our store</button>
+                <button type="button" (click)="closeBlog()">Back to blogs</button>
+            </footer>
+        </article>
+
+        <aside class="modal-rail rail-right" *ngIf="wideScreen && adRight">
+            <ng-container *ngTemplateOutlet="adTpl; context: { $implicit: adRight }"></ng-container>
+        </aside>
     </div>
 </div>
 

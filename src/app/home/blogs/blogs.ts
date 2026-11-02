@@ -19,7 +19,7 @@ interface Block {
   url?: string;
   caption?: string;
   credit?: string;
-  wide?: boolean; // wide photos run the full width of the modal
+  wide?: boolean;
 }
 
 interface BlogPost {
@@ -43,6 +43,26 @@ interface BlogPost {
   comments: Comment[];
 }
 
+/** An advert shown in the side rails of the story modal. */
+interface Ad {
+  id: string;
+  type: 'car' | 'video' | 'finance' | 'service';
+  tag: string;
+  kicker: string;
+  title: string;
+  text: string;
+  ticker: string;
+  cta: string;
+  imageUrl: string;
+  videoUrl?: string;
+  specs?: string[];
+  price?: string;
+  priceLabel?: string;
+  carPrice?: number;
+  rate?: number;
+  months?: number;
+}
+
 const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=80`;
 
 // Placeholder photos. Replace with your own pictures (tyres, oil, battery, your showroom...).
@@ -55,6 +75,15 @@ const IMG = {
 };
 const CREDIT = 'Photo: Unsplash';
 
+// Placeholder videos. Replace with your own short, muted clips (mp4).
+const VIDEO = {
+  drive: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+  road: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+};
+
+// The modal switches to a single column and an inline ad below this width.
+const WIDE_SCREEN_MIN = 1240;
+
 @Component({
   selector: 'app-blogs',
   standalone: true,
@@ -65,13 +94,16 @@ const CREDIT = 'Photo: Unsplash';
 export class Blog implements AfterViewInit, OnDestroy {
   currentMainTab: 'blogs' | 'store' | 'home' = 'blogs';
   currentFilter: 'latest' | 'popular' | 'bookmarked' | 'all' = 'latest';
-  // Set to true once the logged-in user is confirmed as a verified customer.
   isVerifiedCustomer = false;
   toastMessage: string | null = null;
   private toastTimeout: any;
 
-  // Modal state (works for both blogs and "Did you know" posts)
   selectedBlog: BlogPost | null = null;
+
+  // Two random ads picked every time the modal opens
+  adLeft: Ad | null = null;
+  adRight: Ad | null = null;
+  wideScreen = typeof window !== 'undefined' ? window.innerWidth >= WIDE_SCREEN_MIN : true;
 
   @ViewChildren('blogArticle') blogArticles!: QueryList<ElementRef>;
   @ViewChildren('factPost') factPosts!: QueryList<ElementRef>;
@@ -90,22 +122,47 @@ export class Blog implements AfterViewInit, OnDestroy {
     document.body.style.overflow = '';
   }
 
-  /** Every visible post card: blogs on the right and "Did you know" posts on the left. */
+  @HostListener('window:resize')
+  onResize(): void {
+    this.wideScreen = window.innerWidth >= WIDE_SCREEN_MIN;
+  }
+
   private allPostEls(): HTMLElement[] {
     const blogs = this.blogArticles ? this.blogArticles.map(el => el.nativeElement as HTMLElement) : [];
     const facts = this.factPosts ? this.factPosts.map(el => el.nativeElement as HTMLElement) : [];
     return [...facts, ...blogs];
   }
 
+  /**
+   * Entrance animation. GSAP inline styles are cleared per element when its
+   * tween finishes so cards go back to plain, clickable DOM.
+   */
   animateBlogsIn(): void {
     const els = this.allPostEls();
-    if (els.length > 0) {
-      gsap.fromTo(
-        els,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.1, ease: 'power2.out' }
-      );
-    }
+    if (!els.length) return;
+
+    gsap.killTweensOf(els);
+    gsap.set(els, { clearProps: 'opacity,transform' });
+
+    gsap.fromTo(
+      els,
+      { opacity: 0, y: 20 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.4,
+        stagger: 0.1,
+        ease: 'power2.out',
+        clearProps: 'opacity,transform',
+        onComplete: () => {
+          els.forEach(el => {
+            el.style.removeProperty('opacity');
+            el.style.removeProperty('transform');
+            el.style.removeProperty('pointer-events');
+          });
+        }
+      }
+    );
   }
 
   goHome() {
@@ -114,6 +171,128 @@ export class Blog implements AfterViewInit, OnDestroy {
 
   goToStore() {
     this.router.navigate(['/store']);
+  }
+
+  /* ---------- Adverts (side rails of the modal) ---------- */
+
+  // Placeholder cars, prices and finance terms. Replace with your real stock and partner terms.
+  private adPool: Ad[] = [
+    {
+      id: 'car-harrier',
+      type: 'car',
+      tag: 'Recommended car',
+      kicker: 'Just arrived',
+      title: 'Toyota Harrier Premium',
+      text: 'One owner, full service history and a spotless cabin. Ready to drive away this week.',
+      ticker: 'Right-hand drive • Full history • Inspected by our workshop • Warranty included •',
+      cta: 'View this car',
+      imageUrl: IMG.a,
+      specs: ['2018', '2.0L Petrol', 'Auto', '42,000 km'],
+      price: 'KES 3,450,000',
+      priceLabel: 'Cash price'
+    },
+    {
+      id: 'video-testdrive',
+      type: 'video',
+      tag: 'Live',
+      kicker: 'Test drive',
+      title: 'Feel it before you buy it.',
+      text: 'Book a slot and take any car in our showroom for a proper drive around Nairobi.',
+      ticker: 'Book a test drive • Same-day slots • No pressure • Bring a friend •',
+      cta: 'Book a test drive',
+      imageUrl: IMG.d,
+      videoUrl: VIDEO.drive
+    },
+    {
+      id: 'finance-monthly',
+      type: 'finance',
+      tag: 'Financing',
+      kicker: 'Pay monthly',
+      title: 'Drive today. Pay over time.',
+      text: 'Slide to see what a monthly payment could look like with our financing partners.',
+      ticker: 'Flexible terms • Quick approval • Trade-ins welcome • Bank partners •',
+      cta: 'Explore financing',
+      imageUrl: IMG.c,
+      carPrice: 2400000,
+      rate: 12,
+      months: 48
+    },
+    {
+      id: 'car-forester',
+      type: 'car',
+      tag: 'Recommended car',
+      kicker: 'Family favourite',
+      title: 'Subaru Forester XT',
+      text: 'Symmetrical all-wheel drive, roomy boot and the confidence to handle any road.',
+      ticker: 'All-wheel drive • Family ready • Fresh service • Low mileage •',
+      cta: 'View this car',
+      imageUrl: IMG.e,
+      specs: ['2017', '2.0L Turbo', 'Auto', '58,000 km'],
+      price: 'KES 2,950,000',
+      priceLabel: 'Cash price'
+    },
+    {
+      id: 'video-import',
+      type: 'video',
+      tag: 'Live',
+      kicker: 'Import a car',
+      title: 'Your dream car, shipped to Nairobi.',
+      text: 'Tell us the car you want. We handle sourcing, shipping and clearing, and you track every step.',
+      ticker: 'Japan • UK • Full import service • Landed-cost quote in minutes •',
+      cta: 'Start an import',
+      imageUrl: IMG.b,
+      videoUrl: VIDEO.road
+    },
+    {
+      id: 'service-tradein',
+      type: 'service',
+      tag: 'Trade in',
+      kicker: 'Upgrade',
+      title: 'Your old car is worth more than you think.',
+      text: 'Get a fair valuation and book an inspection. Trade it in against your next car in one visit.',
+      ticker: 'Free valuation • Inspection booking • Fast payout • Upgrade today •',
+      cta: 'Value my car',
+      imageUrl: IMG.d
+    }
+  ];
+
+  private randomOf<T>(list: T[]): T {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  /** Left ad is always a random video. Right ad is a random different ad, preferring a non-video. */
+  private pickAds(): void {
+    const videos = this.adPool.filter(a => a.type === 'video');
+    const left = this.randomOf(videos.length ? videos : this.adPool);
+    const others = this.adPool.filter(a => a.id !== left.id);
+    const nonVideo = others.filter(a => a.type !== 'video');
+    this.adLeft = left;
+    this.adRight = this.randomOf(nonVideo.length ? nonVideo : others);
+  }
+
+  onAdClick(ad: Ad): void {
+    this.closeBlog();
+    this.goToStore();
+  }
+
+  /** Indicative monthly payment: 20% deposit, fixed rate, equal instalments. */
+  monthly(ad: Ad): string {
+    const price = ad.carPrice || 0;
+    const months = ad.months || 48;
+    const rate = (ad.rate || 0) / 1200;
+    const principal = price * 0.8;
+    const payment = rate === 0
+      ? principal / months
+      : (principal * rate) / (1 - Math.pow(1 + rate, -months));
+    return this.formatKes(payment);
+  }
+
+  setMonths(ad: Ad, event: Event): void {
+    ad.months = Number((event.target as HTMLInputElement).value);
+  }
+
+  formatKes(value?: number): string {
+    return Math.round(value || 0).toLocaleString('en-KE');
   }
 
   /* ---------- "Did you know" posts (left column) ---------- */
@@ -368,7 +547,6 @@ export class Blog implements AfterViewInit, OnDestroy {
     return this.applyFilter(this.blogs);
   }
 
-  /** "Did you know" posts follow the same Latest / Popular / Bookmarked / All filters as the blogs. */
   get filteredFacts(): BlogPost[] {
     return this.applyFilter(this.facts);
   }
@@ -380,8 +558,6 @@ export class Blog implements AfterViewInit, OnDestroy {
   setFilter(filter: 'latest' | 'popular' | 'bookmarked' | 'all'): void {
     if (this.currentFilter === filter) return;
 
-    // Apply the filter straight away so a single click always shows the content,
-    // then play the entrance animation once the new list has rendered.
     this.currentFilter = filter;
     this.cdr.detectChanges();
 
@@ -396,6 +572,7 @@ export class Blog implements AfterViewInit, OnDestroy {
   /* ---------- Modal ---------- */
 
   openBlog(post: BlogPost, scrollToReplies = false): void {
+    this.pickAds();
     this.selectedBlog = post;
     document.body.style.overflow = 'hidden';
     this.cdr.detectChanges();
@@ -405,8 +582,18 @@ export class Blog implements AfterViewInit, OnDestroy {
     const backdrop = root.querySelector('.modal-backdrop') as HTMLElement | null;
     if (backdrop) backdrop.scrollTop = 0;
     if (panel) {
-      gsap.fromTo(panel, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' });
+      gsap.fromTo(panel, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', clearProps: 'opacity,transform' });
     }
+
+    const ads = root.querySelectorAll('.modal-rail .ad');
+    if (ads.length) {
+      gsap.fromTo(
+        ads,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.6, delay: 0.15, stagger: 0.15, ease: 'power2.out', clearProps: 'opacity,transform' }
+      );
+    }
+
     if (scrollToReplies) {
       const target = root.querySelector('#replies');
       if (target) target.scrollIntoView({ block: 'start' });
@@ -424,6 +611,12 @@ export class Blog implements AfterViewInit, OnDestroy {
     if (event.target === event.currentTarget) {
       this.closeBlog();
     }
+  }
+
+  /** Up to two other posts of the same kind, shown at the bottom of the modal. */
+  relatedPosts(post: BlogPost): BlogPost[] {
+    const pool = post.kind === 'fact' ? this.facts : this.blogs;
+    return pool.filter(p => p.id !== post.id).slice(0, 2);
   }
 
   /* ---------- Actions ---------- */
