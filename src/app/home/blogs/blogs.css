@@ -418,38 +418,30 @@ svg {
 }
 
 .more {
+  display: flex;
+  flex-direction: column;
   margin-top: 6px;
 }
-
-.more summary {
+.more > summary {
+  order: 2;                 /* push summary below the body */
   display: inline-block;
+  list-style: none;
+  cursor: pointer;
+  margin-top: 6px;
+}
+.more > .more-body {
+  order: 1;                 /* paragraphs render first */
+}
+.more > summary::-webkit-details-marker { display: none; }
+
+.more > summary::before {
+  content: "Read more";
   font-size: 13px;
   font-weight: 600;
   color: var(--muted);
-  cursor: pointer;
-  list-style: none;
-  transition: color 0.2s ease;
 }
-
-.more summary::-webkit-details-marker {
-  display: none;
-}
-
-.more summary:hover {
-  color: var(--text);
-}
-
-.more[open] summary {
-  margin-bottom: 4px;
-  color: transparent; 
-  position: relative;
-}
-.more[open] summary::before {
+.more[open] > summary::before {
   content: "Minimize";
-  color: var(--muted);
-  position: absolute;
-  left: 0;
-  top: 0;
 }
 
 .post-actions {
