@@ -77,8 +77,9 @@
                     <div class="post-text">
                         <p>{{ blog.content[0] }}</p>
                         <details class="more" *ngIf="blog.content.length > 1">
-                            <summary>Read more</summary>
+                          
                             <p *ngFor="let para of blog.content.slice(1)">{{ para }}</p>
+                            <summary>Read more</summary>
                         </details>
                     </div>
 
