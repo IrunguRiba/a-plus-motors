@@ -1,22 +1,19 @@
-import { Component, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { gsap } from 'gsap';
 import { Nav2 } from '../nav-2/nav-2';
 
 @Component({
   selector: 'app-financing',
   standalone: true,
-  imports: [CommonModule, Nav2], 
+  imports: [CommonModule, Nav2],
   templateUrl: './financing.html',
   styleUrl: './financing.css',
 })
-export class Financing implements AfterViewInit {
-  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
+export class Financing {
+  constructor(private router: Router) {}
 
   activeTab: string = 'general';
-
-  @ViewChild('contentWrapper', { static: false }) contentWrapper!: ElementRef;
 
   banks1 = [
     { name: 'Equity', logo: 'equity.png' },
@@ -24,7 +21,7 @@ export class Financing implements AfterViewInit {
     { name: 'Stanbic', logo: 'stanbic.png' },
     { name: 'NIC', logo: 'nic.png' },
   ];
-  
+
   banks2 = [
     { name: 'Co-op', logo: 'coop.png' },
     { name: 'KWFT', logo: 'kwft.png' },
@@ -50,33 +47,9 @@ export class Financing implements AfterViewInit {
     'Memo & articles of association'
   ];
 
-  ngAfterViewInit(): void {
-    this.animateContentIn();
-  }
-
+  // Switches instantly: no fade-out/fade-in, so there is no delay on click.
   setActiveTab(tab: string) {
-    if (this.activeTab === tab) return;
-
-    // GSAP fade and slide out current content wrapper
-    gsap.to(this.contentWrapper.nativeElement, {
-      opacity: 0,
-      y: 12,
-      duration: 0.2,
-      onComplete: () => {
-        this.activeTab = tab;
-        this.cdr.detectChanges();
-        this.animateContentIn();
-      }
-    });
-  }
-
-  animateContentIn() {
-    if (!this.contentWrapper) return;
-    gsap.fromTo(
-      this.contentWrapper.nativeElement,
-      { opacity: 0, y: 15 },
-      { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }
-    );
+    this.activeTab = tab;
   }
 
   goToStore() {

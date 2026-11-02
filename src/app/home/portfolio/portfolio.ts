@@ -12,10 +12,13 @@ interface Car {
   description: string;
   price: string;
   image: string;
-  engineCC: string;     
-  fuelType: string;    
-  transmission: string;  
-  monthlyFinance: string;  
+  engineCC: string;
+  fuelType: string;
+  transmission: string;
+  monthlyFinance: string;
+  /** Likes and shares already recorded for this car (from your backend later). */
+  likes: number;
+  shares: number;
 }
 
 interface Brand {
@@ -32,6 +35,17 @@ interface Brand {
 })
 export class Portfolio {
   openedSpecs = false;
+
+  /** Car ids the visitor has liked / bookmarked. Copies of the same car share state. */
+  private likedIds = new Set<number>();
+  private bookmarkedIds = new Set<number>();
+
+  /** Shares made by this visitor, added on top of the car's stored share count. */
+  private sharedExtra = new Map<number, number>();
+
+  /** Car id whose "Link copied" note is showing (clipboard fallback for share). */
+  copiedId: number | null = null;
+  private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private router: Router) {
     const shuffledCars = [...this.cars].sort(() => Math.random() - 0.5);
@@ -50,6 +64,79 @@ export class Portfolio {
     this.router.navigate(['/specs']);
   }
 
+  isLiked(id: number): boolean {
+    return this.likedIds.has(id);
+  }
+
+  isBookmarked(id: number): boolean {
+    return this.bookmarkedIds.has(id);
+  }
+
+  /** Stored likes, plus this visitor's like. */
+  likeCount(car: Car): number {
+    return car.likes + (this.likedIds.has(car.id) ? 1 : 0);
+  }
+
+  /** Stored shares, plus shares made by this visitor. */
+  shareCount(car: Car): number {
+    return car.shares + (this.sharedExtra.get(car.id) ?? 0);
+  }
+
+  /** 950 -> "950", 1240 -> "1.2K", 15300 -> "15K", 2400000 -> "2.4M" */
+  formatCount(n: number): string {
+    if (n >= 1_000_000) return this.trim(n / 1_000_000) + 'M';
+    if (n >= 1_000) return this.trim(n / 1_000) + 'K';
+    return String(n);
+  }
+
+  private trim(value: number): string {
+    return (value >= 10 ? Math.round(value) : Math.round(value * 10) / 10).toString();
+  }
+
+  toggleLike(id: number, event: Event) {
+    event.stopPropagation();
+    this.likedIds.has(id) ? this.likedIds.delete(id) : this.likedIds.add(id);
+  }
+
+  toggleBookmark(id: number, event: Event) {
+    event.stopPropagation();
+    this.bookmarkedIds.has(id) ? this.bookmarkedIds.delete(id) : this.bookmarkedIds.add(id);
+  }
+
+  async shareCar(car: Car, event: Event) {
+    event.stopPropagation();
+
+    const title = `${car.year} ${car.make.replace(/\s+/g, '')} ${car.model.trim()}`;
+    const text = `${title}: ${car.price}`;
+    const url = window.location.href;
+
+    // Native share sheet where available (phones, some desktops).
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+        this.countShare(car.id);
+      } catch {
+        // dismissed by the visitor: not counted
+      }
+      return;
+    }
+
+    // Fallback: copy the link and show a short "Link copied" note.
+    try {
+      await navigator.clipboard.writeText(url);
+      this.countShare(car.id);
+      this.copiedId = car.id;
+      if (this.copiedTimer) clearTimeout(this.copiedTimer);
+      this.copiedTimer = setTimeout(() => (this.copiedId = null), 1600);
+    } catch {
+      // clipboard blocked: stay silent, not counted
+    }
+  }
+
+  private countShare(id: number) {
+    this.sharedExtra.set(id, (this.sharedExtra.get(id) ?? 0) + 1);
+  }
+
   cars: Car[] = [
     {
       id: 1,
@@ -63,7 +150,9 @@ export class Portfolio {
       engineCC: '1,998 CC',
       fuelType: 'Electric',
       transmission: 'Automatic',
-      monthlyFinance: 'KSH 148,000'
+      monthlyFinance: 'KSH 148,000',
+      likes: 1240,
+      shares: 86
     },
     {
       id: 2,
@@ -77,7 +166,9 @@ export class Portfolio {
       engineCC: '1,998 CC',
       fuelType: 'Electric',
       transmission: 'Automatic',
-      monthlyFinance: 'KSH 148,000'
+      monthlyFinance: 'KSH 148,000',
+      likes: 932,
+      shares: 54
     },
     {
       id: 3,
@@ -91,7 +182,9 @@ export class Portfolio {
       engineCC: '1,998 CC',
       fuelType: 'Electric',
       transmission: 'Automatic',
-      monthlyFinance: 'KSH 148,000'
+      monthlyFinance: 'KSH 148,000',
+      likes: 2150,
+      shares: 140
     }
   ];
 
@@ -108,7 +201,9 @@ export class Portfolio {
       engineCC: '1,984 CC',
       fuelType: 'Petrol',
       transmission: 'Automatic',
-      monthlyFinance: 'KSH 145,000'
+      monthlyFinance: 'KSH 145,000',
+      likes: 312,
+      shares: 21
     }
   ];
 

@@ -1,235 +1,384 @@
+/* Fonts are loaded in index.html: Inter (300-600), DM Mono, Orbitron */
+
 html {
-    scrollbar-gutter: stable both-edges;
-  }
-  
-  .financing-container {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0;
-    background: #ffffff;
-    border: var(--border-thin) solid var(--border-color);
-    font-family: var(--font-main);
-    color: #000000;
-    position: relative;
-    --border-color: #111111;
-    --border-thin: 0.5px;
-    --font-main:
-      "Inter",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      Helvetica,
-      Arial,
-      sans-serif;
-  }
-  
-  .main-nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-bottom: var(--border-thin) solid var(--border-color);
-    background: #ffffff;
-    cursor: pointer;
-  }
-  
-  .main-nav a {
-    text-decoration: none;
-    color: #000000;
-    text-align: center;
-    padding: 16px 0;
-    font-size: 1em;
-    font-weight: 400;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  
-  .main-nav a:first-child {
-    border-right: var(--border-thin) solid var(--border-color);
-  }
-  
-  .financing-nav {
-    position: sticky;
-    top: 53px;
-    z-index: 99;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    border-bottom: var(--border-thin) solid var(--border-color);
-    background: #ffffff;
-  }
-  
-  .financing-nav a {
-    text-align: center;
-    padding: 12px 0px;
-    text-decoration: none;
-    color: #000000;
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    border-right: var(--border-thin) solid var(--border-color);
-    background: #ffffff;
-    cursor: pointer;
-  }
-  
-  .financing-nav a:last-child {
-    border-right: none;
-  }
-  
-  .financing-nav a.active {
-    border: var(--border-thin) solid var(--border-color);
-    background-color: #000000;
-    color: #ffffff;
-  }
-  
-  .content-wrapper {
-    padding: 25px;
-    min-height: 520px;
-    padding-bottom: 40px;
-    will-change: transform, opacity;
-  }
-  
-  .section-box {
-    border: var(--border-thin) solid var(--border-color);
-    padding: 25px;
-    margin-bottom: 20px;
-    background: #ffffff;
-    border-radius: 0px;
-  }
-  
-  .section-box:last-child {
-    margin-bottom: 0;
-  }
-  
-  .section-box h2 {
-    font-size: 16px;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #000000;
-    margin-bottom: 15px;
-  }
-  
-  .section-box p {
-    line-height: 1.5;
-    margin-bottom: 12px;
-    font-size: 14px;
-  }
-  
-  .section-box p:last-child {
-    margin-bottom: 0;
-  }
-  
-  .section-box ul {
-    list-style-type: disc;
-    padding-left: 20px;
-    margin: 0;
-  }
-  
-  .section-box li {
-    margin-bottom: 8px;
-    font-size: 14px;
-    line-height: 1.4;
-  }
-  
-  .section-box li:last-child {
-    margin-bottom: 0;
-  }
-  
-  .banks-footer {
-    width: 100%;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    padding: 20px 0;
-    border-top: var(--border-thin) solid var(--border-color);
-    background: #ffffff;
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    overflow: hidden;
-    perspective: 900px;
-  }
-  
-  .flow-row {
-    display: flex;
-    gap: 15px;
-    margin: 0 auto;
-    transform-style: preserve-3d;
-  }
-  
-  .drift-row-1 {
-    width: 80%;
-    animation: driftRightAnim 12s ease-in-out infinite alternate;
-  }
-  
-  .drift-row-1 .bank-logo {
-    flex: 1;
-  }
-  
-  .drift-row-2 {
-    width: 95%;
-    animation: driftLeftAnim 12s ease-in-out infinite alternate;
-  }
-  
-  .drift-row-2 .bank-logo {
-    flex: 1;
-  }
-  
-  @keyframes driftRightAnim {
-    0% {
-      transform: translateX(-15px) rotateY(-3deg);
-    }
-    100% {
-      transform: translateX(15px) rotateY(3deg);
-    }
-  }
-  
-  @keyframes driftLeftAnim {
-    0% {
-      transform: translateX(15px) rotateY(3deg);
-    }
-    100% {
-      transform: translateX(-15px) rotateY(-3deg);
-    }
-  }
-  
-  .bank-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100px;
-    background: #ffffff;
-    border-radius: 0px;
-    padding: 0;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  .drift-row-1 .bank-logo {
-    border: none;
-  }
-  
-  .drift-row-2 .bank-logo {
-    border: var(--border-thin) solid var(--border-color);
-  }
-  
-  .bank-logo img {
-    width: 97%;
-    height: 97%;
-    object-fit: contain;
-    display: block;
-  }
-  
-  .banks-footer:hover .flow-row {
-    animation-play-state: paused;
-  }
-  
+  scrollbar-gutter: stable both-edges;
+}
+
+/* =====================================================
+   Tokens
+   ===================================================== */
+
+.financing-container {
+  --ink: #1C1C1B;
+  --border-color: #091540;       /* structural lines: navs, frame */
+  --post-border-color: #1C1C1B;  /* cards and tiles */
+  --border-thin: 0.5px;
+  --hairline: #1C1C1B; /* list dividers inside cards */
+  --accent: #000000;
+  --paper: #f7f6f2;
+  --muted: #4a4a48;
+  --nav-h: 52px;
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0;
+  background: #ffffff;
+  border: var(--border-thin) solid var(--border-color);
+  border-radius: 0;
+  font-family: var(--font-main);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+  color: #000000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  font-kerning: normal;
+}
+
+.financing-container ::selection {
+  background-color: var(--ink);
+  color: #ffffff;
+}
+
+.financing-container a:focus-visible,
+.financing-container button:focus-visible {
+  outline: 1px dotted var(--accent);
+  outline-offset: -4px;
+}
+
+.financing-container h2,
+.financing-container p,
+.financing-container ul {
+  margin: 0;
+}
+
+.financing-container img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* =====================================================
+   Navs: hairline cells, with a second rule under the sub nav
+   ===================================================== */
+
+.main-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: var(--nav-h);
+  background: #ffffff;
+  border-bottom: var(--border-thin) solid var(--border-color);
+}
+
+.main-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #000000;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.main-nav a:first-child {
+  border-right: var(--border-thin) solid var(--border-color);
+}
+
+.financing-nav {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 99;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: #ffffff;
+  border-bottom: var(--border-thin) solid var(--border-color);
+}
+
+.financing-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 10px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.75rem;
+  line-height: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #000000;
+  background: #ffffff;
+  border-right: var(--border-thin) solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.financing-nav a:last-child {
+  border-right: none;
+}
+
+.financing-nav a.active {
+  background-color: var(--accent);
+  color: #ffffff;
+}
+
+/* =====================================================
+   Content: paper-toned field with double-ruled cards
+   ===================================================== */
+
+.content-wrapper {
+  min-height: 520px;
+  padding: 36px 36px 48px;
+  background-color: var(--paper);
+}
+
+.section-box {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 28px 32px 30px;
+  background: #ffffff;
+  border: var(--border-thin) solid var(--post-border-color);
+  border-radius: 0;
+}
+
+.section-box:last-child {
+  margin-bottom: 0;
+}
+
+.section-box h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #000000;
+}
+
+.section-box h2::before {
+  content: "";
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  background-color: var(--accent);
+}
+
+.section-box p {
+  margin-bottom: 14px;
+  font-size: 17px;
+  line-height: 27px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #000000;
+}
+
+/* opening line of a card reads as the lead */
+.section-box p:first-of-type {
+  font-size: 19px;
+  line-height: 30px;
+  font-weight: 500;
+}
+
+/* closing line ("The requirements for qualifications") reads as a signpost */
+.section-box p:last-child {
+  margin: 22px 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+/* requirement list: ruled rows with check marks */
+.section-box ul {
+  padding: 0;
+  list-style: none;
+}
+
+.section-box li {
+  position: relative;
+  margin: 0;
+  padding: 6px 0 6px 34px;
+  font-size: 17px;
+  line-height: 27px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #000000;
+}
+
+/* check mark drawn with borders, so it is crisp and font-independent */
+.section-box li::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 12px;
+  width: 6px;
+  height: 11px;
+  border: solid #000000;
+  border-width: 0 1px 1px 0;
+  transform: rotate(45deg);
+}
+
+.section-box li:last-child {
+  padding-bottom: 0;
+}
+
+/* =====================================================
+   Banks footer: two stacked rows of ruled tiles
+   ===================================================== */
+
+.banks-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 0;
+  overflow: hidden;
+  background: #ffffff;
+  border-top: var(--border-thin) solid var(--border-color);
+  box-shadow: none;
+  perspective: 900px;
+}
+
+.flow-row {
+  display: flex;
+  gap: 12px;
+  margin: 0; /* auto margins were spreading the two groups apart */
+  transform-style: preserve-3d;
+}
+
+.drift-row-1 {
+  width: 32%; /* was 80% */
+  animation: driftRightAnim 12s ease-in-out infinite alternate;
+}
+
+.drift-row-2 {
+  width: 38%; /* was 95% */
+  animation: driftLeftAnim 12s ease-in-out infinite alternate;
+}
+
+.drift-row-1 .bank-logo,
+.drift-row-2 .bank-logo {
+  flex: 1;
+}
+
+@keyframes driftRightAnim {
+  0%   { transform: translateX(-15px) rotateY(-3deg); }
+  100% { transform: translateX(15px) rotateY(3deg); }
+}
+
+@keyframes driftLeftAnim {
+  0%   { transform: translateX(15px) rotateY(3deg); }
+  100% { transform: translateX(-15px) rotateY(-3deg); }
+}
+
+.bank-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px; /* was 100px */
+  padding: 0;
+  overflow: hidden;
+  background: #ffffff;
+  border: var(--border-thin) solid var(--post-border-color);
+  border-radius: 0;
+}
+
+.bank-logo img {
+  display: block;
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+
+.banks-footer:hover .flow-row {
+  animation-play-state: paused;
+}
+
+/* hover only on devices that really hover, so touch screens don't need a second tap */
+@media (hover: hover) {
   .bank-logo:hover {
     transform: scale(1.05);
-    border-color: #0066ff;
-    box-shadow: none;
   }
+}
+
+.main-nav a,
+.financing-nav a,
+.bank-logo {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* =====================================================
+   Responsive + motion
+   ===================================================== */
+
+@media (max-width: 700px) {
+  .main-nav a {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+  }
+  .financing-nav a {
+    padding: 12px 6px;
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+  }
+  .content-wrapper {
+    padding: 24px 20px 36px;
+  }
+  .section-box {
+    padding: 20px 18px 22px;
+  }
+  .section-box p,
+  .section-box li {
+    font-size: 16px;
+    line-height: 25px;
+  }
+  .section-box p:first-of-type {
+    font-size: 17px;
+    line-height: 27px;
+  }
+  .section-box li {
+    padding-left: 30px;
+  }
+  .banks-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .drift-row-1,
+  .drift-row-2 {
+    width: 92%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-row-1,
+  .drift-row-2 {
+    animation: none;
+  }
+}
