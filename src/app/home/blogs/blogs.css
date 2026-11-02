@@ -199,8 +199,8 @@ svg {
   display: grid;
   place-items: center;
   border: var(--border-thin) solid var(--border-color);
-  background-color: #fff3b0;
-  color: #FF0000;
+  background-color: #290044;
+  color: #fcf9f9;
   font-size: 12px;
   font-weight: 700;
 }
