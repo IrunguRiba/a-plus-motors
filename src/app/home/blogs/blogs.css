@@ -445,7 +445,7 @@ svg {
   position: relative;
 }
 .more[open] summary::before {
-  content: "read less";
+  content: "Read less";
   color: #000; 
   position: absolute;
   left: 0;
