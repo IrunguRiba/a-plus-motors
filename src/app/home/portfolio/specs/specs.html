@@ -1,198 +1,352 @@
-<!-- specs-container.component.html -->
+<!-- specs.html -->
 <div class="specs-container">
 
-    <!-- ================= GLOBAL BACKGROUND OVERLAY ================= -->
-    <!-- This spans the ENTIRE page (both pages) -->
-    <div class="global-car-blur-bg" [style.backgroundImage]="'url(' + activeImage + ')'"></div>
-  
-    <!-- ================= PAGE 1: HERO ================= -->
-    <section class="hero-page">
-  
-      <!-- TOP NAV BAR (sticky) -->
-      <nav class="top-nav">
-        <button class="nav-cell back-cell" (click)="goBack()"> <span class="back-arrow"> ← </span>BACK TO STORE</button>
-        <div class="nav-cell" (click)="goToMainStore()">MAIN STORE</div>
-        <div class="nav-cell" (click)="goToContact()">CONTACT US</div>
-      </nav>
-  
-      <!-- MAIN GRID: rail | car | sidebar -->
-      <div class="main-grid">
-  
-        <!-- LEFT RAIL -->
-        <aside class="side-rail">
-          <span class="rail-label">INTERIOR</span>
-          <span class="rail-line"></span>
-          <span class="rail-label">EXTERIOR</span>
-          <span class="rail-line short"></span>
-          <span class="rail-label-more">MORE</span>
-          <span class="rail-arrow">↓</span>
-        </aside>
-  
-        <!-- CENTER: CAR (full bleed) + SIDE PREVIEW STACK + VIDEO PREVIEW -->
-        <div class="car-section">
-          <!-- REMOVED: the local .car-blur-bg -->
-  
-          <h1 class="main-title">BMW i4 Series</h1>
-  
-          <!-- CAR STAGE — car fills width & height -->
-          <div class="car-stage">
-  
-            <!-- MAIN CAR — fixed, full-size stage -->
-            <div class="image-wrapper">
-              <img [src]="activeImage" [alt]="carName" class="car-img" />
+  <div class="global-car-blur-bg" [style.backgroundImage]="'url(' + activeImage + ')'"></div>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero-page">
+
+    <nav class="top-nav">
+      <button class="nav-cell back-cell" (click)="goBack()">
+        <span class="back-arrow">←</span>Back to store
+      </button>
+      <button class="nav-cell" (click)="goToMainStore()">Main store</button>
+      <button class="nav-cell" (click)="goToContact()">Contact us</button>
+    </nav>
+
+    <div class="main-grid">
+
+      <!-- ============================================
+           LEFT: SPECS BOX
+           ============================================ -->
+      <aside class="specs-box">
+
+        <!-- Pinned: tabs -->
+        <div class="view-switch" role="tablist" aria-label="Specs view">
+          <button class="view-tab" role="tab" type="button"
+                  [class.active]="view === 'exterior'"
+                  [attr.aria-selected]="view === 'exterior'"
+                  (click)="setView('exterior')">
+            Exterior
+          </button>
+          <button class="view-tab" role="tab" type="button"
+                  [class.active]="view === 'interior'"
+                  [attr.aria-selected]="view === 'interior'"
+                  (click)="setView('interior')">
+            Interior
+          </button>
+        </div>
+
+        <!-- Pinned: car identity (simplified) -->
+        <div class="specs-car">
+          <div class="specs-eyebrow">
+            <span>{{ seriesName }}</span>
+            <!-- Add the condition tag here -->
+            <span class="condition-tag">Brand New</span>
+          </div>
+          <h1 class="specs-car-name">{{ carName }}</h1>
+          <span class="meta-item"><i></i>Trade-in available</span>
+        </div>
+        
+
+        <!-- Scrollable spec list -->
+        <div class="specs-scroll">
+          <ng-container *ngIf="view === 'exterior'">
+            <div class="spec-group" *ngFor="let group of exteriorSpecs">
+              <h3 class="spec-group-title">{{ group.title }}</h3>
+              <ul class="spec-list">
+                <li class="spec-row" *ngFor="let row of group.rows">
+                  <span class="spec-label">{{ row.label }}</span>
+                  <span class="spec-value">{{ row.value }}</span>
+                </li>
+              </ul>
             </div>
-  
-            <!-- SIDE PARALLAX SCROLLER + VIDEO THUMB BELOW -->
-            <div class="preview-scroller" (wheel)="onScrollerWheel($event)">
-              <div class="preview-track"
-                   [class.expanded]="stackExpanded"
-                   (click)="toggleStack($event)">
-                <div class="stack-thumb"
-                     *ngFor="let img of previewImages; let i = index"
-                     [class.active]="activeImage === img"
-                     (click)="selectImage(img, $event)">
-                  <img [src]="img" [alt]="'preview ' + (i+1)" />
-                </div>
-              </div>
-  
-              <!-- VIDEO PREVIEW THUMB (placed below preview track) -->
-              <div class="video-thumb-wrapper" (click)="openVideo($event)">
-                <div class="stack-thumb video-thumb">
-                  <video [src]="reviewVid" muted preload="metadata" playsinline></video>
-                  <span class="play-icon">▶</span>
-                </div>
-              </div>
+          </ng-container>
+
+          <ng-container *ngIf="view === 'interior'">
+            <div class="spec-group" *ngFor="let group of interiorSpecs">
+              <h3 class="spec-group-title">{{ group.title }}</h3>
+              <ul class="spec-list">
+                <li class="spec-row" *ngFor="let row of group.rows">
+                  <span class="spec-label">{{ row.label }}</span>
+                  <span class="spec-value">{{ row.value }}</span>
+                </li>
+              </ul>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Pinned: footer with price, meta, and Interested button -->
+        <div class="specs-footer">
+          <div class="specs-footer-details">
+            <span class="specs-footer-price">{{ carPrice }}</span>
+            <div class="specs-footer-meta">
+              <span class="meta-item"><i></i>Financing available</span>
+             
             </div>
           </div>
-  
-          <!-- OVERLAY INFO AT BOTTOM OF STAGE -->
-          <div class="car-info-overlay">
-            <div class="view-indicator">
-              <span class="arrow">←</span>
-              <span class="degrees">{{ carLength }}</span>
-              <span class="arrow">→</span>
-            </div>
-  
-            <div class="car-info">
-              <h2 class="car-name">{{ carName }}</h2>
-              <p class="car-desc">{{ shortDesc }}</p>
-  
-              <div class="car-meta-row">
-                <span class="meta-item">FINANCING AVAILABLE</span>
-                <span class="meta-item">TRADE-IN AVAILABLE</span>
-                <span class="car-price">{{ carPrice }}</span>
-              </div>
-  
-              <button class="interested-btn" (click)="goToContact()">INTERESTED</button>
-            </div>
+          <button class="interested-btn" type="button" (click)="openModal()">Interested</button>
+        </div>
+      </aside>
+
+      <!-- ============================================
+           CENTER: CAR IMAGE
+           ============================================ -->
+      <div class="car-section">
+        <div class="car-stage">
+          <div class="image-wrapper" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+            <img *ngFor="let src of [activeImage]" [src]="src"
+                 [alt]="carName + ' ' + view" class="car-img" />
           </div>
         </div>
-  
-        <!-- RIGHT: SPECS SIDEBAR -->
-        <aside class="specs-sidebar">
-          <div class="specs-header-group">
-            <span class="specs-title">Specs</span>
-            <div class="blue-lines-graphic">
-              <span class="b-line"></span>
-              <span class="b-line"></span>
-              <span class="b-line"></span>
-              <span class="b-line"></span>
-            </div>
-          </div>
-  
-          <div class="spec-block">
-            <div class="spec-value">{{ carRange }}</div>
-            <div class="spec-label">Range (est)</div>
-          </div>
-  
-          <div class="spec-block">
-            <div class="spec-value">{{ carTopSpeed }}</div>
-            <div class="spec-label">Top Speed</div>
-          </div>
-  
-          <div class="spec-block">
-            <div class="spec-value">{{ carAcceleration }}</div>
-            <div class="spec-label">0-60 mph</div>
-          </div>
-  
-          <div class="scroll-arrows">
-            <span class="scroll-label">MORE</span>
-            <span class="scroll-down">↓</span>
-          </div>
-        </aside>
-      </div>
-    </section>
-  
-    <!-- ================= PAGE 2: SPECIFICATIONS TABLES ================= -->
-    <section class="more-specs">
-      <div class="specs-section-header">
-        <h2>MORE SPECIFICATIONS <span>{{carName}}</span></h2>
-      </div>
-  
-      <div class="spec-category-group">
-        <h3 class="category-title">Overview</h3>
-        <div class="specs-grid-table">
-          <div class="spec-item" *ngFor="let item of overviewSpecs">
-            <span class="label">{{ item.label }}</span>
-            <span class="val">{{ item.value }}</span>
-          </div>
+
+        <div class="view-controls">
+          <button class="ctrl-btn" type="button" (click)="prev()" aria-label="Previous image">←</button>
+          <span class="ctrl-count">
+            <strong>{{ counter }}</strong>
+            <em>{{ view }}</em>
+          </span>
+          <button class="ctrl-btn" type="button" (click)="next()" aria-label="Next image">→</button>
         </div>
       </div>
-  
-      <div class="spec-category-group">
-        <h3 class="category-title">Comfort &amp; Luxury Features</h3>
-        <div class="comfort-table-grid">
-          <div class="comfort-row-item" *ngFor="let feature of comfortFeatures">
-            <span class="check-dot"></span>
-            <span class="feature-name">{{ feature }}</span>
-          </div>
-        </div>
-      </div>
-  
-      <div class="spec-category-group similar-vehicles-section">
-        <h3 class="category-title">Similar Masterpieces</h3>
-        <div class="similar-cards-row">
-          <div class="similar-card" *ngFor="let simCar of similarVehicles" (click)="goToSpecs()">
-            <div class="sim-img-wrap">
-              <img [src]="simCar.image" [alt]="simCar.name" />
+
+      <!-- ============================================
+           RIGHT: GALLERY (Header removed, Expand added)
+           ============================================ -->
+           <aside class="gallery-col" [class.expanded]="stackExpanded">
+        
+            <!-- Expand button replaces the header -->
+            <button class="gal-toggle" type="button" (click)="toggleStack()">
+              {{ stackExpanded ? 'Collapse' : 'Expand' }}
+            </button>
+    
+            <div class="stack-track" [class.expanded]="stackExpanded" (wheel)="onScrollerWheel($event)">
+              <button class="stack-thumb" type="button"
+                      *ngFor="let img of images; let i = index"
+                      [class.active]="i === activeIndex"
+                      [attr.aria-label]="view + ' image ' + (i + 1)"
+                      (click)="selectImage(i)">
+                <img [src]="img" [alt]="view + ' ' + (i + 1)" loading="lazy" />
+              </button>
             </div>
-            <div class="sim-info">
-              <h4>{{ simCar.name }}</h4>
-              <p>{{ simCar.price }}</p>
+    
+            <div class="review-slot" *ngIf="reviewVid">
+              <span class="gal-eyebrow review-eyebrow">Car review</span>
+              <button class="review-thumb" type="button" (click)="openVideo($event)" aria-label="Play review video">
+                <video [src]="reviewVid + '#t=0.5'" muted preload="metadata" playsinline></video>
+                <span class="play-icon">▶</span>
+              </button>
+              <span class="review-cap">Watch the full review</span>
             </div>
-          </div>
+          </aside>
+    </div>
+  </section>
+
+  <!-- ================= SIMILAR CARS ================= -->
+  <section class="similar-section">
+    <div class="specs-section-header">
+      <h2>Similar Masterpieces</h2>
+    </div>
+
+    <!-- Using exactly the store card classes and structure -->
+    <div class="cars similar-cards-row">
+      <div class="car-card" *ngFor="let simCar of similarVehicles" (click)="goToSpecs()">
+        
+        <div class="car-image-wrapper">
+          <img [src]="simCar.image" [alt]="simCar.name" />
         </div>
+        
+        <div class="car-details">
+          <span class="car-year">{{ simCar.year || '2013' }}</span>
+          <span class="car-brand">{{ simCar.brand || 'Audi A4' }}</span>
+          <span class="car-price">{{ simCar.price }}</span>
+        </div>
+        
+        <div class="car-actions">
+          <button class="action-btn" type="button">
+            <!-- Like Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+            <span>Like</span>
+          </button>
+          <button class="action-btn" type="button">
+            <!-- Bookmark Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span>Bookmark</span>
+          </button>
+          <button class="action-btn" type="button">
+            <!-- Share Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+            <span>Share</span>
+          </button>
+          <button class="inquire-box-btn" type="button">INQUIRE</button>
+        </div>
+
       </div>
-  
-      <footer class="specs-footer-table">
-        <div class="footer-cell">
-          <p class="footer-highlight">Showroom Location</p>
-          <p>Along Thika Road Highway, Near Safari Park Hotel</p>
-        </div>
-        <div class="footer-cell">
-          <p class="footer-highlight">Direct Inquiries</p>
-          <p>+254 707 555 666</p>
-          <p>info@aplusmotors.biz</p>
-        </div>
-        <div class="footer-cell financing-cell">
-          <a href="javascript:void(0)" (click)="openFinancing()">
-            <span>Explore Financing</span>
-            <span class="arrow-diag">⟶</span>
-          </a>
-        </div>
-     
-      </footer>
-    </section>
-  
-    <div class="video-overlay" *ngIf="videoFullscreen" (click)="closeVideo($event)">
-      <div class="video-overlay-content" (click)="$event.stopPropagation()">
-        <button class="video-close-btn" (click)="closeVideo($event)">✕</button>
-        <video [src]="reviewVid" autoplay controls playsinline class="fullscreen-video"></video>
-        <div class="video-actions">
-          <a [href]="'https://www.youtube.com/results?search_query=' + carName + '+review'" target="_blank" rel="noopener" class="youtube-link">
-            Watch on YouTube <span class="arrow-diag">⟶</span>
-          </a>
-        </div>
+    </div>
+
+    <!-- Discover more centered as the last element, styled as the store button -->
+    <div class="discover-more-wrapper">
+      <button class="inquire-box-btn discover-more-btn" type="button" (click)="goToMainStore()">
+        Discover More
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= VIDEO OVERLAY ================= -->
+  <div class="video-overlay" #videoRoot [class.open]="videoFullscreen" (click)="closeVideo($event)">
+    <div class="video-overlay-content" (click)="$event.stopPropagation()">
+      <button class="video-close-btn" (click)="closeVideo($event)" aria-label="Close video">✕</button>
+      <video *ngIf="videoFullscreen" [src]="reviewVid" autoplay controls playsinline class="fullscreen-video"></video>
+      <div class="video-actions">
+        <a [href]="'https://www.youtube.com/results?search_query=' + carName + '+review'"
+           target="_blank" rel="noopener" class="youtube-link">
+          Watch on YouTube <span class="arrow-diag">⟶</span>
+        </a>
       </div>
     </div>
   </div>
+
+  <!-- ================= INTEREST MODAL (unchanged) ================= -->
+  <div class="interest-modal" #modalRoot [class.is-open]="modalOpen"
+       role="dialog" aria-modal="true" aria-labelledby="imTitle" (click)="closeModal()">
+
+    <div class="interest-card" (click)="$event.stopPropagation()">
+
+      <button class="im-close" type="button" (click)="closeModal()" aria-label="Close">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div class="im-scroll">
+        <div class="im-brand">
+          <img [src]="logoImg" alt="A PLUS LTD" class="im-logo" />
+          <span class="logo-tagline">Driving that suits you</span>
+        </div>
+
+        <div class="im-success" *ngIf="submitted">
+          <span class="material-symbols-outlined im-success-icon">check</span>
+          <h3>Thank you, {{ form.name }}</h3>
+          <p>Your interest in the <strong>{{ carName }}</strong> has been noted. Send it to our team on WhatsApp so we can reach you faster.</p>
+          <a class="im-submit" [href]="waLink" target="_blank" rel="noopener">Send via WhatsApp</a>
+          <button type="button" class="im-ghost" (click)="closeModal()">Close</button>
+        </div>
+
+        <ng-container *ngIf="!submitted">
+          <div class="im-car">
+            <div class="im-car-top">
+              <div class="im-car-id">
+                <span class="im-eyebrow">Enquire about</span>
+                <h2 id="imTitle" class="im-car-name">{{ carName }}</h2>
+                <span class="im-car-price">{{ carPrice }}</span>
+              </div>
+              <button type="button" class="im-share" (click)="shareCar()">
+                <span class="material-symbols-outlined">ios_share</span>
+                <span>{{ shareLabel }}</span>
+              </button>
+            </div>
+            <div class="im-badges">
+              <span class="im-badge"><i></i>Financing available</span>
+              <span class="im-badge"><i></i>Trade-in available</span>
+            </div>
+          </div>
+
+          <form class="im-form" (ngSubmit)="submitInterest()" novalidate>
+            <!-- Form fields unchanged -->
+            <div class="im-field" [class.invalid]="attempted && !nameValid">
+              <label for="imName">Full name</label>
+              <input id="imName" name="name" type="text" autocomplete="name" [(ngModel)]="form.name" placeholder="Your name" />
+              <small *ngIf="attempted && !nameValid">Please enter your name.</small>
+            </div>
+            <div class="im-field" [class.invalid]="attempted && !phoneValid">
+              <label for="imPhone">Phone number</label>
+              <input id="imPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" [(ngModel)]="form.phone" placeholder="+254 7XX XXX XXX" />
+              <small *ngIf="attempted && !phoneValid">Please enter a valid phone number.</small>
+            </div>
+            <label class="im-check">
+              <input type="checkbox" name="schedule" [(ngModel)]="form.schedule" />
+              <span class="box"></span>
+              <span class="im-check-text">Schedule a physical meeting</span>
+            </label>
+            <div class="im-reveal" *ngIf="form.schedule">
+              <div class="im-row">
+                <div class="im-field" [class.invalid]="attempted && !dateValid">
+                  <label for="imDate">Date</label>
+                  <input id="imDate" name="date" type="date" [min]="minDate" [(ngModel)]="form.date" />
+                  <small *ngIf="attempted && !dateValid">Pick a date.</small>
+                </div>
+                <div class="im-field">
+                  <label for="imTime">Time</label>
+                  <select id="imTime" name="time" [(ngModel)]="form.time">
+                    <option *ngFor="let t of timeSlots" [value]="t">{{ t }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <label class="im-check">
+              <input type="checkbox" name="tradeIn" [(ngModel)]="form.tradeIn" />
+              <span class="box"></span>
+              <span class="im-check-text">Request a trade-in valuation</span>
+            </label>
+            <div class="im-reveal" *ngIf="form.tradeIn">
+              <div class="im-field" [class.invalid]="attempted && !tradeValid">
+                <label for="imTrade">Your current car</label>
+                <input id="imTrade" name="tradeMake" type="text" [(ngModel)]="form.tradeMake" placeholder="Make &amp; model, e.g. Toyota Harrier" />
+                <small *ngIf="attempted && !tradeValid">Tell us which car you would trade in.</small>
+              </div>
+              <div class="im-row">
+                <div class="im-field">
+                  <label for="imYear">Year</label>
+                  <input id="imYear" name="tradeYear" type="text" inputmode="numeric" maxlength="4" [(ngModel)]="form.tradeYear" placeholder="2018" />
+                </div>
+                <div class="im-field">
+                  <label for="imKm">Mileage (km)</label>
+                  <input id="imKm" name="tradeMileage" type="text" inputmode="numeric" [(ngModel)]="form.tradeMileage" placeholder="85,000" />
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="im-submit">Submit interest</button>
+          </form>
+
+          <div class="im-contact">
+            <div class="im-socials">
+              <a [href]="'tel:' + phoneTel" class="social-icon" aria-label="Phone">
+                <img [src]="phoneImg" alt="Call" class="social-img" />
+              </a>
+              <a [href]="'https://wa.me/' + whatsappNumber" target="_blank" rel="noopener" class="social-icon" aria-label="WhatsApp">
+                <img [src]="whatsappImg" alt="WhatsApp" class="social-img" />
+              </a>
+              <a href="https://youtube.com" target="_blank" rel="noopener" class="social-icon" aria-label="YouTube">
+                <img [src]="youtubeImg" alt="YouTube" class="social-img" />
+              </a>
+            </div>
+            <div class="im-details">
+              <a [href]="'tel:' + phoneTel">+254 707 555 666</a>
+              <a href="mailto:info@aplusmotors.biz">info@aplusmotors.biz</a>
+              <span>Thika Road, near Safari Park Hotel</span>
+            </div>
+          </div>
+
+          <div class="im-actions">
+            <button type="button" class="im-action" (click)="goModal('/blogs')">
+              <span class="material-symbols-outlined">domain</span>
+              <span>Subsidiaries</span>
+            </button>
+            <button type="button" class="im-action" (click)="goModal('/import')">
+              <span class="material-symbols-outlined">flight_land</span>
+              <span>Import</span>
+            </button>
+            <button type="button" class="im-action" (click)="goModal('/store')">
+              <span class="material-symbols-outlined">storefront</span>
+              <span>Back to store</span>
+            </button>
+          </div>
+        </ng-container>
+      </div>
+
+      <footer class="tagline">
+        <span class="tagline-rule"></span>
+        <p class="tagline-text">A Plus Motors Ltd</p>
+        <span class="tagline-rule"></span>
+      </footer>
+    </div>
+  </div>
+</div>
