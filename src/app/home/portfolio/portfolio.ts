@@ -208,11 +208,16 @@ export class Portfolio {
   ];
 
   brands: Brand[] = [
-    { id: 1, name: 'Toyota', logo: 'toyota-logo-2020.png' },
-    { id: 2, name: 'Subaru', logo: 'subaru-logo-2019.png' },
-    { id: 3, name: 'BMW', logo: 'bmw-logo-2020-1.png' },
-    { id: 4, name: 'Mercedes', logo: 'mercedes-benz-logo-2011.png' },
-    { id: 5, name: 'Audi', logo: 'audi-logo-2016.png' }
+    { id: 1, name: 'Toyota', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/toyota.png' },
+    { id: 2, name: 'Subaru', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/subaru.png' },
+    { id: 3, name: 'Nissan', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/nissan.png' },
+    { id: 4, name: 'Honda', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/honda.png' },
+    { id: 5, name: 'Mazda', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/mazda.png' },
+    { id: 6, name: 'BMW', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/bmw.png' },
+    { id: 7, name: 'Mercedes', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/mercedes-benz.png' },
+    { id: 8, name: 'Audi', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/audi.png' },
+    { id: 9, name: 'Volkswagen', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/volkswagen.png' },
+    { id: 10, name: 'Mitsubishi', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/mitsubishi.png' }
   ];
 
   displayCars: Car[] = [];

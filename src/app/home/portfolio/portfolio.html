@@ -21,7 +21,6 @@
           </div>
 
           <div class="car-details">
-            <!-- Header: year + make -->
             <div class="car-meta-top">
               <span>{{ car.year }}</span>
               <span>{{ car.make }}</span>
@@ -34,7 +33,6 @@
               {{ car.description }}
             </p>
 
-            <!-- Spec chips -->
             <div class="car-specs">
               <span class="spec-chip">{{ car.engineCC }}</span>
               <span class="spec-chip">{{ car.fuelType }}</span>
@@ -42,14 +40,12 @@
               <span class="spec-chip">{{ car.mileage }}</span>
             </div>
 
-            <!-- Price + financing -->
             <div class="car-pricing">
               <span class="starting-label">Starting From</span>
               <span class="car-price">{{ car.price }}</span>
               <span class="car-finance">Financing available</span>
             </div>
 
-            <!-- Thin-bordered inquire button -->
             <button class="inquire-btn" type="button" (click)="openSpecs()">INQUIRE</button>
           </div>
         </div>
@@ -70,20 +66,17 @@
     <div class="car-rows-container" *ngFor="let rowIndex of [0, 1, 2]">
       <div class="store-row">
         <ng-container *ngFor="let car of displayCars">
-          <!-- Triggers the specs pop-up on store cards -->
           <div class="store-car-card" role="group" [attr.aria-label]="car.model">
             <div class="store-image-container" (click)="openSpecs()">
               <img [src]="car.image" [alt]="car.model" />
             </div>
 
             <div class="store-car-details">
-              <!-- Title row -->
               <div class="store-car-header">
                 <span class="store-car-year">{{ car.year }}</span>
                 <span class="store-car-model">{{ car.make }} {{ car.model }}</span>
               </div>
 
-              <!-- Spec chips -->
               <div class="store-car-specs">
                 <span class="spec-chip">{{ car.engineCC }}</span>
                 <span class="spec-chip">{{ car.fuelType }}</span>
@@ -94,7 +87,6 @@
               <div class="store-car-pricing">
                 <div class="store-car-price">{{ car.price }}</div>
 
-                <!-- Financing line, with like / share / bookmark on the right -->
                 <div class="store-finance-row">
                   <div class="store-car-finance">Financing available</div>
 
@@ -135,7 +127,6 @@
                 <span class="copied-note" *ngIf="copiedId === car.id" role="status">Link copied</span>
               </div>
 
-              <!-- Thin-bordered inquire button -->
               <button class="inquire-btn" type="button" (click)="openSpecs()">INQUIRE</button>
             </div>
           </div>
@@ -149,16 +140,19 @@
   </div>
 
   <div class="brand-display">
-    <div class="brand-rows-container" *ngFor="let rowIndex of [0, 1, 2]">
-      <div class="brand-row">
-        <ng-container *ngFor="let brand of displayBrands">
-          <div class="brand-card" role="group" [attr.aria-label]="brand.name">
-            <div class="brand-logo-container">
-              <img [src]="brand.logo" [alt]="brand.name" />
-            </div>
-            <div class="brand-name">{{ brand.name }}</div>
-          </div>
-        </ng-container>
+    <div class="brand-row">
+      <div
+        class="brand-card"
+        *ngFor="let brand of displayBrands"
+        role="group"
+        tabindex="0"
+        [attr.aria-label]="brand.name"
+      >
+        <div class="brand-bg" [style.backgroundImage]="'url(' + brand.logo + ')'"></div>
+        <div class="brand-logo-container">
+          <img [src]="brand.logo" [alt]="brand.name" loading="lazy" />
+        </div>
+        <div class="brand-name">{{ brand.name }}</div>
       </div>
     </div>
   </div>
