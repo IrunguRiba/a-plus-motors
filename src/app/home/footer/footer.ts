@@ -8,6 +8,7 @@ templateUrl: './footer.html',
   styleUrl: './footer.css',
 })
 export class Footer {
+  currentYear = new Date().getFullYear();
   copyright='copyright.png';
   legal='insurance.png';
   constructor(private router: Router){}
