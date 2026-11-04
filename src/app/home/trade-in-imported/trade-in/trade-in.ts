@@ -60,16 +60,45 @@ export class TradeIn implements OnDestroy {
 
   videoOpen = false;
   videoSrc = 'assets/trade-in.mp4';
-  videoThumb = 'assets/trade-in-thumb.jpg';
+  // Replaced local thumbnail with a real luxury car image
+  videoThumb = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop';
   activeSrc = this.videoSrc;
   activeThumb = this.videoThumb;
   openStep = -1;
 
   steps = [
-    { n: '01', t: 'Describe', d: 'Tell us about your car.', m: 'Briefly', thumb: 'assets/steps/describe.jpg', video: 'assets/steps/describe.mp4' },
-    { n: '02', t: 'Get a range', d: 'See an indicative offer instantly, no sign-up.', m: 'Instant', thumb: 'assets/steps/range.jpg', video: 'assets/steps/range.mp4' },
-    { n: '03', t: 'Inspect', d: 'Book a slot. We check the car and confirm the number.', m: 'At our yard', thumb: 'assets/steps/inspect.jpg', video: 'assets/steps/inspect.mp4' },
-    { n: '04', t: 'Swap', d: 'Pick your next car. We handle the paperwork.', m: 'Same day', thumb: 'assets/steps/swap.jpg', video: 'assets/steps/swap.mp4' },
+    { 
+      n: '01', 
+      t: 'Describe', 
+      d: 'Tell us about your car.', 
+      m: 'Briefly', 
+      thumb: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=800&auto=format&fit=crop', // Person in car / describing
+      video: 'assets/steps/describe.mp4' 
+    },
+    { 
+      n: '02', 
+      t: 'Get a range', 
+      d: 'See an indicative offer instantly, no sign-up.', 
+      m: 'Instant', 
+      thumb: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=800&auto=format&fit=crop', // Financial calculator / numbers
+      video: 'assets/steps/range.mp4' 
+    },
+    { 
+      n: '03', 
+      t: 'Inspect', 
+      d: 'Book a slot. We check the car and confirm the number.', 
+      m: 'At our yard', 
+      thumb: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800&auto=format&fit=crop', // Mechanic / car inspection
+      video: 'assets/steps/inspect.mp4' 
+    },
+    { 
+      n: '04', 
+      t: 'Swap', 
+      d: 'Pick your next car. We handle the paperwork.', 
+      m: 'Same day', 
+      thumb: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?q=80&w=800&auto=format&fit=crop', // Handing over keys
+      video: 'assets/steps/swap.mp4' 
+    },
   ];
 
   benefits = [

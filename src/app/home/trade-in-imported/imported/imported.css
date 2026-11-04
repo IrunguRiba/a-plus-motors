@@ -2,17 +2,19 @@
 
 :host {
   display: block;
-  --border-color: #111111;
-  --border-thin: 0.5px;
+  --ink: #0F1010;
+  --ink-soft: #787C7C;
+  --gold: #7E5B47;
+  --light: #D8DADB;
+  --hair: rgba(15, 16, 16, 0.22);
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --panel-bg: #092635;
 
   font-family: var(--font-main);
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: #000;
-  background: #fff;
+  color: var(--ink);
+  background: var(--light);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -25,6 +27,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  border-radius: 0 !important;
 }
 
 button,
@@ -41,7 +44,7 @@ button {
   border: 0;
 }
 button:focus-visible {
-  outline: 1px solid #000;
+  outline: 1px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -69,9 +72,9 @@ button:focus-visible {
   padding: 0;
   overflow: hidden;
   perspective: 700px;
-  border: var(--border-thin) solid var(--panel-bg);
-  background: var(--panel-bg);
-  color: #fff;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--light);
   font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.16em;
@@ -80,9 +83,9 @@ button:focus-visible {
   align-items: end;
 }
 .btn .flip {
-  --half: calc((var(--h) - 1px) / 2);
+  --half: calc((var(--h) - 2px) / 2);
   display: grid;
-  height: calc(var(--h) - 1px);
+  height: calc(var(--h) - 2px);
   transform-style: preserve-3d;
   transform: translateZ(calc(-1 * var(--half)));
   transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -99,12 +102,12 @@ button:focus-visible {
   -webkit-backface-visibility: hidden;
 }
 .btn .front {
-  color: #fff;
+  color: var(--light);
   transform: translateZ(var(--half));
 }
 .btn .back {
-  background: #fff;
-  color: var(--panel-bg);
+  background: var(--light);
+  color: var(--ink);
   transform: rotateX(90deg) translateZ(var(--half));
 }
 .btn .arrow {
@@ -130,7 +133,7 @@ button:focus-visible {
   display: grid;
   grid-template-columns: 58% 1fr;
   width: 100%;
-  border-bottom: var(--border-thin) solid var(--border-color);
+  border-bottom: 1px solid var(--ink);
 }
 
 .hero-main {
@@ -141,9 +144,9 @@ button:focus-visible {
   align-items: end;
   min-height: auto;
   padding: 56px 48px 48px;
-  border-right: var(--border-thin) solid var(--border-color);
-  background: #fff;
-  color: #000;
+  border-right: 1px solid var(--ink);
+  background: var(--light);
+  color: var(--ink);
 }
 .hero-main > * {
   animation: fadeUp 0.8s ease both;
@@ -155,15 +158,15 @@ button:focus-visible {
 .hero h1 {
   grid-column: 1 / -1;
   grid-row: 1;
-   align-self: flex-start;
+  align-self: flex-start;
   margin: 13px;
-  text-align:right;
+  text-align: right;
   font-family: var(--font-main);
   font-size: clamp(38px, 5vw, 64px);
-  font-weight: 200;
+  font-weight: 300;
   line-height: 1.02;
   letter-spacing: 0.02em;
-  color: #000;
+  color: var(--ink);
 }
 
 .video-thumb {
@@ -182,19 +185,19 @@ button:focus-visible {
   justify-content: center;
   width: 100%;
   padding: 5%;
-  border: 1px dotted var(--border-color);
+  border: 1px dashed var(--hair);
 }
 .video-frame::before {
   content: '';
   position: absolute;
   inset: -49px;
-  opacity: 0.8;
+  opacity: 0.6;
   pointer-events: none;
   background:
-    repeating-linear-gradient(90deg, var(--border-color) 0 1px, transparent 1px 4px) 0 48px / 100% 1px no-repeat,
-    repeating-linear-gradient(180deg, var(--border-color) 0 1px, transparent 1px 4px) 48px 0 / 1px 100% no-repeat,
-    repeating-linear-gradient(180deg, var(--border-color) 0 1px, transparent 1px 4px) calc(100% - 48px) 0 / 1px calc(100% - 48px) no-repeat,
-    repeating-linear-gradient(90deg, var(--border-color) 0 1px, transparent 1px 4px) 0 calc(100% - 48px) / calc(100% - 48px) 1px no-repeat;
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 4px) 0 48px / 100% 1px no-repeat,
+    repeating-linear-gradient(180deg, var(--ink) 0 1px, transparent 1px 4px) 48px 0 / 1px 100% no-repeat,
+    repeating-linear-gradient(180deg, var(--ink) 0 1px, transparent 1px 4px) calc(100% - 48px) 0 / 1px calc(100% - 48px) no-repeat,
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 4px) 0 calc(100% - 48px) / calc(100% - 48px) 1px no-repeat;
 }
 .video-media {
   position: relative;
@@ -202,7 +205,7 @@ button:focus-visible {
   overflow: hidden;
   width: 90%;
   aspect-ratio: 16 / 10;
-  background: #000;
+  background: var(--ink);
 }
 .video-media img {
   display: block;
@@ -217,9 +220,8 @@ button:focus-visible {
   left: 50%;
   width: 52px;
   height: 52px;
-  border: var(--border-thin) solid #fff;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--light);
+  background: rgba(15, 16, 16, 0.45);
   transform: translate(-50%, -50%);
   transition: transform 0.3s ease, background 0.3s ease;
 }
@@ -230,7 +232,7 @@ button:focus-visible {
   left: 50%;
   border-style: solid;
   border-width: 7px 0 7px 11px;
-  border-color: transparent transparent transparent #fff;
+  border-color: transparent transparent transparent var(--light);
   transform: translate(-30%, -50%);
 }
 .video-thumb:hover .video-media img {
@@ -238,7 +240,7 @@ button:focus-visible {
 }
 .video-thumb:hover .play,
 .video-thumb:focus-visible .play {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(15, 16, 16, 0.85);
   transform: translate(-50%, -50%) scale(1.08);
 }
 
@@ -251,7 +253,7 @@ button:focus-visible {
   font-size: 16px;
   font-weight: 300;
   line-height: 1.7;
-  color: #444;
+  color: var(--ink-soft);
   letter-spacing: 0.005em;
 }
 .hero-main .btn {
@@ -264,8 +266,8 @@ button:focus-visible {
 .hero-side {
   display: flex;
   flex-direction: column;
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
 }
 .specs {
   display: flex;
@@ -282,23 +284,23 @@ button:focus-visible {
   align-items: center;
   align-content: center;
   padding: 0 12px;
-  border: var(--border-thin) solid var(--border-color);
+  border: 1px solid var(--ink);
   font-size: 14px;
   font-weight: 300;
   letter-spacing: 0.005em;
 }
 .specs dt {
   font-weight: 500;
-  color: #000;
+  color: var(--ink);
 }
 .specs dd {
-  color: #000;
+  color: var(--ink-soft);
 }
 
 .specs .tag {
   margin-left: auto;
   padding: 4px 8px;
-  border: 1px dotted var(--border-color);
+  border: 1px dashed var(--ink);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.14em;
@@ -313,21 +315,21 @@ button:focus-visible {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.88);
+  background: rgba(15, 16, 16, 0.9);
   animation: fadeIn 0.3s ease both;
 }
 .lightbox-box {
   position: relative;
   width: 60vw;
-  border: var(--border-thin) solid rgba(255, 255, 255, 0.6);
-  background: #000;
+  border: 1px solid rgba(216, 218, 219, 0.6);
+  background: var(--ink);
   animation: expand 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .lightbox-box video {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: #000;
+  background: var(--ink);
 }
 .lightbox-close {
   position: absolute;
@@ -335,8 +337,8 @@ button:focus-visible {
   right: 0;
   height: 34px;
   padding: 0 16px;
-  border: var(--border-thin) solid #fff;
-  color: #fff;
+  border: 1px solid var(--light);
+  color: var(--light);
   font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.16em;
@@ -344,13 +346,13 @@ button:focus-visible {
   transition: background 0.2s ease, color 0.2s ease;
 }
 .lightbox-close:hover {
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
 }
 
 .steps {
   width: 100%;
-  border-bottom: var(--border-thin) solid var(--border-color);
+  border-bottom: 1px solid var(--ink);
 }
 .steps-row {
   display: flex;
@@ -372,7 +374,7 @@ button:focus-visible {
   top: 50%;
   right: 100%;
   width: 64px;
-  border-top: 1px dotted var(--border-color);
+  border-top: 1px dashed var(--ink);
 }
 .step:first-child .step-link {
   width: 48px;
@@ -384,10 +386,9 @@ button:focus-visible {
   z-index: 2;
   width: 34px;
   height: 34px;
-  border: var(--border-thin) solid #000;
-  border-radius: 50%;
-  background: #fff;
-  color: #000;
+  border: 1px solid var(--ink);
+  background: var(--light);
+  color: var(--ink);
   transform: translate(-50%, -50%);
   transition: background 0.2s ease, color 0.2s ease;
 }
@@ -400,8 +401,8 @@ button:focus-visible {
 }
 .step-num:hover,
 .step-num.on {
-  background: #000;
-  color: #fff;
+  background: var(--ink);
+  color: var(--light);
 }
 .step-box {
   position: relative;
@@ -409,8 +410,8 @@ button:focus-visible {
   width: 100%;
   aspect-ratio: 5 / 4;
   padding: 16px;
-  border: 1px dotted var(--border-color);
-  background: #fff;
+  border: 1px dashed var(--hair);
+  background: var(--light);
 }
 .step-box::before,
 .step-box::after {
@@ -418,28 +419,28 @@ button:focus-visible {
   position: absolute;
   width: 96px;
   height: 96px;
-  opacity: 0.8;
+  opacity: 0.6;
   pointer-events: none;
 }
 .step-box::before {
   top: -49px;
   right: -48px;
   background:
-    repeating-linear-gradient(90deg, var(--border-color) 0 1px, transparent 1px 4px) 48px 48px / 48px 1px no-repeat,
-    repeating-linear-gradient(180deg, var(--border-color) 0 1px, transparent 1px 4px) 48px 0 / 1px 48px no-repeat;
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 4px) 48px 48px / 48px 1px no-repeat,
+    repeating-linear-gradient(180deg, var(--ink) 0 1px, transparent 1px 4px) 48px 0 / 1px 48px no-repeat;
 }
 .step-box::after {
   bottom: -48px;
   left: -49px;
   background:
-    repeating-linear-gradient(90deg, var(--border-color) 0 1px, transparent 1px 4px) 0 48px / 48px 1px no-repeat,
-    repeating-linear-gradient(180deg, var(--border-color) 0 1px, transparent 1px 4px) 48px 48px / 1px 48px no-repeat;
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 4px) 0 48px / 48px 1px no-repeat,
+    repeating-linear-gradient(180deg, var(--ink) 0 1px, transparent 1px 4px) 48px 48px / 1px 48px no-repeat;
 }
 .step-media {
   position: absolute;
   inset: 16px;
   overflow: hidden;
-  background: #000;
+  background: var(--ink);
 }
 .step-media img {
   display: block;
@@ -453,7 +454,7 @@ button:focus-visible {
 }
 .step-box:hover .play,
 .step-box:focus-visible .play {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(15, 16, 16, 0.85);
   transform: translate(-50%, -50%) scale(1.08);
 }
 .step h3 {
@@ -461,7 +462,7 @@ button:focus-visible {
   align-self: flex-start;
   margin-bottom: 5px;
   padding: 0px 10px;
-  color: #092635;
+  color: var(--ink);
   font-size: 22px;
   font-weight: 400;
   letter-spacing: -0.01em;
@@ -484,7 +485,7 @@ button:focus-visible {
   font-size: 18px;
   font-weight: 300;
   line-height: 1.7;
-  color: #000000;
+  color: var(--ink-soft);
 }
 .step-more small {
   display: block;
@@ -493,7 +494,7 @@ button:focus-visible {
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #12372A;
+  color: var(--gold);
   margin-left: 20px;
 }
 
@@ -502,8 +503,8 @@ button:focus-visible {
   grid-template-columns: 58% 1fr;
   align-items: stretch;
   width: 100%;
-  border-bottom: var(--border-thin) solid var(--border-color);
-  background: #fff;
+  border-bottom: 1px solid var(--ink);
+  background: var(--light);
   overflow: visible;
 }
 .form {
@@ -516,6 +517,7 @@ button:focus-visible {
   font-weight: 400;
   line-height: 1.12;
   letter-spacing: -0.02em;
+  color: var(--ink);
 }
 .form h2 {
   margin-bottom: 40px;
@@ -527,19 +529,20 @@ button:focus-visible {
   gap: 16px;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: var(--border-thin) solid var(--border-color);
+  border-bottom: 1px solid var(--ink);
 }
 .sec strong {
   font-size: 11.5px;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: var(--ink);
 }
 .sec .hint {
   margin-left: auto;
   font-size: 13px;
   font-weight: 300;
-  color: #666;
+  color: var(--ink-soft);
 }
 .divider {
   height: 0;
@@ -575,37 +578,37 @@ button:focus-visible {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #000;
+  color: var(--ink);
 }
 
 .input {
   width: 100%;
   height: 48px;
   padding: 0 14px;
-  background: #fff;
-  border: var(--border-thin) solid var(--border-color);
-  border-radius: 0;
+  background: var(--light);
+  border: 1px solid var(--ink);
   font-size: 16px;
   font-weight: 300;
-  color: #000;
+  color: var(--ink);
   transition: border-color 0.2s ease;
 }
 .input:hover {
-  border-color: #000;
+  border-color: var(--gold);
 }
 .input:focus {
   outline: none;
-  border-color: #000;
+  border-color: var(--gold);
 }
 .input::placeholder {
-  color: #999;
+  color: var(--ink-soft);
+  opacity: 0.6;
   font-weight: 300;
 }
 
 select.input {
   appearance: none;
   padding-right: 30px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23000' stroke-width='1.2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%230F1010' stroke-width='1.2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
 }
@@ -621,7 +624,7 @@ select.input {
   margin-top: 4px;
   font-size: 12.5px;
   font-weight: 300;
-  color: #666;
+  color: var(--ink-soft);
 }
 
 .input.ng-invalid.ng-touched,
@@ -641,10 +644,10 @@ select.input {
   min-width: 92px;
   height: 48px;
   padding: 0 16px;
-  margin-left: -0.5px;
-  border: var(--border-thin) solid var(--border-color);
-  background: #fff;
-  color: #000;
+  margin-left: -1px;
+  border: 1px solid var(--ink);
+  background: var(--light);
+  color: var(--ink);
   font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -659,12 +662,12 @@ select.input {
   pointer-events: none;
 }
 .seg button:hover:not(.on) {
-  background: #f2efe9;
+  background: var(--ink-soft);
 }
 .seg button.on {
-  background: #000;
-  color: #fff;
-  border-color: #000;
+  background: var(--ink);
+  color: var(--light);
+  border-color: var(--ink);
   position: relative;
   z-index: 1;
 }
@@ -676,14 +679,14 @@ select.input {
   gap: 24px;
   margin-top: 40px;
   padding-top: 24px;
-  border-top: var(--border-thin) solid var(--border-color);
+  border-top: 1px solid var(--ink);
 }
 .submit p {
   max-width: 320px;
   font-size: 13px;
   font-weight: 300;
   line-height: 1.6;
-  color: #666;
+  color: var(--ink-soft);
 }
 .submit p.err {
   color: #CF0A0A;
@@ -691,8 +694,8 @@ select.input {
 }
 
 .panel {
-  background: var(--panel-bg);
-  color: #fff;
+  background: var(--ink);
+  color: var(--light);
 }
 
 .panel-sticky {
@@ -706,7 +709,7 @@ select.input {
   font-weight: 400;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--light);
 }
 .panel-amount {
   display: flex;
@@ -724,7 +727,7 @@ select.input {
   font-size: 16px;
   font-weight: 400;
   letter-spacing: 0.18em;
-  color: #fff;
+  color: var(--light);
 }
 .panel-route {
   margin-top: 14px;
@@ -732,7 +735,7 @@ select.input {
   font-weight: 400;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(216, 218, 219, 0.7);
 }
 .panel-rows {
   margin-top: 26px;
@@ -742,22 +745,22 @@ select.input {
   justify-content: space-between;
   gap: 16px;
   padding: 12px 0;
-  border-top: var(--border-thin) solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid rgba(216, 218, 219, 0.25);
   font-size: 14px;
   font-weight: 300;
   font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(216, 218, 219, 0.78);
 }
 .prow:last-child {
-  border-bottom: var(--border-thin) solid rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(216, 218, 219, 0.25);
 }
 .prow.strong {
   font-weight: 500;
-  color: #fff;
+  color: var(--light);
 }
 .prow.strong:last-child {
   padding: 16px 0;
-  border-top: var(--border-thin) solid #fff;
+  border-top: 1px solid var(--light);
   font-size: 16px;
 }
 .panel-note {
@@ -765,15 +768,14 @@ select.input {
   font-size: 12.5px;
   font-weight: 300;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(216, 218, 219, 0.8);
 }
 
-/* ============ FAQ — questions left, answers right ============ */
 .know {
   width: 100%;
-  border-bottom: var(--border-thin) solid var(--border-color);
-  background: #fff;
-  color: #000;
+  border-bottom: 1px solid var(--ink);
+  background: var(--light);
+  color: var(--ink);
 }
 .know-head {
   display: flex;
@@ -781,9 +783,9 @@ select.input {
   justify-content: space-between;
   gap: 24px;
   padding: 28px 48px;
-  border-bottom: var(--border-thin) solid var(--border-color);
-  background: var(--panel-bg);
-  color: #FAEEE0;
+  border-bottom: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--light);
 }
 .know-head h2 {
   font-size: 13px;
@@ -791,14 +793,14 @@ select.input {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   line-height: 1.15;
-  color: #FAEEE0;
+  color: var(--light);
 }
 .know-head p {
   font-size: 12px;
   font-weight: 300;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(216, 218, 219, 0.55);
 }
 
 .know-body {
@@ -808,10 +810,10 @@ select.input {
 
 .faq-q {
   list-style: none;
-  border-right: var(--border-thin) solid var(--border-color);
+  border-right: 1px solid var(--ink);
 }
 .faq-q li {
-  border-bottom: var(--border-thin) solid var(--border-color);
+  border-bottom: 1px solid var(--ink);
 }
 .faq-q li:last-child {
   border-bottom: 0;
@@ -831,19 +833,19 @@ select.input {
   line-height: 1.6;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #000;
+  color: var(--ink);
   transition: color 0.25s ease, padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.25s ease;
 }
 .faq-q button:hover {
-  color: #000;
+  color: var(--gold);
 }
 .faq-q button.on {
   padding-left: 60px;
-  color: #fff;
-  background: var(--panel-bg);
+  color: var(--light);
+  background: var(--ink);
 }
 .faq-q button:focus-visible {
-  outline: 1px solid #000;
+  outline: 1px solid var(--ink);
   outline-offset: -4px;
 }
 .faq-q .arrow {
@@ -879,7 +881,7 @@ select.input {
   justify-content: center;
   min-height: 460px;
   padding: 64px 48px;
-  background: #fff;
+  background: var(--light);
   overflow: hidden;
 }
 .answer {
@@ -887,8 +889,8 @@ select.input {
   width: 100%;
   max-width: 560px;
   padding: 40px;
-  border: 1px dotted var(--border-color);
-  background: #fff;
+  border: 1px dashed var(--ink);
+  background: var(--light);
   animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .answer::before,
@@ -897,39 +899,39 @@ select.input {
   position: absolute;
   width: 48px;
   height: 48px;
-  opacity: 0.8;
+  opacity: 0.6;
   pointer-events: none;
 }
 .answer::before {
   top: -25px;
   right: -24px;
   background:
-    repeating-linear-gradient(90deg, var(--border-color) 0 1px, transparent 1px 4px) 24px 24px / 24px 1px no-repeat,
-    repeating-linear-gradient(180deg, var(--border-color) 0 1px, transparent 1px 4px) 24px 0 / 1px 24px no-repeat;
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 4px) 24px 24px / 24px 1px no-repeat,
+    repeating-linear-gradient(180deg, var(--ink) 0 1px, transparent 1px 4px) 24px 0 / 1px 24px no-repeat;
 }
 .answer::after {
   bottom: -24px;
   left: -25px;
   background:
-    repeating-linear-gradient(90deg, var(--border-color) 0 1px, transparent 1px 4px) 0 24px / 24px 1px no-repeat,
-    repeating-linear-gradient(180deg, var(--border-color) 0 1px, transparent 1px 4px) 24px 24px / 1px 24px no-repeat;
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 4px) 0 24px / 24px 1px no-repeat,
+    repeating-linear-gradient(180deg, var(--ink) 0 1px, transparent 1px 4px) 24px 24px / 1px 24px no-repeat;
 }
 .answer h3 {
   margin-bottom: 24px;
   padding-bottom: 24px;
-  border-bottom: var(--border-thin) dashed var(--border-color);
+  border-bottom: 1px dashed var(--ink);
   font-size: 13.5px;
   font-weight: 600;
   line-height: 1.6;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #000;
+  color: var(--ink);
 }
 .answer p {
   font-size: 16px;
   font-weight: 300;
   line-height: 1.8;
-  color: #444;
+  color: var(--ink-soft);
 }
 
 @media (max-width: 960px) {
@@ -946,7 +948,7 @@ select.input {
     min-height: 0;
     padding: 64px 24px 48px;
     border-right: 0;
-    border-bottom: var(--border-thin) solid var(--border-color);
+    border-bottom: 1px solid var(--ink);
   }
   .hero h1,
   .video-thumb,
@@ -1002,7 +1004,7 @@ select.input {
   }
   .faq-q {
     border-right: 0;
-    border-bottom: var(--border-thin) solid var(--border-color);
+    border-bottom: 1px solid var(--ink);
   }
   .faq-q button {
     min-height: 0;
@@ -1039,7 +1041,7 @@ select.input {
     width: 0;
     height: 64px;
     border-top: 0;
-    border-left: 1px dotted var(--border-color);
+    border-left: 1px dashed var(--ink);
   }
   .step-num {
     top: 50%;

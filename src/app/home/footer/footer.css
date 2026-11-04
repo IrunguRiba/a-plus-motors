@@ -242,7 +242,7 @@
   padding: 30px 0 10px 30%;
   border-top: 1px solid #000000;
   box-sizing: border-box;
-  font-family: "Orbitron", sans-serif;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   font-size: 0.6rem;
   line-height: 1;
   font-weight: 100;
@@ -312,7 +312,7 @@
   align-items: center;
   gap: 0;
   padding-left: 2px;
-  font-family: "Orbitron", sans-serif;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   font-size: 0.6rem;
   font-weight: 100;
   letter-spacing: 0.4em;

@@ -1,4 +1,14 @@
 .recommended {
+  --ink: #0F1010;
+  --ink-soft: #3B3E3E;
+  --mid: #787C7C;
+  --light: #D8DADB;
+  --brown: #7E5B47;
+  --brown-dark: #664839;
+  --surface: #E4E6E7;
+  --sunk: #CBCECF;
+  --hair: rgba(15, 16, 16, 0.22);
+
   position: relative;
   width: 100%;
   max-width: 100%;
@@ -9,6 +19,7 @@
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
   font-kerning: normal;
+  color: var(--ink);
 }
 
 .recommended .recommended {
@@ -22,10 +33,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 16px 28px;
-  border: 1px solid #111;
-  background: #fff;
-  font-family: "Orbitron", sans-serif;
+  padding: 1px 28px;
+  background: var(--surface);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .recommended-heading h1,
@@ -35,7 +45,8 @@
   line-height: 26px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: #000;
+  color: #202734;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   white-space: nowrap;
 }
 
@@ -48,13 +59,14 @@
   gap: 8px;
   margin: 0;
   font-size: 0;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
 }
 
 .recommended-heading h2 span,
 .main-store h2 span {
   display: inline-block;
   padding: 8px 14px;
-  border: 1px solid #111;
+  border: 1px solid var(--ink);
   background: transparent;
   font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   font-size: 11px;
@@ -62,15 +74,22 @@
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #000;
+  color: var(--ink);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .recommended-heading h2 span:hover,
 .main-store h2 span:hover {
-  background: #111;
-  color: #fff;
+  background: var(--ink);
+  color: var(--light);
+}
+
+.recommended-heading h2 span:active,
+.main-store h2 span:active {
+  background: var(--brown);
+  border-color: var(--brown);
+  color: #F4F5F5;
 }
 
 .belt-track {
@@ -87,12 +106,8 @@
 }
 
 @keyframes moveCars {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 .car-card {
@@ -101,8 +116,8 @@
   grid-template-columns: 1fr 1fr;
   width: 880px;
   min-width: 880px;
-  background: #fff;
-  border: 1px solid #111;
+  background: var(--surface);
+  border: 1px solid var(--ink);
   border-radius: 0;
   overflow: hidden;
   box-sizing: border-box;
@@ -117,8 +132,8 @@
   position: relative;
   min-height: 340px;
   overflow: hidden;
-  background: #e9e7e1;
-  border-right: 1px solid #111;
+  background: var(--sunk);
+  border-right: 1px solid var(--ink);
 }
 
 .car-image-container img {
@@ -150,12 +165,12 @@
   font-weight: 500;
   letter-spacing: -0.008em;
   text-transform: none;
-  color: #4a4a48;
+  color: var(--ink-soft);
 }
 
 .car-meta-top span:first-child {
   font-weight: 600;
-  color: #000;
+  color: var(--ink);
 }
 
 .car-title {
@@ -164,7 +179,7 @@
   line-height: 36px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: #000;
+  color: var(--ink);
 }
 
 .car-description {
@@ -173,7 +188,7 @@
   font-size: 15px;
   line-height: 24px;
   font-weight: 400;
-  color: #000;
+  color: var(--ink);
 }
 
 .car-specs {
@@ -208,7 +223,7 @@
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #4a4a48;
+  color: var(--ink-soft);
 }
 
 .car-price {
@@ -216,7 +231,7 @@
   line-height: 36px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: #000;
+  color: var(--ink);
 }
 
 .car-finance {
@@ -225,7 +240,7 @@
   font-size: 13px;
   line-height: 18px;
   font-weight: 500;
-  color: #000;
+  color: var(--ink);
 }
 
 .car-details .inquire-btn {
@@ -233,21 +248,27 @@
   margin: 0;
   padding: 13px 24px;
   background: transparent;
-  border: 1px solid #111;
+  border: 1px solid var(--ink);
   border-radius: 0;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 1.5px;
-  color: #111;
+  color: var(--ink);
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .car-details .inquire-btn:hover {
-  background-color: #111;
-  color: #fff;
+  background-color: var(--ink);
+  color: var(--light);
+}
+
+.car-details .inquire-btn:active {
+  background-color: var(--brown);
+  border-color: var(--brown);
+  color: #F4F5F5;
 }
 
 .bridge-line {
@@ -255,7 +276,7 @@
   align-self: center;
   width: 40px;
   height: 1px;
-  background: #111;
+  background: var(--ink);
 }
 
 .car-link {
@@ -263,18 +284,20 @@
   align-items: center;
   gap: 8px;
   width: fit-content;
-  color: #000;
+  color: var(--ink);
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
-  border-bottom: 1px solid #000;
+  border-bottom: 1px solid var(--ink);
   padding-bottom: 4px;
   cursor: pointer;
-  transition: gap 0.25s ease;
+  transition: gap 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 
 .car-link:hover {
   gap: 15px;
+  color: var(--brown);
+  border-bottom-color: var(--brown);
 }
 
 .car-link span {
@@ -303,28 +326,29 @@
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.3px;
-  color: #111;
+  color: var(--ink);
   background: transparent;
-  border: 1px solid #111;
+  border: 1px solid var(--ink);
   border-radius: 999px;
   padding: 3px 10px;
   white-space: nowrap;
 }
 
 .store-car-card {
-  border: 1px solid #dcdcdc;
-  background: #fff;
+  border: 1px solid var(--hair);
+  background: var(--surface);
   padding: 16px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .store-car-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--brown);
+  box-shadow: 0 0 0 1px var(--brown);
 }
 
 .store-image-container {
@@ -332,7 +356,7 @@
   aspect-ratio: 17.7 / 10;
   overflow: hidden;
   margin-bottom: 16px;
-  background: #f7f7f7;
+  background: var(--sunk);
 }
 
 .store-image-container img {
@@ -354,17 +378,17 @@
   align-items: baseline;
   gap: 8px;
   font-size: 16px;
-  color: #111;
+  color: var(--ink);
 }
 
 .store-car-year {
   font-weight: 500;
-  color: #555;
+  color: var(--ink);
 }
 
 .store-car-model {
   font-weight: 500;
-  color: #111;
+  color: var(--ink);
 }
 
 .store-car-specs {
@@ -383,33 +407,39 @@
 .store-car-price {
   font-size: 20px;
   font-weight: 600;
-  color: #111;
+  color: var(--ink);
   white-space: nowrap;
 }
 
 .store-car-finance {
   font-size: 13px;
   font-weight: 300;
-  color: #666;
+  color: var(--ink-soft);
 }
 
 .store-car-details .inquire-btn {
   margin-top: 8px;
   width: 100%;
   background: transparent;
-  border: 1px solid #222;
+  border: 1px solid var(--ink);
   padding: 10px 0;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 1.5px;
-  color: #111;
+  color: var(--ink);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .store-car-details .inquire-btn:hover {
-  background-color: #111;
-  color: #fff;
+  background-color: var(--ink);
+  color: var(--light);
+}
+
+.store-car-details .inquire-btn:active {
+  background-color: var(--brown);
+  border-color: var(--brown);
+  color: #F4F5F5;
 }
 
 .discover-section {
@@ -421,19 +451,25 @@
 
 .discover-more-btn {
   background: transparent;
-  border: 1px solid #222;
+  border: 1px solid var(--ink);
   padding: 14px 48px;
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 1.5px;
-  color: #111;
+  color: var(--ink);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .discover-more-btn:hover {
-  background-color: #111;
-  color: #fff;
+  background-color: var(--ink);
+  color: var(--light);
+}
+
+.discover-more-btn:active {
+  background-color: var(--brown);
+  border-color: var(--brown);
+  color: #F4F5F5;
 }
 
 .brand-display {
@@ -442,9 +478,9 @@
   gap: 20px;
   width: 100%;
   padding: 28px;
-  border: 1px solid #111;
+  border: 1px solid var(--ink);
   box-sizing: border-box;
-  background: #fff;
+  background: var(--surface);
 }
 
 .brand-row {
@@ -463,8 +499,8 @@
   aspect-ratio: 4 / 3;
   padding: 16px;
   box-sizing: border-box;
-  border: 1px solid #dcdcdc;
-  background: #fff;
+  border: 1px solid var(--hair);
+  background: var(--surface);
   cursor: pointer;
   animation: brandFloat 7s ease-in-out infinite;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -489,7 +525,7 @@
   z-index: 2;
   width: 0;
   height: 0;
-  border: 0 solid #111;
+  border: 0 solid var(--brown);
   transition: width 0.35s ease, height 0.35s ease;
   pointer-events: none;
 }
@@ -510,8 +546,8 @@
 
 .brand-card:hover,
 .brand-card:focus-visible {
-  border-color: #111;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
   animation-play-state: paused;
   outline: none;
 }
@@ -578,8 +614,8 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-align: center;
-  color: #111;
-  background: linear-gradient(#111, #111) left bottom / 100% 1px no-repeat;
+  color: var(--ink);
+  background: linear-gradient(var(--brown), var(--brown)) left bottom / 100% 1px no-repeat;
   transition: background-size 0.35s ease;
 }
 
@@ -590,13 +626,8 @@
 }
 
 @keyframes brandFloat {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 app-specs {
@@ -604,7 +635,7 @@ app-specs {
   top: 0;
   left: 0;
   z-index: 99999;
-  background-color: #9c9c9c;
+  background-color: #D8DADB;
   box-sizing: border-box;
 }
 
@@ -628,7 +659,7 @@ app-specs {
   border: none;
   border-radius: 0;
   background: transparent;
-  color: #111;
+  color: var(--ink);
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -659,13 +690,13 @@ app-specs {
 }
 
 .card-action:focus-visible {
-  outline: 1px dotted #111;
+  outline: 1px dotted var(--ink);
   outline-offset: 2px;
 }
 
 @media (hover: hover) {
   .card-action:hover {
-    background-color: rgba(0, 0, 0, 0.07);
+    background-color: rgba(15, 16, 16, 0.08);
   }
   .card-action.like:hover {
     color: #4A943E;
@@ -707,7 +738,7 @@ app-specs {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: #111;
+  color: var(--ink);
 }
 
 @media (max-width: 1100px) {
@@ -738,7 +769,7 @@ app-specs {
   .car-image-container {
     min-height: 220px;
     border-right: none;
-    border-bottom: 1px solid #111;
+    border-bottom: 1px solid var(--ink);
   }
   .car-details {
     padding: 24px 20px;

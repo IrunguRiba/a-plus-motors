@@ -36,15 +36,44 @@ export class Imported implements OnDestroy {
   ];
 
   steps = [
-    { n: '01', t: 'Brief', d: 'Tell us the car you want and we confirm it is eligible.', m: 'Approx. 1  Week', thumb: 'assets/steps/brief.jpg', video: 'assets/steps/brief.mp4' },
-    { n: '02', t: 'Source & inspect', d: 'We find the car overseas and send an inspection report before you commit.', m: ' Approx. 1  Week', thumb: 'assets/steps/source.jpg', video: 'assets/steps/source.mp4' },
-    { n: '03', t: 'Ship', d: 'Your car is shipped to Mombasa.', m: 'Approx.  2–6  Weeks', thumb: 'assets/steps/ship.jpg', video: 'assets/steps/ship.mp4' },
-    { n: '04', t: 'Clear & deliver', d: 'We clear it through KRA and KEBS, register it and hand you the keys.', m: 'Approx. 7–8  Weeks', thumb: 'assets/steps/deliver.jpg', video: 'assets/steps/deliver.mp4' },
+    { 
+      n: '01', 
+      t: 'Brief', 
+      d: 'Tell us the car you want and we confirm it is eligible.', 
+      m: 'Approx. 1 Week', 
+      thumb: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800&auto=format&fit=crop', // Team meeting/briefing
+      video: 'assets/steps/brief.mp4' 
+    },
+    { 
+      n: '02', 
+      t: 'Source & inspect', 
+      d: 'We find the car overseas and send an inspection report before you commit.', 
+      m: 'Approx. 1 Week', 
+      thumb: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800&auto=format&fit=crop', // Car inspection
+      video: 'assets/steps/source.mp4' 
+    },
+    { 
+      n: '03', 
+      t: 'Ship', 
+      d: 'Your car is shipped to Mombasa.', 
+      m: 'Approx. 2–6 Weeks', 
+      thumb: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?q=80&w=800&auto=format&fit=crop', // Cargo ship
+      video: 'assets/steps/ship.mp4' 
+    },
+    { 
+      n: '04', 
+      t: 'Clear & deliver', 
+      d: 'We clear it through KRA and KEBS, register it and hand you the keys.', 
+      m: 'Approx. 7–8 Weeks', 
+      thumb: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=800&auto=format&fit=crop', // Handing over keys
+      video: 'assets/steps/deliver.mp4' 
+    },
   ];
 
   videoOpen = false;
   videoSrc = 'assets/hero.mp4';
-  videoThumb = 'assets/hero-thumb.jpg';
+  // Replaced hero thumbnail with a high-quality car image
+  videoThumb = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1200&auto=format&fit=crop';
   activeSrc = this.videoSrc;
   activeThumb = this.videoThumb;
   openStep = -1;

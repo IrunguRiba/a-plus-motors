@@ -4,24 +4,32 @@
   display: block;
   height: 100vh;
   overflow: hidden;
-  --ink: #1C1C1B;
-  --paper: #f2f0ea;
-  --border-color: #091540;
-  --post-border-color: #1C1C1B;
+  
+  /* === APPLIED PALETTE === */
+  --ink: #0F1010;           /* Near-black */
+  --muted: #787C7C;         /* Mid grey */
+  --light: #D8DADB;         /* Light grey */
+  --brown: #7E5B47;         /* Warm leather brown */
+  /* ======================= */
+
+  --border-color: #0F1010;
+  --post-border-color: #0F1010;
   --border-thin: 0.5px;
-  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --paper: #D8DADB;
   --text: #000000;
-  --muted: #4a4a48;
   --panel: #f7f9f9;
-  --green: #4A943E;
-  --red: #790D16;
-  --dotted: #930031;
+  --green: #4A943E;         /* Kept for standard likes */
+  --red: #790D16;           /* Kept for standard bookmarks */
+  --dotted: #930031;        /* Kept for specific active/dotted borders */
   --dotted-hover: #FF0000;
   --top-h: 100px;
   --bottom-nav-h: 1px;
   --modal-bar-h: 44px;
+  
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
   width: 100vw;
   background-color: #ffffff;
   color: var(--text);
@@ -107,7 +115,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .main-nav button + button {
@@ -131,7 +139,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .blogs-nav button + button {
@@ -194,13 +202,13 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 .side-heading {
   margin: 0 0 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #000000;
+  border-bottom: 1px solid var(--ink);
   font-size: 12px;
   line-height: 14px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
 }
 
 .fact-list {
@@ -212,14 +220,14 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   overflow-y: scroll;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: #000000 #ece9e2;
+  scrollbar-color: var(--ink) var(--light);
   position: relative;
   z-index: 1;
 }
 
 .fact-list::-webkit-scrollbar { width: 6px; }
-.fact-list::-webkit-scrollbar-track { background: #ece9e2; }
-.fact-list::-webkit-scrollbar-thumb { background: #000000; }
+.fact-list::-webkit-scrollbar-track { background: var(--light); }
+.fact-list::-webkit-scrollbar-thumb { background: var(--ink); }
 
 .fact-list,
 .fact-post,
@@ -233,7 +241,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 .fact-empty {
   padding: 32px 16px;
   text-align: center;
-  border: 1px dotted #000000;
+  border: 1px dotted var(--ink);
 }
 
 .fact-empty h4 {
@@ -254,7 +262,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   position: relative;
   z-index: 1;
   margin-bottom: 14px;
-  border: 1px dotted #000000;
+  border: 1px dotted var(--ink);
   background-color: #ffffff;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -265,16 +273,16 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 
 .fact-post:hover,
 .fact-post:focus-within {
-  border-color: var(--dotted-hover);
-  box-shadow: 0 10px 24px -16px rgba(28, 28, 27, 0.5);
+  border-color: var(--brown);
+  box-shadow: 0 10px 24px -16px rgba(15, 16, 16, 0.5);
 }
 
 .fact-media {
   position: relative;
   z-index: 1;
   overflow: hidden;
-  border-bottom: 1px dotted #000000;
-  background-color: #e9e7e1;
+  border-bottom: 1px dotted var(--ink);
+  background-color: var(--light);
   cursor: pointer;
 }
 
@@ -322,7 +330,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   text-align: left;
   font: inherit;
   letter-spacing: inherit;
-  color: #000000;
+  color: var(--ink);
 }
 
 .fact-title button:hover {
@@ -337,7 +345,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   line-height: 24px;
   font-weight: 400;
   letter-spacing: -0.008em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .fact-foot {
@@ -348,7 +356,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   gap: 4px 8px;
   margin-top: 14px;
   padding-top: 10px;
-  border-top: 1px dotted #000000;
+  border-top: 1px dotted var(--ink);
   position: relative;
   z-index: 3;
 }
@@ -425,14 +433,14 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 
 .post:hover,
 .post:focus-within {
-  border-color: var(--dotted);
-  box-shadow: 0 0 0 0.5px var(--dotted), 0 10px 24px -14px rgba(28, 28, 27, 0.45);
+  border-color: var(--brown);
+  box-shadow: 0 0 0 0.5px var(--brown), 0 10px 24px -14px rgba(15, 16, 16, 0.45);
 }
 
 .post-media {
   overflow: hidden;
   border-bottom: var(--border-thin) solid var(--ink);
-  background-color: #e9e7e1;
+  background-color: var(--light);
   cursor: pointer;
 }
 
@@ -479,7 +487,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   text-align: left;
   font: inherit;
   letter-spacing: inherit;
-  color: #000000;
+  color: var(--ink);
 }
 
 .post-title button:hover {
@@ -498,7 +506,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   line-height: 24px;
   font-weight: 300;
   letter-spacing: 0.012em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .post-foot {
@@ -519,14 +527,14 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
   text-decoration: underline;
   text-decoration-thickness: 0.5px;
   text-underline-offset: 4px;
 }
 
 .read-link:hover {
-  color: var(--dotted-hover);
+  color: var(--brown);
 }
 
 /* Twitter-style icon row */
@@ -575,19 +583,42 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-variant-numeric: tabular-nums;
 }
 
-.action.reply:hover { color: var(--border-color); }
-.action.reply:hover .icon-wrap { background-color: rgba(9, 21, 64, 0.1); }
+/* Colors applied to the icon row */
+.action.reply:hover,
+.action.reply.active {
+  color: var(--ink);
+}
+.action.reply:hover .icon-wrap,
+.action.reply.active .icon-wrap {
+  background-color: rgba(15, 16, 16, 0.08);
+}
 
 .action.like:hover,
-.action.like.active { color: var(--green); }
-.action.like:hover .icon-wrap { background-color: rgba(74, 148, 62, 0.12); }
+.action.like.active {
+  color: var(--brown);
+}
+.action.like:hover .icon-wrap,
+.action.like.active .icon-wrap {
+  background-color: rgba(126, 91, 71, 0.12);
+}
 
 .action.bookmark:hover,
-.action.bookmark.active { color: var(--red); }
-.action.bookmark:hover .icon-wrap { background-color: rgba(121, 13, 22, 0.1); }
+.action.bookmark.active {
+  color: var(--ink);
+}
+.action.bookmark:hover .icon-wrap,
+.action.bookmark.active .icon-wrap {
+  background-color: rgba(15, 16, 16, 0.1);
+}
 
-.action.share:hover { color: #000000; }
-.action.share:hover .icon-wrap { background-color: rgba(0, 0, 0, 0.08); }
+.action.share:hover,
+.action.share.active {
+  color: var(--ink);
+}
+.action.share:hover .icon-wrap,
+.action.share.active .icon-wrap {
+  background-color: rgba(15, 16, 16, 0.08);
+}
 
 /* ---------- Shared bits ---------- */
 
@@ -627,7 +658,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--green);
+  color: var(--brown);
   white-space: nowrap;
 }
 
@@ -684,7 +715,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -698,7 +729,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   padding: 0 12px;
   border: var(--border-thin) solid var(--ink);
   background-color: #ffffff;
-  color: #000000;
+  color: var(--ink);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -708,7 +739,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 }
 
 .footer-btn:hover {
-  background-color: #000000;
+  background-color: var(--ink);
   color: #ffffff;
 }
 
@@ -722,7 +753,6 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   line-height: 16px;
   color: var(--muted);
 }
-
 
 .toast {
   position: fixed;
@@ -741,8 +771,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 }
 
 /* =====================================================
-   Story modal: full screen. Sticky bar on top, story in the
-   middle, side-information rails on both sides.
+   Story modal
    ===================================================== */
 
 .modal-backdrop {
@@ -751,7 +780,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   z-index: 200;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background-color: #ece9e2;
+  background-color: var(--light);
 }
 
 .modal-bar {
@@ -776,7 +805,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -789,7 +818,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 }
 
 .modal-bar button:hover {
-  border-color: rgb(62, 7, 114);
+  border-color: var(--brown);
 }
 
 .modal-layout {
@@ -826,7 +855,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 
 .modal-hero {
   border-bottom: var(--border-thin) solid var(--ink);
-  background-color: #e9e7e1;
+  background-color: var(--light);
 }
 
 .modal-hero img {
@@ -871,7 +900,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   line-height: 36px;
   font-weight: 500;
   letter-spacing: -0.01em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .byline {
@@ -922,7 +951,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   line-height: 14px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
 }
 
 .modal-excerpt {
@@ -933,7 +962,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   line-height: 28px;
   font-weight: 400;
   letter-spacing: 0.005em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .modal-body {
@@ -947,18 +976,18 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   line-height: 27px;
   font-weight: 300;
   letter-spacing: 0.012em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .pull {
   margin: 10px 0 24px;
   padding: 14px 0 14px 16px;
-  border-left: 1px solid var(--dotted);
+  border-left: 1px solid var(--brown);
   font-size: 22px;
   line-height: 30px;
   font-weight: 400;
   letter-spacing: -0.01em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .story-fig {
@@ -986,7 +1015,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
 }
 
 .modal-actions {
@@ -1007,7 +1036,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -1027,7 +1056,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 }
 
 .modal-actions button.on {
-  color: var(--green);
+  color: var(--brown);
 }
 
 .modal-actions button.on:hover {
@@ -1058,7 +1087,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-size: 15px;
   line-height: 22px;
   font-weight: 300;
-  color: #000000;
+  color: var(--ink);
 }
 
 .composer input::placeholder {
@@ -1074,7 +1103,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -1109,7 +1138,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   line-height: 24px;
   font-weight: 300;
   letter-spacing: 0.012em;
-  color: #000000;
+  color: var(--ink);
   overflow-wrap: anywhere;
 }
 
@@ -1129,7 +1158,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 }
 
 .related-item:hover {
-  border-color: var(--dotted);
+  border-color: var(--brown);
 }
 
 .related-item img {
@@ -1162,7 +1191,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-size: 15px;
   line-height: 20px;
   font-weight: 500;
-  color: #000000;
+  color: var(--ink);
 }
 
 .related-item:hover .related-title {
@@ -1185,15 +1214,15 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #000000;
+  color: var(--ink);
 }
 
 .modal-foot button:hover {
-  color: var(--dotted-hover);
+  color: var(--brown);
 }
 
 /* =====================================================
-   Side information: full-bleed media, thin border, text over a dark shade
+   Side information
    ===================================================== */
 
 .side-info {
@@ -1215,8 +1244,8 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 }
 
 .side-info:hover {
-  border-color: var(--dotted);
-  box-shadow: 0 0 0 0.5px var(--dotted), 0 18px 40px -20px rgba(28, 28, 27, 0.7);
+  border-color: var(--brown);
+  box-shadow: 0 0 0 0.5px var(--brown), 0 18px 40px -20px rgba(15, 16, 16, 0.7);
 }
 
 .side-info-media {
@@ -1239,7 +1268,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to top, rgba(10, 10, 10, 0.94) 0%, rgba(10, 10, 10, 0.55) 42%, rgba(10, 10, 10, 0.1) 68%, rgba(10, 10, 10, 0.5) 100%);
+    linear-gradient(to top, rgba(15, 16, 16, 0.94) 0%, rgba(15, 16, 16, 0.55) 42%, rgba(15, 16, 16, 0.1) 68%, rgba(15, 16, 16, 0.5) 100%);
   pointer-events: none;
 }
 
@@ -1270,7 +1299,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #0b07e7;
+  background-color: var(--brown);
   animation: side-info-pulse 1.6s ease-in-out infinite;
 }
 
@@ -1286,7 +1315,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
   overflow: hidden;
   border-top: var(--border-thin) solid rgba(255, 255, 255, 0.4);
   border-bottom: var(--border-thin) solid rgba(255, 255, 255, 0.4);
-  background-color: rgba(10, 10, 10, 0.35);
+  background-color: rgba(15, 16, 16, 0.35);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -1370,7 +1399,7 @@ dl, dd, dt, figure, h2, h3, h4, blockquote {
 .side-info-calc {
   padding: 12px;
   border: var(--border-thin) solid rgba(255, 255, 255, 0.6);
-  background-color: rgba(10, 10, 10, 0.45);
+  background-color: rgba(15, 16, 16, 0.45);
   cursor: default;
 }
 

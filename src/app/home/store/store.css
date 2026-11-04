@@ -1,7 +1,12 @@
 :host {
-  --border-color: #111111;
-  --border-thin: 0.5px;
-  --accent: #09251c;
+  --ink: #0F1010;
+  --muted: #787C7C;
+  --light: #D8DADB;
+  --brown: #7E5B47;
+
+  --border-color: var(--ink);
+  --border-thin: 1px dotted var(--ink);
+  --accent: var(--brown);
   --font-main:
     "Inter",
     -apple-system,
@@ -14,7 +19,7 @@
   --nav-height: 96px;
   display: block;
   font-family: var(--font-main);
-  color: #000;
+  color: var(--ink);
   background: #fff;
 }
 
@@ -40,14 +45,14 @@
 .nav-top {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  border-bottom: var(--border-thin) solid var(--border-color);
+  border-bottom: var(--border-thin);
 }
 
 .nav-brand {
   padding: 12px 40%;
   font-size: 1em;
   letter-spacing: 1px;
-  border-right: var(--border-thin) solid var(--border-color);
+  border-right: var(--border-thin);
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -66,7 +71,7 @@
 .nav-filters {
   display: grid;
   grid-template-columns: 1fr 1.5fr 1.5fr 1.5fr;
-  border-bottom: var(--border-thin) solid var(--border-color);
+  border-bottom: var(--border-thin);
 }
 
 .filter-item {
@@ -76,10 +81,14 @@
   font-size: 13px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  background: transparent;
+  border: 1px dotted transparent;
+  transition: border 0.2s ease;
 }
 
 .filter-item.center {
   justify-content: center;
+  cursor: pointer;
 }
 
 .filter-item.dropdown {
@@ -104,12 +113,18 @@
   transform: rotate(180deg);
 }
 
-.filter-item.active {
-  background-color: #f2efe9;
+/* Active state: no background color change, just a dotted border */
+.filter-item.active,
+.filter-item.center.active,
+.filter-item.dropdown.active {
+  background-color: transparent;
+  margin: -1px;
+  z-index: 1;
+  border: 1px dotted var(--ink);
 }
 
 .nav-filters > .filter-item:not(:last-child) {
-  border-right: var(--border-thin) solid var(--border-color);
+  border-right: var(--border-thin);
 }
 
 .filter-dropdown-portal {
@@ -136,16 +151,16 @@
 
 .filter-dropdown-portal .filter-dropdown-list {
   background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px dotted var(--ink);
   border-radius: 4px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 40px rgba(15, 16, 16, 0.12);
   min-width: 100px;
   max-width: 180px;
   max-height: 260px;
   overflow-y: auto;
   padding: 0.5em;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  scrollbar-color: rgba(15, 16, 16, 0.2) transparent;
 }
 
 .filter-dropdown-portal .filter-dropdown-list::-webkit-scrollbar {
@@ -153,7 +168,7 @@
 }
 
 .filter-dropdown-portal .filter-dropdown-list::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(15, 16, 16, 0.2);
   border-radius: 3px;
 }
 
@@ -162,7 +177,7 @@
   font-size: 0.9em;
   font-weight: lighter;
   letter-spacing: 0.05em;
-  color: #222;
+  color: var(--ink);
   cursor: pointer;
   border-radius: 1px;
   white-space: nowrap;
@@ -172,11 +187,11 @@
 }
 
 .filter-dropdown-item:hover {
-  background-color: #f2efe9;
+  background-color: var(--light);
 }
 
 .filter-dropdown-item.selected {
-  background-color: #111;
+  background-color: var(--ink);
   color: #fff;
 }
 
@@ -206,7 +221,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border: var(--border-thin) solid var(--border-color);
+  border: var(--border-thin);
   padding: 10px;
   box-sizing: border-box;
   cursor: pointer;
@@ -214,7 +229,8 @@
 }
 
 .car-card:hover {
-  border-color: var(--accent);
+  border-color: var(--brown);
+  border-style: dotted;
 }
 
 .car-image-wrapper {
@@ -223,7 +239,7 @@
   aspect-ratio: 16 / 10;
   overflow: hidden;
   margin-bottom: 24px;
-  background: #f5f5f5;
+  background: var(--light);
 }
 
 .car-image-wrapper img {
@@ -247,7 +263,7 @@
 
 .car-flag {
   padding: 6px 10px;
-  border: var(--border-thin) solid var(--accent);
+  border: var(--border-thin);
   font-size: 10px;
   font-weight: 600;
   line-height: 1;
@@ -258,13 +274,15 @@
 }
 
 .flag-new {
-  background: var(--accent);
+  background: var(--brown);
   color: #fff;
+  border-color: var(--brown);
 }
 
 .flag-deal {
   background: #fff;
-  color: var(--accent);
+  color: var(--brown);
+  border-color: var(--brown);
 }
 
 .car-details {
@@ -302,7 +320,7 @@
 
 .car-old {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--muted);
   text-decoration: line-through;
   white-space: nowrap;
 }
@@ -319,7 +337,7 @@
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border: var(--border-thin) solid var(--border-color);
+  border: var(--border-thin);
 }
 
 .car-specs li {
@@ -331,14 +349,14 @@
 }
 
 .car-specs li + li {
-  border-left: var(--border-thin) solid var(--border-color);
+  border-left: var(--border-thin);
 }
 
 .car-specs span {
   font-size: 9px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -370,7 +388,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: #000;
+  color: var(--ink);
   padding: 0;
   transition: color 0.3s ease;
 }
@@ -405,7 +423,7 @@
 }
 
 .action-btn:hover {
-  color: var(--accent);
+  color: var(--brown);
 }
 
 .action-btn:active svg {
@@ -418,24 +436,24 @@
 
 .action-btn.like-btn.on,
 .action-btn.like-btn.on:hover {
-  color: #2a7c13;
+  color: var(--brown);
 }
 
 .action-btn.save-btn.on,
 .action-btn.save-btn.on:hover {
-  color: #2d0000;
+  color: var(--ink);
 }
 
 .action-btn.share-btn.on,
 .action-btn.share-btn.on:hover {
-  color: var(--accent);
+  color: var(--brown);
 }
 
 .inquire-box-btn {
   flex: none;
   background: none;
-  border: var(--border-thin) solid var(--border-color);
-  color: #000;
+  border: var(--border-thin);
+  color: var(--ink);
   font-family: var(--font-main);
   font-size: 13px;
   font-weight: 400;
@@ -449,7 +467,7 @@
 }
 
 .inquire-box-btn:hover {
-  background: #111;
+  background: var(--ink);
   color: #fff;
 }
 
@@ -458,7 +476,7 @@
   text-align: center;
   font-size: 14px;
   letter-spacing: 0.5px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--muted);
 }
 
 .empty-state p {
@@ -473,7 +491,7 @@
 }
 
 .page-info {
-  border: var(--border-thin) solid var(--border-color);
+  border: var(--border-thin);
   padding: 12px 18px;
   font-size: 14px;
   font-weight: 400;
@@ -481,7 +499,7 @@
 }
 
 .page-next {
-  border: var(--border-thin) solid var(--border-color);
+  border: var(--border-thin);
   padding: 12px 24px;
   font-size: 14px;
   font-weight: 400;
@@ -493,7 +511,7 @@
 }
 
 .page-next:hover {
-  background: #f9f9f9;
+  background: var(--light);
 }
 
 .page-next.disabled {
@@ -503,7 +521,7 @@
 }
 
 .footer-wrapper {
-  border-top: var(--border-thin) solid var(--border-color);
+  border-top: var(--border-thin);
   display: flex;
   justify-content: flex-end;
   padding: 40px 40px;
@@ -515,7 +533,7 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: #000;
+  color: var(--ink);
   font-size: 1.6em;
   font-weight: lighter;
   letter-spacing: 0.5px;
@@ -524,7 +542,7 @@
 }
 
 .footer-link svg {
-  stroke: #000;
+  stroke: var(--ink);
   width: 28px;
   height: 28px;
   transition: transform 0.25s ease;
@@ -551,7 +569,7 @@
     background: var(--border-color);
   }
   .filter-item {
-    background: #a3a1a1;
+    background: var(--light);
   }
   .nav-filters > .filter-item:nth-child(2) {
     border-right: none;
@@ -591,7 +609,7 @@
     border-left: 0;
   }
   .car-specs li:nth-child(n + 3) {
-    border-top: var(--border-thin) solid var(--border-color);
+    border-top: var(--border-thin);
   }
   .car-actions {
     gap: 12px;

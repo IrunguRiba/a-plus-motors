@@ -1,12 +1,16 @@
 :host {
   display: block;
+  
+  --ink: #0F1010;
+  --muted: #787C7C;
+  --light: #D8DADB;
+  --brown: #7E5B47;
+
   --font-main: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --ink: #0d0d0d;
-  --blue: #12372A;
-  --grey-soft: #8a8a8a;
+  
   font-family: var(--font-main);
   color: var(--ink);
-  background: #fff;
+  background: var(--light);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -27,7 +31,7 @@ a {
   display: grid;
   grid-template-columns: 12.3% 21.1% 20.3% 12.7% 14.4% 19.2%;
   height: clamp(48px, 4.5vw, 72px);
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px dotted var(--ink);
 }
 
 .cell {
@@ -35,12 +39,11 @@ a {
   align-items: center;
   justify-content: center;
   text-align: center;
-  border-right: 1px solid var(--ink);
-  /* Reduced font size for .cell */
+  border-right: 1px dotted var(--ink);
   font-size: clamp(9px, 1vw, 16px);
   letter-spacing: .02em;
   line-height: 1;
-  transition: background .25s;
+  transition: background .25s, border .25s;
 }
 
 .cell:last-child { 
@@ -48,14 +51,15 @@ a {
 }
 
 a.cell:hover { 
-  background: #f4f4f4; 
+  background: var(--light); 
+  border-bottom: 1px dotted var(--ink);
 }
 
 .tabs {
   display: grid;
   grid-template-columns: 46% 1fr;
   height: clamp(60px, 2vw, 56px);
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px dotted var(--ink);
 }
 
 .tab {
@@ -66,12 +70,15 @@ a.cell:hover {
   font-size: clamp(10px, 1.4vw, 22px);
   letter-spacing: .02em;
   text-transform: uppercase;
-  color: var(--grey-soft);
-  transition: color .25s;
+  color: var(--muted);
+  transition: color .25s, border .25s;
+  background: transparent;
+  border-top: 1px dotted transparent;
+  border-bottom: 1px dotted transparent;
 }
 
 .tab:first-child { 
-  border-right: 1px solid var(--ink); 
+  border-right: 1px dotted var(--ink); 
 }
 
 .tab sup { 
@@ -79,22 +86,20 @@ a.cell:hover {
   margin: 3vw 14px 0 0; 
   font-size: 11px; 
   letter-spacing: .15em; 
-  color: var(--blue); 
+  color: var(--brown); 
 }
 
-.tab:hover, 
+.tab:hover { 
+  color: var(--ink); 
+  border-top: 1px dotted var(--ink);
+  border-bottom: 1px dotted var(--ink);
+}
+
 .tab.active { 
   color: var(--ink); 
-}
-
-.tab.active::after { 
-  content: ""; 
-  position: absolute; 
-  left: 0; 
-  right: 0; 
-  bottom: -1px; 
-  height: 2px; 
-  background: var(--blue); 
+  margin: -1px;
+  z-index: 1;
+  border: 1px dotted var(--ink);
 }
 
 @media (max-width: 960px) {

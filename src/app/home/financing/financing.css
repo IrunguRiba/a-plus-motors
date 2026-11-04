@@ -9,14 +9,14 @@ html {
    ===================================================== */
 
 .financing-container {
-  --ink: #1C1C1B;
-  --border-color: #091540;       /* structural lines: navs, frame */
-  --post-border-color: #1C1C1B;  /* cards and tiles */
+  --ink: #0F1010;
+  --ink-soft: #787C7C;
+  --light: #D8DADB;
+  --brown: #7E5B47;
+  --border-color: #0F1010;
+  --post-border-color: #0F1010;
   --border-thin: 0.5px;
-  --hairline: #1C1C1B; /* list dividers inside cards */
-  --accent: #000000;
-  --paper: #f7f6f2;
-  --muted: #4a4a48;
+  --paper: #D8DADB;
   --nav-h: 52px;
   --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -32,7 +32,7 @@ html {
   font-size: 15px;
   line-height: 20px;
   font-weight: 400;
-  color: #000000;
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
@@ -46,7 +46,7 @@ html {
 
 .financing-container a:focus-visible,
 .financing-container button:focus-visible {
-  outline: 1px dotted var(--accent);
+  outline: 1px dotted var(--ink);
   outline-offset: -4px;
 }
 
@@ -63,7 +63,7 @@ html {
 }
 
 /* =====================================================
-   Navs: hairline cells, with a second rule under the sub nav
+   Navs
    ===================================================== */
 
 .main-nav {
@@ -81,16 +81,21 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   height: 100%;
   font-size: 0.8125rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: #000000;
+  color: var(--ink);
   text-decoration: none;
   cursor: pointer;
   user-select: none;
-  -webkit-user-select: none;
+}
+
+.main-nav a:hover {
+  background: var(--light);
+  color: var(--brown);
 }
 
 .main-nav a:first-child {
@@ -119,25 +124,28 @@ html {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #000000;
+  color: var(--ink);
   background: #ffffff;
   border-right: var(--border-thin) solid var(--border-color);
   cursor: pointer;
   user-select: none;
-  -webkit-user-select: none;
 }
 
 .financing-nav a:last-child {
   border-right: none;
 }
 
+.financing-nav a:hover {
+  background: var(--light);
+}
+
 .financing-nav a.active {
-  background-color: var(--accent);
+  background-color: var(--ink);
   color: #ffffff;
 }
 
 /* =====================================================
-   Content: paper-toned field with double-ruled cards
+   Content
    ===================================================== */
 
 .content-wrapper {
@@ -170,7 +178,7 @@ html {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #000000;
+  color: var(--ink);
 }
 
 .section-box h2::before {
@@ -178,7 +186,7 @@ html {
   flex-shrink: 0;
   width: 7px;
   height: 7px;
-  background-color: var(--accent);
+  background-color: var(--brown);
 }
 
 .section-box p {
@@ -187,17 +195,15 @@ html {
   line-height: 27px;
   font-weight: 400;
   letter-spacing: 0;
-  color: #000000;
+  color: var(--ink);
 }
 
-/* opening line of a card reads as the lead */
 .section-box p:first-of-type {
   font-size: 19px;
   line-height: 30px;
   font-weight: 500;
 }
 
-/* closing line ("The requirements for qualifications") reads as a signpost */
 .section-box p:last-child {
   margin: 22px 0 0;
   font-family: var(--font-mono);
@@ -206,9 +212,9 @@ html {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.14em;
+  color: var(--ink-soft);
 }
 
-/* requirement list: ruled rows with check marks */
 .section-box ul {
   padding: 0;
   list-style: none;
@@ -222,10 +228,10 @@ html {
   line-height: 27px;
   font-weight: 400;
   letter-spacing: 0;
-  color: #000000;
+  color: var(--ink);
+  border-bottom: 1px dashed var(--light);
 }
 
-/* check mark drawn with borders, so it is crisp and font-independent */
 .section-box li::before {
   content: "";
   position: absolute;
@@ -233,17 +239,18 @@ html {
   top: 12px;
   width: 6px;
   height: 11px;
-  border: solid #000000;
+  border: solid var(--brown);
   border-width: 0 1px 1px 0;
   transform: rotate(45deg);
 }
 
 .section-box li:last-child {
   padding-bottom: 0;
+  border-bottom: none;
 }
 
 /* =====================================================
-   Banks footer: two stacked rows of ruled tiles
+   Banks Footer (Black and White) - NO ANIMATION
    ===================================================== */
 
 .banks-footer {
@@ -254,31 +261,27 @@ html {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  padding: 8px 0;
+  padding: 12px 0;
   overflow: hidden;
   background: #ffffff;
   border-top: var(--border-thin) solid var(--border-color);
   box-shadow: none;
-  perspective: 900px;
 }
 
 .flow-row {
   display: flex;
   gap: 12px;
-  margin: 0; /* auto margins were spreading the two groups apart */
-  transform-style: preserve-3d;
+  margin: 0;
 }
 
 .drift-row-1 {
-  width: 32%; /* was 80% */
-  animation: driftRightAnim 12s ease-in-out infinite alternate;
+  width: 36%;
 }
 
 .drift-row-2 {
-  width: 38%; /* was 95% */
-  animation: driftLeftAnim 12s ease-in-out infinite alternate;
+  width: 44%;
 }
 
 .drift-row-1 .bank-logo,
@@ -286,44 +289,25 @@ html {
   flex: 1;
 }
 
-@keyframes driftRightAnim {
-  0%   { transform: translateX(-15px) rotateY(-3deg); }
-  100% { transform: translateX(15px) rotateY(3deg); }
-}
-
-@keyframes driftLeftAnim {
-  0%   { transform: translateX(15px) rotateY(3deg); }
-  100% { transform: translateX(-15px) rotateY(-3deg); }
-}
-
 .bank-logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 40px; /* was 100px */
-  padding: 0;
+  height: 48px;
+  padding: 4px; 
   overflow: hidden;
   background: #ffffff;
   border: var(--border-thin) solid var(--post-border-color);
   border-radius: 0;
+  min-width: 0; /* Prevents flexbox blowout */
 }
 
 .bank-logo img {
   display: block;
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
-}
-
-.banks-footer:hover .flow-row {
-  animation-play-state: paused;
-}
-
-/* hover only on devices that really hover, so touch screens don't need a second tap */
-@media (hover: hover) {
-  .bank-logo:hover {
-    transform: scale(1.05);
-  }
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Squeezes image to fit perfectly without stretching */
+  filter: grayscale(100%) contrast(1.2);
 }
 
 .main-nav a,
@@ -334,13 +318,14 @@ html {
 }
 
 /* =====================================================
-   Responsive + motion
+   Responsive
    ===================================================== */
 
 @media (max-width: 700px) {
   .main-nav a {
     font-size: 0.6875rem;
     letter-spacing: 0.12em;
+    gap: 6px;
   }
   .financing-nav a {
     padding: 12px 6px;
@@ -369,16 +354,10 @@ html {
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    padding: 10px 0;
   }
   .drift-row-1,
   .drift-row-2 {
     width: 92%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .drift-row-1,
-  .drift-row-2 {
-    animation: none;
   }
 }

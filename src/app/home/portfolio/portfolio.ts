@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Specs } from './specs/specs';
 import { Router } from '@angular/router';
@@ -16,8 +16,9 @@ interface Car {
   fuelType: string;
   transmission: string;
   monthlyFinance: string;
-  /** Likes and shares already recorded for this car (from your backend later). */
+  /** Base likes recorded (from backend). */
   likes: number;
+  /** Base shares recorded (from backend). */
   shares: number;
 }
 
@@ -29,43 +30,63 @@ interface Brand {
 
 @Component({
   selector: 'app-portfolio',
+  standalone: true, // Assuming standalone since imports array is used
   imports: [CommonModule, Specs],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.css',
 })
-export class Portfolio {
+export class Portfolio implements AfterViewInit {
   openedSpecs = false;
 
-  /** Car ids the visitor has liked / bookmarked. Copies of the same car share state. */
+  /** Reference to DOM elements for the scroll-reveal animation. */
+  @ViewChildren('reveal') revealElements!: QueryList<ElementRef>;
+
+  /** Track user interactions locally (to be synced with backend later). */
   private likedIds = new Set<number>();
   private bookmarkedIds = new Set<number>();
-
-  /** Shares made by this visitor, added on top of the car's stored share count. */
   private sharedExtra = new Map<number, number>();
 
-  /** Car id whose "Link copied" note is showing (clipboard fallback for share). */
+  /** State for the "Link copied" clipboard fallback. */
   copiedId: number | null = null;
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private router: Router) {
-    const shuffledCars = [...this.cars].sort(() => Math.random() - 0.5);
-    this.displayCars = [
-      ...shuffledCars,
-      ...shuffledCars
-    ];
+  displayCars: Car[] = [];
+  displayBrands: Brand[] = [];
 
-    this.displayBrands = [
-      ...this.brands,
-    ];
+  constructor(private router: Router) {
+    // Shuffle cars and duplicate the array so the marquee loops seamlessly.
+    const shuffledCars = [...this.cars].sort(() => Math.random() - 0.5);
+    this.displayCars = [...shuffledCars, ...shuffledCars];
+    this.displayBrands = [...this.brands];
   }
 
+  /** Initialize Intersection Observer to trigger CSS reveal animations on scroll. */
+  ngAfterViewInit() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target); // Stop observing once revealed
+        }
+      });
+    }, { threshold: 0.15 }); // Trigger when 15% of the element is visible
+
+    // Observe the text paragraphs
+    const textNodes = document.querySelectorAll('.into-txt .reveal');
+    textNodes.forEach(node => observer.observe(node));
+  }
+
+  /** Navigation handlers */
   openSpecs() {
     this.openedSpecs = !this.openedSpecs;
     this.router.navigate(['/specs']);
   }
-  goToStore(){
-    this.router.navigate(['/store'])
+
+  goToStore() {
+    this.router.navigate(['/store']);
   }
+
+  /** Check if a specific car has been liked/bookmarked by the user. */
   isLiked(id: number): boolean {
     return this.likedIds.has(id);
   }
@@ -74,17 +95,17 @@ export class Portfolio {
     return this.bookmarkedIds.has(id);
   }
 
-  /** Stored likes, plus this visitor's like. */
+  /** Calculate total likes (base + user interaction). */
   likeCount(car: Car): number {
     return car.likes + (this.likedIds.has(car.id) ? 1 : 0);
   }
 
-  /** Stored shares, plus shares made by this visitor. */
+  /** Calculate total shares (base + user interaction). */
   shareCount(car: Car): number {
     return car.shares + (this.sharedExtra.get(car.id) ?? 0);
   }
 
-  /** 950 -> "950", 1240 -> "1.2K", 15300 -> "15K", 2400000 -> "2.4M" */
+  /** Format large numbers elegantly: 950 -> "950", 1240 -> "1.2K", 15300 -> "15K". */
   formatCount(n: number): string {
     if (n >= 1_000_000) return this.trim(n / 1_000_000) + 'M';
     if (n >= 1_000) return this.trim(n / 1_000) + 'K';
@@ -95,6 +116,7 @@ export class Portfolio {
     return (value >= 10 ? Math.round(value) : Math.round(value * 10) / 10).toString();
   }
 
+  /** Toggle local state for likes and bookmarks. */
   toggleLike(id: number, event: Event) {
     event.stopPropagation();
     this.likedIds.has(id) ? this.likedIds.delete(id) : this.likedIds.add(id);
@@ -105,6 +127,7 @@ export class Portfolio {
     this.bookmarkedIds.has(id) ? this.bookmarkedIds.delete(id) : this.bookmarkedIds.add(id);
   }
 
+  /** Handle sharing via native OS share sheet, or fallback to clipboard. */
   async shareCar(car: Car, event: Event) {
     event.stopPropagation();
 
@@ -112,32 +135,35 @@ export class Portfolio {
     const text = `${title}: ${car.price}`;
     const url = window.location.href;
 
-    // Native share sheet where available (phones, some desktops).
+    // Native share sheet (Mobile iOS/Android, some desktops)
     if (navigator.share) {
       try {
         await navigator.share({ title, text, url });
         this.countShare(car.id);
       } catch {
-        // dismissed by the visitor: not counted
+        // User dismissed the share sheet: do not count
       }
       return;
     }
 
-    // Fallback: copy the link and show a short "Link copied" note.
+    // Fallback: copy link to clipboard and show "Link copied" note
     try {
       await navigator.clipboard.writeText(url);
       this.countShare(car.id);
       this.copiedId = car.id;
+      
       if (this.copiedTimer) clearTimeout(this.copiedTimer);
       this.copiedTimer = setTimeout(() => (this.copiedId = null), 1600);
     } catch {
-      // clipboard blocked: stay silent, not counted
+      // Clipboard access blocked by browser: fail silently
     }
   }
 
   private countShare(id: number) {
     this.sharedExtra.set(id, (this.sharedExtra.get(id) ?? 0) + 1);
   }
+
+  // --- Data ---
 
   cars: Car[] = [
     {
@@ -221,8 +247,4 @@ export class Portfolio {
     { id: 9, name: 'Volkswagen', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/volkswagen.png' },
     { id: 10, name: 'Mitsubishi', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/mitsubishi.png' }
   ];
-
-  displayCars: Car[] = [];
-  displayBrands: Brand[] = [];
-
 }

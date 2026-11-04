@@ -2,17 +2,21 @@
 
 :host {
   display: block;
-  --border-color: #111111;
+  --ink: #0F1010;          /* Near-black */
+  --ink-soft: #787C7C;     /* Mid grey */
+  --light: #D8DADB;        /* Light grey */
+  --brown: #7E5B47;        /* Leather brown */
+  --border-color: #0F1010;
   --border-thin: 0.5px;
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --panel-bg: #092635;
+  --panel-bg: #0F1010;
 
   font-family: var(--font-main);
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: #000;
-  background: #fff;
+  color: var(--ink);
+  background: var(--light);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -41,7 +45,7 @@ button {
   border: 0;
 }
 button:focus-visible {
-  outline: 1px solid #000;
+  outline: 1px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -72,7 +76,7 @@ button:focus-visible {
   perspective: 700px;
   border: var(--border-thin) solid var(--panel-bg);
   background: var(--panel-bg);
-  color: #fff;
+  color: var(--light);
   font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.16em;
@@ -100,11 +104,11 @@ button:focus-visible {
   -webkit-backface-visibility: hidden;
 }
 .btn .front {
-  color: #fff;
+  color: var(--light);
   transform: translateZ(var(--half));
 }
 .btn .back {
-  background: #fff;
+  background: var(--light);
   color: var(--panel-bg);
   transform: rotateX(90deg) translateZ(var(--half));
 }
@@ -144,8 +148,8 @@ button:focus-visible {
   min-height: auto;
   padding: 56px 48px 48px;
   border-right: var(--border-thin) solid var(--border-color);
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
 }
 .hero-main > * {
   animation: fadeUp 0.8s ease both;
@@ -165,7 +169,7 @@ button:focus-visible {
   font-weight: 200;
   line-height: 1.02;
   letter-spacing: 0.02em;
-  color: #000;
+  color: var(--ink);
 }
 
 .video-thumb {
@@ -204,7 +208,7 @@ button:focus-visible {
   overflow: hidden;
   width: 90%;
   aspect-ratio: 16 / 10;
-  background: #000;
+  background: var(--ink);
 }
 .video-media img {
   display: block;
@@ -219,9 +223,9 @@ button:focus-visible {
   left: 50%;
   width: 52px;
   height: 52px;
-  border: var(--border-thin) solid #fff;
+  border: var(--border-thin) solid var(--light);
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(15, 16, 16, 0.45);
   transform: translate(-50%, -50%);
   transition: transform 0.3s ease, background 0.3s ease;
 }
@@ -232,7 +236,7 @@ button:focus-visible {
   left: 50%;
   border-style: solid;
   border-width: 7px 0 7px 11px;
-  border-color: transparent transparent transparent #fff;
+  border-color: transparent transparent transparent var(--light);
   transform: translate(-30%, -50%);
 }
 .video-thumb:hover .video-media img {
@@ -240,7 +244,7 @@ button:focus-visible {
 }
 .video-thumb:hover .play,
 .video-thumb:focus-visible .play {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(15, 16, 16, 0.75);
   transform: translate(-50%, -50%) scale(1.08);
 }
 
@@ -253,7 +257,7 @@ button:focus-visible {
   font-size: 16px;
   font-weight: 300;
   line-height: 1.7;
-  color: #444;
+  color: var(--ink-soft);
   letter-spacing: 0.005em;
 }
 .hero-main .btn {
@@ -266,8 +270,8 @@ button:focus-visible {
 .hero-side {
   display: flex;
   flex-direction: column;
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
 }
 .specs {
   display: flex;
@@ -291,10 +295,10 @@ button:focus-visible {
 }
 .specs dt {
   font-weight: 500;
-  color: #000;
+  color: var(--ink);
 }
 .specs dd {
-  color: #000;
+  color: var(--ink);
 }
 .specs .tag {
   margin-left: auto;
@@ -315,21 +319,21 @@ button:focus-visible {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.88);
+  background: rgba(15, 16, 16, 0.88);
   animation: fadeIn 0.3s ease both;
 }
 .lightbox-box {
   position: relative;
   width: 60vw;
-  border: var(--border-thin) solid rgba(255, 255, 255, 0.6);
-  background: #000;
+  border: var(--border-thin) solid rgba(216, 218, 219, 0.6);
+  background: var(--ink);
   animation: expand 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .lightbox-box video {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: #000;
+  background: var(--ink);
 }
 .lightbox-close {
   position: absolute;
@@ -337,8 +341,8 @@ button:focus-visible {
   right: 0;
   height: 34px;
   padding: 0 16px;
-  border: var(--border-thin) solid #fff;
-  color: #fff;
+  border: var(--border-thin) solid var(--light);
+  color: var(--light);
   font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.16em;
@@ -346,8 +350,8 @@ button:focus-visible {
   transition: background 0.2s ease, color 0.2s ease;
 }
 .lightbox-close:hover {
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
 }
 
 /* ============ STEPS ============ */
@@ -387,10 +391,10 @@ button:focus-visible {
   z-index: 2;
   width: 34px;
   height: 34px;
-  border: var(--border-thin) solid #000;
+  border: var(--border-thin) solid var(--ink);
   border-radius: 50%;
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
   transform: translate(-50%, -50%);
   transition: background 0.2s ease, color 0.2s ease;
 }
@@ -403,8 +407,8 @@ button:focus-visible {
 }
 .step-num:hover,
 .step-num.on {
-  background: #000;
-  color: #fff;
+  background: var(--ink);
+  color: var(--light);
 }
 .step-box {
   position: relative;
@@ -413,7 +417,7 @@ button:focus-visible {
   aspect-ratio: 5 / 4;
   padding: 16px;
   border: 1px dotted var(--border-color);
-  background: #fff;
+  background: var(--light);
 }
 .step-box::before,
 .step-box::after {
@@ -442,7 +446,7 @@ button:focus-visible {
   position: absolute;
   inset: 16px;
   overflow: hidden;
-  background: #000;
+  background: var(--ink);
 }
 .step-media img {
   display: block;
@@ -456,7 +460,7 @@ button:focus-visible {
 }
 .step-box:hover .play,
 .step-box:focus-visible .play {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(15, 16, 16, 0.75);
   transform: translate(-50%, -50%) scale(1.08);
 }
 .step h3 {
@@ -464,7 +468,7 @@ button:focus-visible {
   align-self: flex-start;
   margin-bottom: 5px;
   padding: 0 10px;
-  color: #092635;
+  color: var(--ink);
   font-size: 22px;
   font-weight: 400;
   letter-spacing: -0.01em;
@@ -487,7 +491,7 @@ button:focus-visible {
   font-size: 18px;
   font-weight: 300;
   line-height: 1.7;
-  color: #000000;
+  color: var(--ink-soft);
 }
 .step-more small {
   display: block;
@@ -496,7 +500,7 @@ button:focus-visible {
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #12372A;
+  color: var(--brown);
   margin-left: 20px;
 }
 
@@ -507,7 +511,7 @@ button:focus-visible {
   align-items: stretch;
   width: 100%;
   border-bottom: var(--border-thin) solid var(--border-color);
-  background: #fff;
+  background: var(--light);
   overflow: visible;
 }
 .form {
@@ -520,6 +524,7 @@ button:focus-visible {
   font-weight: 400;
   line-height: 1.12;
   letter-spacing: -0.02em;
+  color: var(--ink);
 }
 .form h2 {
   margin-bottom: 40px;
@@ -538,12 +543,13 @@ button:focus-visible {
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: var(--ink);
 }
 .sec .hint {
   margin-left: auto;
   font-size: 13px;
   font-weight: 300;
-  color: #666;
+  color: var(--ink-soft);
 }
 .divider {
   height: 0;
@@ -579,37 +585,37 @@ button:focus-visible {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #000;
+  color: var(--ink);
 }
 
 .input {
   width: 100%;
   height: 48px;
   padding: 0 14px;
-  background: #fff;
+  background: var(--light);
   border: var(--border-thin) solid var(--border-color);
   border-radius: 0;
   font-size: 16px;
   font-weight: 300;
-  color: #000;
+  color: var(--ink);
   transition: border-color 0.2s ease;
 }
 .input:hover {
-  border-color: #000;
+  border-color: var(--brown);
 }
 .input:focus {
   outline: none;
-  border-color: #000;
+  border-color: var(--brown);
 }
 .input::placeholder {
-  color: #999;
+  color: var(--ink-soft);
   font-weight: 300;
 }
 
 select.input {
   appearance: none;
   padding-right: 30px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23000' stroke-width='1.2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%230F1010' stroke-width='1.2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
 }
@@ -625,7 +631,7 @@ select.input {
   margin-top: 4px;
   font-size: 12.5px;
   font-weight: 300;
-  color: #666;
+  color: var(--ink-soft);
 }
 
 .input.ng-invalid.ng-touched,
@@ -648,8 +654,8 @@ select.input {
   padding: 0 16px;
   margin-left: -0.5px;
   border: var(--border-thin) solid var(--border-color);
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
   font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -664,12 +670,12 @@ select.input {
   pointer-events: none;
 }
 .seg button:hover:not(.on) {
-  background: #f2efe9;
+  background: var(--ink-soft);
 }
 .seg button.on {
-  background: #000;
-  color: #fff;
-  border-color: #000;
+  background: var(--ink);
+  color: var(--light);
+  border-color: var(--ink);
   position: relative;
   z-index: 1;
 }
@@ -685,13 +691,13 @@ select.input {
 .seg.tall small {
   font-size: 10px;
   letter-spacing: 0.1em;
-  color: #666;
+  color: var(--ink-soft);
 }
 .seg.tall button.on small {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(216, 218, 219, 0.7);
 }
 
-/* Condition chips (grade selector) */
+/* Condition chips */
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -708,8 +714,8 @@ select.input {
   padding: 0 14px;
   margin-left: -0.5px;
   border: var(--border-thin) solid var(--border-color);
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
   font-size: 13.5px;
   font-weight: 500;
   transition: background 0.2s ease, color 0.2s ease;
@@ -721,20 +727,20 @@ select.input {
   font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #999;
+  color: var(--ink-soft);
 }
 .chip:hover:not(.on) {
-  background: #f2efe9;
+  background: var(--ink-soft);
 }
 .chip.on {
-  background: #000;
-  color: #fff;
-  border-color: #000;
+  background: var(--ink);
+  color: var(--light);
+  border-color: var(--ink);
   position: relative;
   z-index: 1;
 }
 .chip.on small {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(216, 218, 219, 0.7);
 }
 
 /* Photo uploads */
@@ -752,13 +758,13 @@ select.input {
   background-size: cover;
   background-position: center;
   cursor: pointer;
-  color: #999;
+  color: var(--ink-soft);
   font-size: 22px;
   transition: border-color 0.25s ease, color 0.25s ease;
 }
 .photo:hover {
-  border-color: #000;
-  color: #000;
+  border-color: var(--brown);
+  color: var(--brown);
 }
 
 /* Submit row */
@@ -776,7 +782,7 @@ select.input {
   font-size: 13px;
   font-weight: 300;
   line-height: 1.6;
-  color: #666;
+  color: var(--ink-soft);
 }
 .submit p.err {
   color: #CF0A0A;
@@ -785,8 +791,8 @@ select.input {
 
 /* ============ VALUATION PANEL ============ */
 .panel {
-  background: var(--panel-bg);
-  color: #fff;
+  background: var(--ink);
+  color: var(--light);
 }
 .panel-sticky {
   position: sticky;
@@ -799,7 +805,7 @@ select.input {
   font-weight: 400;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--light);
 }
 .panel-amount {
   display: flex;
@@ -817,7 +823,7 @@ select.input {
   font-size: 16px;
   font-weight: 400;
   letter-spacing: 0.18em;
-  color: #fff;
+  color: var(--light);
 }
 .panel-route {
   margin-top: 14px;
@@ -825,7 +831,7 @@ select.input {
   font-weight: 400;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(216, 218, 219, 0.7);
 }
 .panel-rows {
   margin-top: 26px;
@@ -835,22 +841,22 @@ select.input {
   justify-content: space-between;
   gap: 16px;
   padding: 12px 0;
-  border-top: var(--border-thin) solid rgba(255, 255, 255, 0.25);
+  border-top: var(--border-thin) solid rgba(216, 218, 219, 0.25);
   font-size: 14px;
   font-weight: 300;
   font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(216, 218, 219, 0.78);
 }
 .prow:last-child {
-  border-bottom: var(--border-thin) solid rgba(255, 255, 255, 0.25);
+  border-bottom: var(--border-thin) solid rgba(216, 218, 219, 0.25);
 }
 .prow.strong {
   font-weight: 500;
-  color: #fff;
+  color: var(--light);
 }
 .prow.strong:last-child {
   padding: 16px 0;
-  border-top: var(--border-thin) solid #fff;
+  border-top: var(--border-thin) solid var(--light);
   font-size: 16px;
 }
 .panel-note {
@@ -858,17 +864,17 @@ select.input {
   font-size: 12.5px;
   font-weight: 300;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(216, 218, 219, 0.8);
 }
 
-/* Value range meter (trade-in estimate) */
+/* Value range meter */
 .range {
   margin: 28px 0 20px;
 }
 .range-line {
   position: relative;
   height: 9px;
-  border-top: var(--border-thin) solid rgba(255, 255, 255, 0.35);
+  border-top: var(--border-thin) solid rgba(216, 218, 219, 0.35);
 }
 .range-line::before,
 .range-line::after {
@@ -877,7 +883,7 @@ select.input {
   top: -5px;
   width: 1px;
   height: 9px;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(216, 218, 219, 0.35);
 }
 .range-line::before { left: 0; }
 .range-line::after  { right: 0; }
@@ -889,7 +895,7 @@ select.input {
   height: 8px;
   margin-left: -4px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--light);
 }
 .range-labels {
   display: flex;
@@ -899,7 +905,7 @@ select.input {
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(216, 218, 219, 0.55);
 }
 
 /* ============ BENEFITS ============ */
@@ -927,6 +933,7 @@ select.input {
   font-size: 19px;
   font-weight: 500;
   letter-spacing: -0.01em;
+  color: var(--ink);
 }
 .benefits p {
   margin-top: 10px;
@@ -934,15 +941,15 @@ select.input {
   font-size: 14px;
   font-weight: 300;
   line-height: 1.6;
-  color: #666;
+  color: var(--ink-soft);
 }
 
-/* ============ FAQ — questions left, answers right ============ */
+/* ============ FAQ ============ */
 .know {
   width: 100%;
   border-bottom: var(--border-thin) solid var(--border-color);
-  background: #fff;
-  color: #000;
+  background: var(--light);
+  color: var(--ink);
 }
 .know-head {
   display: flex;
@@ -951,8 +958,8 @@ select.input {
   gap: 24px;
   padding: 28px 48px;
   border-bottom: var(--border-thin) solid var(--border-color);
-  background: var(--panel-bg);
-  color: #FAEEE0;
+  background: var(--ink);
+  color: var(--light);
 }
 .know-head h2 {
   font-size: 13px;
@@ -960,14 +967,14 @@ select.input {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   line-height: 1.15;
-  color: #FAEEE0;
+  color: var(--light);
 }
 .know-head p {
   font-size: 12px;
   font-weight: 300;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(216, 218, 219, 0.55);
 }
 
 .know-body {
@@ -1000,19 +1007,19 @@ select.input {
   line-height: 1.6;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #000;
+  color: var(--ink);
   transition: color 0.25s ease, padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.25s ease;
 }
 .faq-q button:hover {
-  color: #000;
+  color: var(--brown);
 }
 .faq-q button.on {
   padding-left: 60px;
-  color: #fff;
-  background: var(--panel-bg);
+  color: var(--light);
+  background: var(--ink);
 }
 .faq-q button:focus-visible {
-  outline: 1px solid #000;
+  outline: 1px solid var(--ink);
   outline-offset: -4px;
 }
 .faq-q .arrow {
@@ -1048,7 +1055,7 @@ select.input {
   justify-content: center;
   min-height: 460px;
   padding: 64px 48px;
-  background: #fff;
+  background: var(--light);
   overflow: hidden;
 }
 .answer {
@@ -1057,7 +1064,7 @@ select.input {
   max-width: 560px;
   padding: 40px;
   border: 1px dotted var(--border-color);
-  background: #fff;
+  background: var(--light);
   animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .answer::before,
@@ -1092,13 +1099,13 @@ select.input {
   line-height: 1.6;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #000;
+  color: var(--ink);
 }
 .answer p {
   font-size: 16px;
   font-weight: 300;
   line-height: 1.8;
-  color: #444;
+  color: var(--ink-soft);
 }
 
 /* ============ RESPONSIVE ============ */

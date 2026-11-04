@@ -1189,3 +1189,316 @@ app-search.search-panel {
     right: 24px;
   }
 }
+/* ============================================================
+   NAV – MOBILE (all phones, ≤ 768px)
+   Bar: search icon left · logo with slogan centred ·
+   two-line hamburger right · "A-PLUS MOTORS LTD" strip with
+   car icons fixed at the bottom.
+   Must stay at the END of the file so it overrides the rules above.
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* ---------- Bar ---------- */
+  .nav-container {
+    height: 104px;
+    background: #ffffff;
+    border-bottom: none;
+  }
+
+  .nav-items-wrapper::before {
+    display: none;               /* desktop column guide lines */
+  }
+
+  /* ---------- Search icon (left) ---------- */
+  .search-box {
+    top: 39px;
+    left: 18px;
+    width: 46px;
+    height: 46px;
+    box-sizing: border-box;
+    padding: 0;
+    gap: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 0;
+  }
+
+  .search-box .search-tag {
+    display: none;
+  }
+
+  /* custom thin magnifier with a highlight arc */
+  .search-box .material-symbols-outlined {
+    font-size: 0;
+    line-height: 0;
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: #000000;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21M7.8 9.6a3 3 0 0 1 2.7-2.4'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21M7.8 9.6a3 3 0 0 1 2.7-2.4'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  /* ---------- Logo (centre) – floating, no box ---------- */
+  .logo-wrapper {
+    top: 22px;
+    width: min(58vw, 260px);
+    box-sizing: border-box;
+    gap: 5px;
+    padding: 7px 10px 17px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .logo-wrapper::after {
+    left: 14%;
+    width: 72%;
+    bottom: 7px;
+  }
+
+  .logo-wrapper::before {
+    bottom: 1px;
+    width: 28px;
+    height: 10px;
+    background: #111111;
+  }
+
+  .image-icon {
+    height: 42px;
+    width: auto;
+  }
+
+  .slogan {
+    display: flex;               /* was hidden at ≤ 900px */
+    gap: 6px;
+    font-size: clamp(0.4rem, 1.9vw, 0.52rem);
+    letter-spacing: 0.2em;
+  }
+
+  .slogan::before,
+  .slogan::after {
+    width: 14px;
+  }
+
+  /* ---------- Hamburger (right) ---------- */
+  .item-3 {
+    top: 55px;
+    right: 12px;
+    height: calc(100svh - 55px - 66px);   /* chat icon rests above the bottom strip */
+  }
+
+  .menu-bar {
+    gap: 9px;
+    padding: 0.6rem;
+  }
+
+  .menu-bar span {
+    height: 2px;
+  }
+
+  .top-bar,
+  .bottom-bar {
+    width: 2.3rem;
+  }
+
+  .menu-bar.is-open .top-bar {
+    width: 2.3rem;
+    transform: translateY(5.5px) rotate(45deg);
+  }
+
+  .menu-bar.is-open .bottom-bar {
+    width: 2.3rem;
+    transform: translateY(-5.5px) rotate(-45deg);
+  }
+
+  /* chat bubble kept, just smaller (hide it by adding display:none) */
+  .chat-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  /* ---------- Bottom strip: — car A-PLUS MOTORS LTD car — ---------- */
+  .item-1-label {
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    gap: 6px;
+    font-size: 0.5rem;
+    letter-spacing: 0.3em;
+  }
+
+  .item-1-label::before,
+  .item-1-label::after {
+    width: 46px;
+    height: 10px;
+  }
+
+  /* ---------- Roll-out menu ---------- */
+  .menu-opened {
+    padding: 108px 24px 6rem;
+  }
+
+  .menu-line {
+    top: calc(108px - 0.9em);
+  }
+}
+
+/* ---------- Small phones (≤ 380px) ---------- */
+@media (max-width: 380px) {
+  .nav-container { height: 96px; }
+
+  .search-box { left: 12px; top: 35px; width: 42px; height: 42px; }
+
+  .logo-wrapper {
+    width: 56vw;
+    padding: 6px 8px 16px;
+  }
+
+  .image-icon { height: 36px; }
+
+  .slogan {
+    font-size: 0.4rem;
+    letter-spacing: 0.16em;
+  }
+
+  .slogan::before,
+  .slogan::after { width: 8px; }
+
+  .item-3 { right: 8px; top: 52px; }
+
+  .item-1-label {
+    font-size: 0.45rem;
+    letter-spacing: 0.24em;
+  }
+
+  .item-1-label::before,
+  .item-1-label::after { width: 36px; }
+}
+
+/* ============================================================
+   COLOUR GRADE – near-black · mid grey · light grey · leather brown
+   #0F1010 · #787C7C · #D8DADB · #7E5B47
+   Keep at the very END of the file. Delete this block to undo.
+   ============================================================ */
+.nav-container {
+  --c-light: #D8DADB;
+  --c-ink: #0F1010;
+  --c-mid: #787C7C;
+  --c-brown: #7E5B47;
+  background: var(--c-light);
+  border-bottom: 1px solid var(--c-ink);
+}
+
+.nav-items-wrapper::before {
+  border-left-color: rgba(15, 16, 16, 0.2);
+  border-right-color: rgba(15, 16, 16, 0.2);
+}
+
+/* search */
+.search-box {
+  background: var(--c-light);
+  border: 1px solid var(--c-ink);
+  border-radius: 0;
+}
+
+.search-box .material-symbols-outlined { color: var(--c-brown); }
+.search-box .search-tag { color: var(--c-ink); }
+
+/* logo + slogan */
+.logo-wrapper::before { background: var(--c-ink); }
+
+.logo-wrapper::after {
+  background:
+    linear-gradient(90deg, transparent, var(--c-ink)) left / calc(50% - 22px) 100% no-repeat,
+    linear-gradient(90deg, var(--c-ink), transparent) right / calc(50% - 22px) 100% no-repeat;
+}
+
+.image-icon { filter: none; }
+.slogan { color: var(--c-ink); }
+.slogan::before { background: linear-gradient(90deg, transparent, var(--c-mid)); }
+.slogan::after  { background: linear-gradient(90deg, var(--c-mid), transparent); }
+
+/* bottom strip */
+.item-1-label { color: var(--c-ink); }
+
+.item-1-label::before {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0.5 1.5 27 10' fill='none' stroke='%237E5B47' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8.6H1.5V7.2Q1.5 6.3 2.5 6.1L6.6 5.4L9 2.7Q9.4 2.2 10 2.2H16.3Q17.1 2.2 17.7 2.8L20.3 5.2L24.4 5.9Q26.5 6.2 26.5 7.4V8.6H23M9 8.6H19M10.2 5.3L11.3 3.1H16L18.9 5.3Z M13.7 3.1V5.3'/%3E%3Ccircle cx='7' cy='8.6' r='2'/%3E%3Ccircle cx='21' cy='8.6' r='2'/%3E%3C/svg%3E"),
+    linear-gradient(90deg, transparent, var(--c-ink));
+  background-position: right center, left center;
+  background-size: 24px 9px, calc(100% - 28px) 1px;
+  background-repeat: no-repeat;
+}
+
+.item-1-label::after {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0.5 1.5 27 10' fill='none' stroke='%237E5B47' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(28 0) scale(-1 1)'%3E%3Cpath d='M5 8.6H1.5V7.2Q1.5 6.3 2.5 6.1L6.6 5.4L9 2.7Q9.4 2.2 10 2.2H16.3Q17.1 2.2 17.7 2.8L20.3 5.2L24.4 5.9Q26.5 6.2 26.5 7.4V8.6H23M9 8.6H19M10.2 5.3L11.3 3.1H16L18.9 5.3Z M13.7 3.1V5.3'/%3E%3Ccircle cx='7' cy='8.6' r='2'/%3E%3Ccircle cx='21' cy='8.6' r='2'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(90deg, var(--c-ink), transparent);
+  background-position: left center, right center;
+  background-size: 24px 9px, calc(100% - 28px) 1px;
+  background-repeat: no-repeat;
+}
+
+/* menu + chat buttons */
+.menu-bar span { background-color: var(--c-ink); }
+
+.chat-icon {
+  color: var(--c-ink);
+  border: 1px solid var(--c-ink);
+  background: var(--c-light);
+  box-shadow: none;
+}
+
+.chat-icon:hover { box-shadow: 0 0 0 1px var(--c-brown); border-color: var(--c-brown); }
+.chat-icon.is-open { background: var(--c-ink); color: var(--c-light); box-shadow: none; }
+
+/* overlays */
+.menu-overlay,
+.search-overlay {
+  background-color: var(--c-light);
+  box-shadow: none;
+}
+
+.menu-opened {
+  --ink: #0F1010;
+  --ink-soft: #3A3D3D;
+  --muted: #787C7C;
+  --hair: rgba(15, 16, 16, 0.25);
+  --gold: #7E5B47;
+  --surface: #D8DADB;
+  --surface-alt: #CBCECF;
+}
+
+.menu-list > li > a::before { background-color: var(--c-brown); }
+.menu-list > li > a::after { background: var(--c-brown); }
+.submenu-links li a:hover .arrow { border-color: var(--c-brown); }
+.submenu-feature:hover .feature-arrow-svg { stroke: var(--c-brown); }
+.submenu-feature img { filter: none; }
+.social-icons a::before { border-color: var(--c-ink); }
+
+.close-search-btn { color: var(--c-ink); }
+.close-search-btn .cross-icon span { background-color: var(--c-ink); }
+
+/* desktop hairline under the bar */
+@media (min-width: 769px) {
+  .nav-container { border-bottom: 1px solid var(--c-ink); }
+}
+
+/* mobile: solid light-grey bar, near-black framed search */
+@media (max-width: 768px) {
+  .nav-container {
+    background: var(--c-light);
+    border-bottom: 1px solid var(--c-ink);
+  }
+
+  .search-box {
+    background: var(--c-light);
+    border-color: var(--c-ink);
+  }
+
+  .search-box .material-symbols-outlined { background: var(--c-ink); }
+}

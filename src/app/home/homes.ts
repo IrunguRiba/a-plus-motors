@@ -1,6 +1,6 @@
 import { Component, inject, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { Portfolio } from './portfolio/portfolio';
 import { Footer } from './footer/footer';
 import { Nav } from './nav/nav';
@@ -26,6 +26,7 @@ export class Home implements OnInit, AfterViewInit {
   logoImg = 'fav3.png';
 
   private smoother!: ScrollSmoother;
+  private router = inject(Router);
 
   brands: string[] = [
     'Toyota', 'Honda', 'Nissan', 'Mazda', 'Subaru',
@@ -121,5 +122,23 @@ export class Home implements OnInit, AfterViewInit {
     this.selectedModel = '';
     this.selectedYear = '';
     this.activeDropdown = null;
+  }
+
+  // ==========================================
+  // UPDATED NAVIGATION TO MATCH ROUTING
+  // ==========================================
+
+  goToImport(event?: Event): void {
+    event?.stopPropagation();
+    this.router.navigate(['/imported-trade-in'], {
+      queryParams: { tab: 'import' }
+    });
+  }
+
+  goToTradeIn(event?: Event): void {
+    event?.stopPropagation();
+    this.router.navigate(['/imported-trade-in'], {
+      queryParams: { tab: 'trade-in' }
+    });
   }
 }
