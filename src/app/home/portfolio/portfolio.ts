@@ -63,7 +63,9 @@ export class Portfolio {
     this.openedSpecs = !this.openedSpecs;
     this.router.navigate(['/specs']);
   }
-
+  goToStore(){
+    this.router.navigate(['/store'])
+  }
   isLiked(id: number): boolean {
     return this.likedIds.has(id);
   }
