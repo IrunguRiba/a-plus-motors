@@ -196,10 +196,7 @@
     <footer class="site-footer">
       <div class="footer-actions">
         <button class="inquire-box-btn" type="button" *ngFor="let l of footerLinks" (click)="goTo(l.route)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle; margin-top: -2px;">
-            <path d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"></path>
-            <line x1="11" y1="13" x2="21" y2="3"></line>
-          </svg>
+        
           {{ l.label }}
         </button>
       </div>

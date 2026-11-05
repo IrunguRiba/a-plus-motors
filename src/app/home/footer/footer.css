@@ -1,5 +1,5 @@
 .footer-container {
-  background-color: #ffffff;
+  background-color: #D8DADB;
   color: #000000;
   font-family: "DM Mono", monospace;
   padding: 20px 1% 20px 1%;
@@ -43,7 +43,7 @@
 }
 
 .comment-card {
-  background: #ffffff;
+  background-color: #D8DADB;
   border: 1px solid #000000;
   border-radius: 4px;
   padding: 28px;
@@ -124,7 +124,7 @@
   border-radius: 4px;
   overflow: hidden;
   border: 1px solid #000000;
-  background: #ffffff;
+  background-color: #D8DADB;
 }
 
 .map-wrapper iframe {
@@ -134,7 +134,7 @@
 }
 
 .location-card {
-  background: #ffffff;
+  background-color: #D8DADB;
   border: 1px solid #000000;
   border-radius: 4px;
   padding: 32px;
@@ -185,28 +185,25 @@
   flex-wrap: wrap;
 }
 
+/* Footer links — sharp 1px border, no icon */
 .nav-links-list a {
   color: #000000;
   text-decoration: none;
   font-size: 2.05rem;
   font-family: "Inter", sans-serif;
   font-weight: 300;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  border: 1px solid #000000;
+  padding: 10px 28px;
+  transition: border-color 0.3s ease, color 0.3s ease;
 }
 
-.nav-links-list a .arrow-icon {
-  width: 24px;
-  height: 24px;
-  transition: transform 0.3s ease;
-}
-
-.nav-links-list a:hover .arrow-icon {
-  transform: translate(2px, -2px);
-}
-
-.nav-links-list a:hover {
+.nav-links-list a:hover,
+.nav-links-list a:focus-visible {
+  border-color: #5B1E31;
+  color: #5B1E31;
   text-decoration: none;
 }
 
@@ -221,7 +218,7 @@
   bottom: -2px;
   width: 0;
   height: 1px;
-  background-color: #000000;
+  background-color: currentColor;
   transition: width 0.25s ease;
 }
 
@@ -344,7 +341,7 @@
 
 .privacy-policy > span::before {
   width: 100%;
-  background-color: #dcdcdc;
+  background-color: #D8DADB;
 }
 
 .privacy-policy > span::after {

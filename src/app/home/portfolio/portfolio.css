@@ -3,8 +3,8 @@
   --ink-soft: #3B3E3E;
   --mid: #787C7C;
   --light: #D8DADB;
-  --brown: #7E5B47;
-  --brown-dark: #664839;
+  --brown: #2E2910;
+  --brown-dark: #010736;
   --surface: #E4E6E7;
   --sunk: #CBCECF;
   --hair: rgba(15, 16, 16, 0.22);
@@ -27,25 +27,29 @@
   margin-bottom: 48px;
 }
 
+/* ---------- SECTION HEADINGS (Recommended + Main Store) ---------- */
 .recommended-heading,
 .main-store {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 1px 28px;
+  padding: 14px 28px;
   background: var(--surface);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--hair);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .recommended-heading h1,
 .main-store h1 {
   margin: 0;
-  font-size: 20px;
-  line-height: 26px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: #202734;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #09251C;
+  
   font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   white-space: nowrap;
 }
@@ -59,29 +63,32 @@
   gap: 8px;
   margin: 0;
   font-size: 0;
-  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
 }
 
 .recommended-heading h2 span,
 .main-store h2 span {
   display: inline-block;
-  padding: 8px 14px;
-  border: 1px solid var(--ink);
+  padding: 6px 12px;
+  border: 1px solid var(--hair);
   background: transparent;
   font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   line-height: 14px;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--ink-soft);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .recommended-heading h2 span:hover,
 .main-store h2 span:hover {
   background: var(--ink);
+  border-color: var(--ink);
   color: var(--light);
 }
 
@@ -92,22 +99,38 @@
   color: #F4F5F5;
 }
 
+/* ---------- BELT (auto-scroll + drag) ---------- */
+.belt-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 24px;
+  touch-action: pan-y; /* allow vertical scroll, capture horizontal drags */
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.belt-viewport:active {
+  cursor: grabbing;
+}
+
 .belt-track {
   display: flex;
   align-items: center;
   width: max-content;
-  margin-top: 24px;
   will-change: transform;
-  animation: moveCars 55s linear infinite;
+  transform: translate3d(0, 0, 0);
 }
 
-.belt-track:hover {
-  animation-play-state: paused;
+.belt-track.is-dragging {
+  cursor: grabbing;
 }
 
-@keyframes moveCars {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+.belt-track img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
 }
 
 .car-card {
@@ -752,7 +775,8 @@ app-specs {
   .main-store {
     flex-direction: column;
     align-items: flex-start;
-    padding: 16px;
+    padding: 14px 16px;
+    gap: 12px;
   }
   .recommended-heading h2,
   .main-store h2 {
@@ -795,7 +819,6 @@ app-specs {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .belt-track,
   .brand-card {
     animation: none;
   }

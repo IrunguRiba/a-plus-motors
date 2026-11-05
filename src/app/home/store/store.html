@@ -108,18 +108,26 @@
             <div class="car-actions">
               <button class="action-btn like-btn" type="button"
                       [class.on]="liked.has(car.id)" [attr.aria-pressed]="liked.has(car.id)"
+                      aria-label="Like"
                       (click)="toggleLike(car, $event)">
-                <svg width="24" height="24" viewBox="0 0 24 24" [attr.fill]="liked.has(car.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                <svg viewBox="0 0 24 24" aria-hidden="true"
+                     [attr.fill]="liked.has(car.id) ? 'currentColor' : 'none'"
+                     stroke="currentColor" stroke-width="1.6"
+                     stroke-linecap="butt" stroke-linejoin="miter">
+                  <path d="M12 21 3.2 12.2A5.4 5.4 0 0 1 11 4.6l1 1 1-1a5.4 5.4 0 0 1 7.8 7.6z"/>
                 </svg>
                 <span>{{ liked.has(car.id) ? 'Liked' : 'Like' }}</span>
               </button>
 
               <button class="action-btn save-btn" type="button"
                       [class.on]="saved.has(car.id)" [attr.aria-pressed]="saved.has(car.id)"
+                      aria-label="Bookmark"
                       (click)="toggleSave(car, $event)">
-                <svg width="24" height="24" viewBox="0 0 24 24" [attr.fill]="saved.has(car.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                <svg viewBox="0 0 24 24" aria-hidden="true"
+                     [attr.fill]="saved.has(car.id) ? 'currentColor' : 'none'"
+                     stroke="currentColor" stroke-width="1.6"
+                     stroke-linecap="butt" stroke-linejoin="miter">
+                  <path d="M6 3h12v18l-6-4.5L6 21z"/>
                 </svg>
                 <span>{{ saved.has(car.id) ? 'Saved' : 'Bookmark' }}</span>
               </button>
@@ -155,24 +163,12 @@
       <div class="footer-wrapper">
         <a class="footer-link" tabindex="0" (click)="goToImport()" (keydown.enter)="goToImport()">
           Import
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"></path>
-            <line x1="11" y1="13" x2="21" y2="3"></line>
-          </svg>
         </a>
         <a class="footer-link" tabindex="0" (click)="goToTradeIn()" (keydown.enter)="goToTradeIn()">
           Trade In
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"></path>
-            <line x1="11" y1="13" x2="21" y2="3"></line>
-          </svg>
         </a>
         <a class="footer-link" tabindex="0" (click)="gotoFinance()" (keydown.enter)="gotoFinance()">
           Financing
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"></path>
-            <line x1="11" y1="13" x2="21" y2="3"></line>
-          </svg>
         </a>
       </div>
 

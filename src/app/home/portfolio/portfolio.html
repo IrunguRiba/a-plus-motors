@@ -10,49 +10,66 @@
       </h2>
     </div>
 
-    <div class="belt-track">
-      <ng-container *ngFor="let car of displayCars">
-        <div
-          class="car-card"
-          role="group"
-          [attr.aria-label]="car.model"
-          [style.--car-bg]="'url(' + car.image + ')'"
-        >
-          <div class="car-image-container">
-            <img [src]="car.image" [alt]="car.model" />
+    <div
+      class="belt-viewport"
+      #beltViewport
+      (pointerdown)="onBeltPointerDown($event)"
+      (pointermove)="onBeltPointerMove($event)"
+      (pointerup)="onBeltPointerUp($event)"
+      (pointercancel)="onBeltPointerUp($event)"
+      (pointerleave)="onBeltPointerUp($event)"
+    >
+      <div
+        class="belt-track"
+        #beltTrack
+        [class.is-dragging]="beltDragging"
+        [style.transform]="beltTransform"
+        [style.animation-play-state]="beltDragging ? 'paused' : 'running'"
+      >
+        <ng-container *ngFor="let car of displayCars; let i = index">
+          <div
+            class="car-card"
+            role="group"
+            [attr.aria-label]="car.model"
+            [style.--car-bg]="'url(' + car.image + ')'"
+            [attr.draggable]="false"
+          >
+            <div class="car-image-container">
+              <img [src]="car.image" [alt]="car.model" draggable="false" />
+            </div>
+
+            <div class="car-details">
+              <div class="car-meta-top">
+                <span>{{ car.year }}</span>
+                <span>{{ car.make }}</span>
+                <span>Mileage: {{ car.mileage }}</span>
+              </div>
+
+              <h2 class="car-title">{{ car.model }}</h2>
+
+              <p class="car-description">
+                {{ car.description }}
+              </p>
+
+              <div class="car-specs">
+                <span class="spec-chip">{{ car.engineCC }}</span>
+                <span class="spec-chip">{{ car.fuelType }}</span>
+                <span class="spec-chip">{{ car.transmission }}</span>
+                <span class="spec-chip">{{ car.mileage }}</span>
+              </div>
+
+              <div class="car-pricing">
+                <span class="starting-label">Starting From</span>
+                <span class="car-price">{{ car.price }}</span>
+                <span class="car-finance">Financing available</span>
+              </div>
+
+              <button class="inquire-btn" type="button" (click)="openSpecs()">INQUIRE</button>
+            </div>
           </div>
-
-          <div class="car-details">
-            <div class="car-meta-top">
-              <span>{{ car.year }}</span>
-              <span>{{ car.make }}</span>
-              <span>Mileage: {{ car.mileage }}</span>
-            </div>
-
-            <h2 class="car-title">{{ car.model }}</h2>
-
-            <p class="car-description">
-              {{ car.description }}
-            </p>
-
-            <div class="car-specs">
-              <span class="spec-chip">{{ car.engineCC }}</span>
-              <span class="spec-chip">{{ car.fuelType }}</span>
-              <span class="spec-chip">{{ car.transmission }}</span>
-              <span class="spec-chip">{{ car.mileage }}</span>
-            </div>
-
-            <div class="car-pricing">
-              <span class="starting-label">Starting From</span>
-              <span class="car-price">{{ car.price }}</span>
-              <span class="car-finance">Financing available</span>
-            </div>
-
-            <button class="inquire-btn" type="button" (click)="openSpecs()">INQUIRE</button>
-          </div>
-        </div>
-        <div class="bridge-line"></div>
-      </ng-container>
+          <div class="bridge-line"></div>
+        </ng-container>
+      </div>
     </div>
   </div>
 

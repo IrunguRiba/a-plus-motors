@@ -5,7 +5,7 @@
   --brown: #7E5B47;
 
   --border-color: var(--ink);
-  --border-thin: 1px dotted var(--ink);
+  --border-thin: 1px solid var(--ink);
   --accent: var(--brown);
   --font-main:
     "Inter",
@@ -82,7 +82,7 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   background: transparent;
-  border: 1px dotted transparent;
+  border: 1px solid transparent;
   transition: border 0.2s ease;
 }
 
@@ -113,14 +113,14 @@
   transform: rotate(180deg);
 }
 
-/* Active state: no background color change, just a dotted border */
+/* Active state: sharp border, no background */
 .filter-item.active,
 .filter-item.center.active,
 .filter-item.dropdown.active {
   background-color: transparent;
   margin: -1px;
   z-index: 1;
-  border: 1px dotted var(--ink);
+  border: 1px solid var(--ink);
 }
 
 .nav-filters > .filter-item:not(:last-child) {
@@ -151,7 +151,7 @@
 
 .filter-dropdown-portal .filter-dropdown-list {
   background-color: #ffffff;
-  border: 1px dotted var(--ink);
+  border: 1px solid var(--ink);
   border-radius: 4px;
   box-shadow: 0 12px 40px rgba(15, 16, 16, 0.12);
   min-width: 100px;
@@ -230,7 +230,6 @@
 
 .car-card:hover {
   border-color: var(--brown);
-  border-style: dotted;
 }
 
 .car-image-wrapper {
@@ -528,10 +527,12 @@
   gap: 80px;
 }
 
+/* Store footer links — sharp 1px border + underline sweep on the label */
 .footer-link {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   text-decoration: none;
   color: var(--ink);
   font-size: 1.6em;
@@ -539,18 +540,34 @@
   letter-spacing: 0.5px;
   cursor: pointer;
   outline: none;
+  border: var(--border-thin);
+  padding: 10px 28px;
+  transition: border-color 0.3s ease, color 0.3s ease;
 }
 
-.footer-link svg {
-  stroke: var(--ink);
-  width: 28px;
-  height: 28px;
-  transition: transform 0.25s ease;
+.footer-link::after {
+  content: "";
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 6px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
 }
 
-.footer-link:hover svg,
-.footer-link:focus-visible svg {
-  transform: translate(5px, -5px);
+.footer-link:hover,
+.footer-link:focus-visible {
+  border-color: var(--brown);
+  color: var(--brown);
+}
+
+.footer-link:hover::after,
+.footer-link:focus-visible::after {
+  transform: scaleX(1);
 }
 
 @media (max-width: 1024px) {
