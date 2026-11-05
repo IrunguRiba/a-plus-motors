@@ -43,8 +43,10 @@
     --ink-soft: #3B3E3E;
     --mid: #787C7C;
     --light: #D8DADB;
-    --gold: #6E3511;
-    --gold-dark: #;
+    --gold: #A55704;
+    --gold-dark: #FFCB56;
+    --find: rgba(165, 87, 4, 0.7);
+    --find-text: #EBE2CC;
     --panel: #0F1010;
     --panel-hover: #1B1D1D;
     --line: rgba(216, 218, 219, 0.16);
@@ -54,6 +56,8 @@
     --glass-edge: rgba(255, 255, 255, 0.12);
     --glass-hair: rgba(216, 218, 219, 0.28);
     --glass-divider: rgba(216, 218, 219, 0.16);
+    --soft-hover: rgba(58, 61, 61, 0.7);
+    --active-ring: rgba(244, 245, 245, 0.6);
     --seam: #E4E6E7;
   
     display: grid;
@@ -226,7 +230,7 @@
      EXPERIENCE CIRCLES
      ============================================================ */
   .experience-container {
-    --ring: 250px;
+    --ring: 280px;
     display: grid;
     place-items: center;
     width: var(--ring);
@@ -248,24 +252,24 @@
   .circle-1,
   .circle-2::before {
     --sine: cubic-bezier(0.45, 0, 0.55, 1);
-    border-width: 1px;
+    border-width: 0.5px;
   }
   
   .circle-0 {
     height: var(--ring);
     width: var(--ring);
-    border: 1px solid rgba(15, 16, 16, 0.75);
-    --amp: calc(var(--ring) * 0.1);
-    animation: driftX 5s var(--sine) infinite alternate, driftY 7.5s var(--sine) infinite alternate;
+    border: 0.5px solid rgba(15, 16, 16, 0.3);
+    --amp: calc(var(--ring) * 0.08);
+    animation: driftX 9s var(--sine) infinite alternate, driftY 12s var(--sine) infinite alternate;
     will-change: transform, translate;
   }
   
   .circle-1 {
     height: var(--ring);
     width: var(--ring);
-    border: 1px solid rgba(15, 16, 16, 0.5);
-    --amp: calc(var(--ring) * 0.085);
-    animation: driftX 4s var(--sine) -1.3s infinite alternate-reverse, driftY 6s var(--sine) -2.1s infinite alternate;
+    border: 0.5px solid rgba(15, 16, 16, 0.2);
+    --amp: calc(var(--ring) * 0.07);
+    animation: driftX 7s var(--sine) -2.5s infinite alternate-reverse, driftY 10s var(--sine) -3.5s infinite alternate;
     will-change: transform, translate;
   }
   
@@ -284,9 +288,9 @@
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    border: 1px solid rgba(126, 91, 71, 0.9);
-    --amp: calc(var(--ring) * 0.095);
-    animation: driftX 6.5s var(--sine) -3.2s infinite alternate, driftY 4.5s var(--sine) -0.8s infinite alternate-reverse;
+    border: 0.5px solid rgba(126, 91, 71, 0.4);
+    --amp: calc(var(--ring) * 0.075);
+    animation: driftX 10s var(--sine) -4.5s infinite alternate, driftY 8s var(--sine) -1.5s infinite alternate-reverse;
     will-change: transform, translate;
     pointer-events: none;
   }
@@ -337,6 +341,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-synthesis: none;
+    font-weight: 300;
     position: relative;
     overflow: visible;
     z-index: 10;
@@ -350,14 +355,14 @@
     justify-content: center;
     gap: 1em;
     font-size: 1em;
-    font-weight: 500;
+    font-weight: 300;
     letter-spacing: 0.04em;
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
     position: relative;
     padding: 0 1em;
-    transition: background-color 0.25s ease;
+    transition: background-color 0.35s ease, box-shadow 0.35s ease;
   }
   
   .search > .search-segment:last-of-type,
@@ -365,38 +370,40 @@
     border-right: none;
   }
   
-  .search-segment:hover,
-  .search-segment.active {
-    background: var(--glass-hover);
+  /* Hover: subtle colour change */
+  .search-segment:hover {
+    background: var(--soft-hover);
+  }
+  
+  /* Active (dropdown open / pressed): border only, no colour change */
+  .search-segment.active,
+  .search-segment.active:hover,
+  .search-segment:active {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--active-ring);
   }
   
   .search-segment:hover .segment-label,
-  .search-segment.active .segment-label,
   .search-segment.has-value:hover .segment-label,
-  .search-segment.has-value.active .segment-label,
   .search-extra .extra-btn:hover {
     color: #F4F5F5;
   }
   
-  .search-segment:active,
-  .search-extra .extra-btn:active {
-    background: rgba(126, 91, 71, 0.96);
-  }
-  
   .search-segment .segment-label {
     font-size: 1.15em;
-    font-weight: 500;
+    font-weight: 300;
     letter-spacing: 0.04em;
     color: #D8DADB;
     max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: color 0.35s ease;
   }
   
   .search-segment.has-value .segment-label {
     color: #F4F5F5;
-    font-weight: 600;
+    font-weight: 400;
   }
   
   .search-segment .arrow {
@@ -452,7 +459,7 @@
   .find-car .material-symbols-outlined {
     -webkit-mask-image: var(--icon-search);
     mask-image: var(--icon-search);
-    background: #D8DADB;
+    background: #0F1010;
   }
   
   .search-segment.has-value > .material-symbols-outlined:first-child {
@@ -460,17 +467,12 @@
   }
   
   .search-segment > .material-symbols-outlined:first-child {
-    transition: transform 0.3s ease;
+    transition: background-color 0.35s ease;
   }
   
-  .search-segment:hover > .material-symbols-outlined:first-child,
-  .search-segment.active > .material-symbols-outlined:first-child {
-    background: #7E5B47;
-    transform: none;
-  }
-  
-  .search-segment:active > .material-symbols-outlined:first-child {
+  .search-segment:hover > .material-symbols-outlined:first-child {
     background: #D8DADB;
+    transform: none;
   }
   
   .search .search-segment .arrow.material-symbols-outlined {
@@ -486,15 +488,14 @@
     border-right: 1px solid #A7ABAB;
     border-bottom: 1px solid #A7ABAB;
     transform: rotate(45deg);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, border-color 0.35s ease;
   }
   
   .search .search-segment .arrow.rotated {
     transform: rotate(225deg);
   }
   
-  .search .search-segment:hover .arrow.material-symbols-outlined,
-  .search .search-segment.active .arrow.material-symbols-outlined {
+  .search .search-segment:hover .arrow.material-symbols-outlined {
     color: #F4F5F5;
     border-right-color: #F4F5F5;
     border-bottom-color: #F4F5F5;
@@ -548,7 +549,7 @@
   .dropdown-item {
     padding: 0.65em 1em;
     font-size: 0.95em;
-    font-weight: 500;
+    font-weight: 300;
     letter-spacing: 0.04em;
     color: #D8DADB;
     cursor: pointer;
@@ -561,13 +562,14 @@
   }
   
   .dropdown-item:hover {
-    background: rgba(216, 218, 219, 0.16);
+    background: rgba(216, 218, 219, 0.12);
     color: #F4F5F5;
   }
   
   .dropdown-item:active,
   .dropdown-item.selected {
-    background: #7E5B47;
+    background: transparent;
+    border-color: var(--active-ring);
     color: #F4F5F5;
   }
   
@@ -599,14 +601,14 @@
     border-radius: 0;
     font: inherit;
     font-size: 0.95em;
-    font-weight: 500;
+    font-weight: 300;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #D8DADB;
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
   }
   
   .search-extra .extra-btn + .extra-btn {
@@ -614,12 +616,13 @@
   }
   
   .search-extra .extra-btn:hover {
-    background: var(--glass-hover);
+    background: var(--soft-hover);
     color: #F4F5F5;
   }
   
   .search-extra .extra-btn:active {
-    background: rgba(126, 91, 71, 0.96);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--active-ring);
   }
   
   .material-symbols-outlined {
@@ -628,10 +631,10 @@
     color: #050505;
   }
   
-  /* Find Car Button */
+  /* Find Car Button – no hover / active colour change */
   .search > .find-car {
-    background-color: var(--gold);
-    color: var(--light);
+    background-color: var(--find);
+    color: var(--find-text);
     border-radius: 0 !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -639,15 +642,13 @@
   }
   
   .search > .find-car span {
-    color: #F4F5F5;
+    color: var(--find-text);
+    font-weight: 400;
   }
   
-  .search > .find-car:hover {
-    background-color: var(--gold-dark);
-  }
-  
+  .search > .find-car:hover,
   .search > .find-car:active {
-    background: #4F382C;
+    background-color: var(--find);
   }
   
   /* ============================================================
@@ -716,18 +717,18 @@
     }
   
     .circle-0 {
-      --amp: calc(var(--ring) * 0.065);
+      --amp: calc(var(--ring) * 0.07);
     }
   
     .circle-1 {
       width: calc(var(--ring) * 0.94);
       height: calc(var(--ring) * 0.94);
-      --amp: calc(var(--ring) * 0.055);
+      --amp: calc(var(--ring) * 0.06);
     }
   
     .circle-2::before {
       inset: 4%;
-      --amp: calc(var(--ring) * 0.06);
+      --amp: calc(var(--ring) * 0.065);
     }
   
     .circle-2 {
@@ -799,14 +800,20 @@
       border-top: 1px solid var(--glass-hair);
     }
   
-    .search > .search-segment:hover,
-    .search > .search-segment.active {
-      background: var(--glass-hover);
+    .search > .search-segment:hover {
+      background: var(--soft-hover);
     }
   
-    .search > .search-segment:active,
+    .search > .search-segment.active,
+    .search > .search-segment.active:hover,
+    .search > .search-segment:active {
+      background: var(--glass-fill);
+      box-shadow: inset 0 0 0 1px var(--active-ring);
+    }
+  
     .search > .search-extra .extra-btn:active {
-      background: rgba(126, 91, 71, 0.96);
+      background: transparent;
+      box-shadow: inset 0 0 0 1px var(--active-ring);
     }
   
     /* Row icons */
@@ -824,12 +831,7 @@
       height: 14px;
     }
   
-    .search > .search-segment:hover > .material-symbols-outlined:first-child,
-    .search > .search-segment.active > .material-symbols-outlined:first-child {
-      background: #7E5B47;
-    }
-  
-    .search > .search-segment:active > .material-symbols-outlined:first-child {
+    .search > .search-segment:hover > .material-symbols-outlined:first-child {
       background: #D8DADB;
     }
   
@@ -843,7 +845,7 @@
       max-width: none;
       text-align: left;
       font-size: 0.92rem;
-      font-weight: 400;
+      font-weight: 300;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--muted);
@@ -851,6 +853,7 @@
   
     .search-segment.has-value .segment-label {
       color: var(--light);
+      font-weight: 400;
     }
   
     /* Chevron */
@@ -887,7 +890,7 @@
       flex: 1 1 50%;
       padding: 0 10px;
       font-size: 0.8rem;
-      font-weight: 400;
+      font-weight: 300;
       letter-spacing: 0.16em;
       -webkit-tap-highlight-color: transparent;
     }
@@ -914,25 +917,22 @@
       padding: 0;
       border: none;
       border-radius: 0 !important;
-      background: var(--gold);
+      background: var(--find);
       justify-content: center;
       transition: background-color 0.25s ease, transform 0.15s ease;
     }
   
     .search > .find-car span {
       font-size: 0.81rem;
-      font-weight: 600;
+      font-weight: 400;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--light);
+      color: var(--find-text);
     }
   
-    .search > .find-car:hover {
-      background: var(--gold-dark);
-    }
-  
+    .search > .find-car:hover,
     .search > .find-car:active {
-      transform: scale(0.99);
+      background: var(--find);
     }
   
     /* Dropdowns */
@@ -962,7 +962,7 @@
     .dropdown-item {
       padding: 0.95em 1.25em;
       font-size: 0.88rem;
-      font-weight: 400;
+      font-weight: 300;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #D8DADB;
@@ -972,7 +972,7 @@
     }
   
     .dropdown-item:hover {
-      background: rgba(126, 91, 71, 0.94);
+      background: rgba(216, 218, 219, 0.1);
       color: #F4F5F5;
       border: none;
       border-bottom: 1px solid var(--glass-divider);
@@ -980,7 +980,8 @@
   
     .dropdown-item:active,
     .dropdown-item.selected {
-      background: rgba(15, 16, 16, 0.94);
+      background: transparent;
+      box-shadow: inset 0 0 0 1px var(--active-ring);
       color: #F4F5F5;
     }
   
@@ -1039,7 +1040,7 @@
     .circle-2::before {
       border-width: 0.5px;
     }
-    .circle-0 { border-color: rgba(15, 16, 16, 0.95); }
-    .circle-1 { border-color: rgba(15, 16, 16, 0.7); }
-    .circle-2::before { border-color: #7E5B47; }
+    .circle-0 { border-color: rgba(15, 16, 16, 0.3); }
+    .circle-1 { border-color: rgba(15, 16, 16, 0.2); }
+    .circle-2::before { border-color: rgba(126, 91, 71, 0.4); }
   }
