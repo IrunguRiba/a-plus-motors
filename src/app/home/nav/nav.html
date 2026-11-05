@@ -11,6 +11,8 @@
 
     <p class="item-1-label" [class.above-search]="searchWindowOpened">A-PLUS MOTORS LTD</p>
 
+    <p class="bottom-slogan" [class.is-visible]="isMenuOpen && !searchWindowOpened">15+ years of trust and excellence</p>
+
     <div class="logo-wrapper" (click)="goHome()" [class.above-search]="searchWindowOpened">
       <img [src]="logoImg" alt="A plus Motors" class="image-icon">
       <span class="slogan" [class.above-search]="searchWindowOpened">Driving That Suits You ...</span>
@@ -26,25 +28,17 @@
           <span class="bottom-bar"></span>
         </div>
       </div>
+      <div class="sidebar-socials" [class.is-visible]="isMenuOpen && !searchWindowOpened">
+        <a class="social-link" href="tel:+254700000000" aria-label="Phone"><img class="ico" [src]="phone" alt="Phone"><span class="social-name">Call</span></a>
+        <a class="social-link" href="https://wa.me/254700000000" aria-label="WhatsApp"><img class="ico" [src]="whatsapp" alt="WhatsApp"><span class="social-name">WhatsApp</span></a>
+        <a class="social-link" href="mailto:info@aplusmotors.co.ke" aria-label="Email"><img class="ico" [src]="email" alt="Email"><span class="social-name">Email</span></a>
+        <a class="social-link" href="#" aria-label="Instagram"><img class="ico" [src]="ig" alt="Instagram"><span class="social-name">Instagram</span></a>
+        <a class="social-link" href="#" aria-label="Facebook"><img class="ico" [src]="facebook" alt="Facebook"><span class="social-name">Facebook</span></a>
+        <a class="social-link" href="#" aria-label="X"><img class="ico" [src]="twitter" alt="X"><span class="social-name">X</span></a>
+        <a class="social-link" href="#" aria-label="YouTube"><img class="ico" [src]="youtube" alt="YouTube"><span class="social-name">YouTube</span></a>
+      </div>
       <div class="sidebar-bottom">
-        <div class="chat-icon"
-             (click)="toggleChat()"
-             [class.is-open]="isChatOpen"
-             [class.above-search]="searchWindowOpened">
-          <svg class="chat-svg bubble-icon" viewBox="0 0 24 24" width="24" height="24"
-               stroke="currentColor" stroke-width="1.5" fill="none"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            <path d="M13 8H7"></path>
-            <path d="M17 12H7"></path>
-          </svg>
-          <svg class="chat-svg cancel-icon" viewBox="0 0 24 24" width="24" height="24"
-               stroke="currentColor" stroke-width="1.5" fill="none"
-               stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </div>
+       
       </div>
     </div>
   </div>
@@ -68,6 +62,7 @@
 
             <div class="submenu-panel" *ngIf="activeSubmenu === item.key">
 
+              <!-- left: links + contact + socials in one block -->
               <div class="submenu-main">
                 <span class="submenu-label">{{ item.title }}</span>
                 <ul class="submenu-links">
@@ -80,25 +75,16 @@
                 </div>
               </div>
 
+              <!-- right: the blog feature on its own -->
               <div class="submenu-aside">
                 <div class="submenu-feature" role="link" tabindex="0"
                      (click)="go(item.feature)" (keydown.enter)="go(item.feature)">
+                  <span class="feature-tag">From the Blog</span>
                   <img [src]="item.feature.image" [alt]="item.feature.title">
                   <div class="feature-text">
                     <span class="feature-title" [class.is-long]="item.feature.long">{{ item.feature.title }}</span>
                     <span class="feature-sub">{{ item.feature.text }}</span>
                     <span class="feature-more">Read more</span>
-                  </div>
-                </div>
-                <div class="feature-socials">
-                  <div class="social-icons">
-                    <a href="#" aria-label="Phone"><img [src]="phone" alt="Phone"></a>
-                    <a href="#" aria-label="Instagram"><img [src]="ig" alt="Instagram"></a>
-                    <a href="#" aria-label="Facebook"><img [src]="facebook" alt="Facebook"></a>
-                    <a href="#" aria-label="X"><img [src]="twitter" alt="X"></a>
-                    <a href="#" aria-label="WhatsApp"><img [src]="whatsapp" alt="WhatsApp"></a>
-                    <a href="#" aria-label="Email"><img [src]="email" alt="Email"></a>
-                    <a href="#" aria-label="YouTube"><img [src]="youtube" alt="YouTube"></a>
                   </div>
                 </div>
               </div>
@@ -108,6 +94,7 @@
 
         </ul>
       </nav>
+
 
     </div>
   </div>
@@ -125,7 +112,24 @@
 
 </div>
 
+<!-- Contact details. Replace the placeholder phone, email and address (and the rail links above) with the real ones -->
 <ng-template #extras>
-  <div class="extra-link" (click)="gototContacts()"><span>Contact</span><span class="material-symbols-outlined">mail</span></div>
-  <div class="extra-link"><span>Login</span><span class="material-symbols-outlined">person</span></div>
+  <span class="contact-title">Contact A-Plus Motors</span>
+  <div class="contact">
+    <div class="contact-row">
+      <img class="ico" [src]="phone" alt="Pin"><span>Nairobi, Kenya</span>
+    </div>
+    <div class="contact-row">
+      <img class="ico" [src]="phone" alt="Clock"><span>Mon–Sat · 8am–6pm</span>
+    </div>
+    <a class="contact-row" href="tel:+254700000000">
+      <img class="ico" [src]="phone" alt="Phone"><span>+254 700 000 000</span>
+    </a>
+    <a class="contact-row" href="https://wa.me/254700000000">
+      <img class="ico" [src]="whatsapp" alt="WhatsApp"><span>WhatsApp us</span>
+    </a>
+    <a class="contact-row is-wide" href="mailto:info@aplusmotors.co.ke">
+      <img class="ico" [src]="email" alt="Email"><span>info@aplusmotors.co.ke</span>
+    </a>
+  </div>
 </ng-template>

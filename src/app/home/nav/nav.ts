@@ -35,6 +35,13 @@ interface MenuItem {
   styleUrl: './nav.css',
 })
 export class Nav {
+  email = 'gmail.png';
+  ig = 'ig.png';
+  twitter = 'twitter.png';
+  whatsapp = 'whatsapp.png';
+  facebook = 'facebook.png';
+  phone = 'call.png';
+  youtube = 'youtube.png';
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
@@ -56,17 +63,10 @@ export class Nav {
 
   private router = inject(Router);
 
-  email = 'gmail.png';
-  ig = 'ig.png';
-  twitter = 'twitter.png';
-  whatsapp = 'whatsapp.png';
-  facebook = 'facebook.png';
-  phone = 'call.png';
-  youtube = 'youtube.png';
   car1 = '1.png';
 
   /** Feature text longer than this many words is cut with "..." and its title gets underlined. */
-  readonly featureWordLimit = 18;
+  readonly featureWordLimit = 40;
 
   activeSubmenu = 'home';
 
@@ -81,7 +81,7 @@ export class Nav {
         { label: 'Latest Offers', path: '/store' },
         { label: 'Blogs', path: '/blogs' },
       ],
-      feature: this.feature('Find Your Perfect Ride', 'Explore our wide range of vehicles, from fresh arrivals to carefully inspected pre-owned cars, all in one place.'),
+      feature: this.feature('Find Your Perfect Ride', 'Explore our wide range of vehicles, from fresh arrivals to carefully inspected pre-owned cars, all in one place.Explore our wide range of vehicles, from fresh arrivals to carefully inspected pre-owned cars, all in one place.'),
     },
     {
       key: 'buycar',
@@ -90,9 +90,6 @@ export class Nav {
       links: [
         { label: 'All Cars', path: '/store' },
         { label: 'New Cars', path: '/store' },
-        { label: 'Pre-Owned', path: '/store' },
-        { label: 'Search by Brand', path: '/store' },
-        { label: 'Special Offers', path: '/store' },
         { label: 'Import', path: '/imported-trade-in', query: { tab: 'import' } },
         { label: 'Trade-in', path: '/imported-trade-in', query: { tab: 'trade-in' } },
       ],
