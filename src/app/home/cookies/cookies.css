@@ -52,6 +52,7 @@ span {
   line-height: 1.65;
   letter-spacing: 0.03em;
   color: var(--ink);
+  text-align: justify;
 }
 
 .cookies-wrapper p strong {
