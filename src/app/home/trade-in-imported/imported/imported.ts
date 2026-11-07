@@ -1,7 +1,7 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { Nav2 } from '../../nav-2/nav-2';
 interface Row {
   label: string;
   value: number;
@@ -17,7 +17,7 @@ const RDL = 0.02;
 
 @Component({
   selector: 'app-imported',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, Nav2],
   templateUrl: './imported.html',
   styleUrl: './imported.css',
 })
