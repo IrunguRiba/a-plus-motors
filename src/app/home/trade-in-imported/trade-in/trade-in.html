@@ -1,16 +1,36 @@
 <section class="hero">
   <div class="hero-main">
+
+    <!-- LEFT: steps, 2 by 2, above the text -->
+    <section class="steps">
+      <div class="steps-row">
+        @for (s of steps; track s.n; let i = $index) {
+          <article class="step">
+            <div class="step-top">
+              <span class="step-link">
+                <button class="step-num" type="button" [class.on]="openStep === i" [attr.aria-expanded]="openStep === i" [attr.aria-label]="'Step ' + s.n + ' details'" (click)="openStep = openStep === i ? -1 : i"><span>{{ s.n }}</span></button>
+              </span>
+              <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)">
+                <span class="step-media">
+                  <img [src]="s.thumb" [alt]="s.t" />
+                  <span class="play" aria-hidden="true"></span>
+                </span>
+              </button>
+            </div>
+            <h3>{{ s.t }}</h3>
+            <div class="step-more" [class.open]="openStep === i">
+              <div>
+                <p>{{ s.d }}</p>
+                <small>{{ s.m }}</small>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <!-- LEFT: heading, copy + CTA under the steps -->
     <h1>TRADE-IN</h1>
-
-    <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()">
-      <span class="video-frame">
-        <span class="video-media">
-          <img [src]="videoThumb" alt="Featured trade-in" />
-          <span class="play" aria-hidden="true"></span>
-        </span>
-      </span>
-    </button>
-
     <p class="lede">Get an instant valuation range for your current vehicle, book a quick inspection, and seamlessly drive away in your next car with all paperwork handled.</p>
 
     <button class="btn hover-flip" type="button" (click)="toForm()">
@@ -23,59 +43,77 @@
         </span>
       </span>
     </button>
-  </div>
 
-  <div class="hero-side">
-    <dl class="specs">
-      @for (s of specs; track s.k) {
-        <div>
-          <dt>{{ s.k }}</dt>
-          <dd>{{ s.v }}</dd>
-          @if (s.tag) { <span class="tag">{{ s.tag }}</span> }
-        </div>
-      }
-    </dl>
-  </div>
-</section>
-
-<section class="steps">
-  <div class="steps-row">
-    @for (s of steps; track s.n; let i = $index) {
-      <article class="step">
-        <div class="step-top">
-          <span class="step-link">
-            <button class="step-num" type="button" [class.on]="openStep === i" [attr.aria-expanded]="openStep === i" [attr.aria-label]="'Step ' + s.n + ' details'" (click)="openStep = openStep === i ? -1 : i"><span>{{ s.n }}</span></button>
-          </span>
-          <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)">
-            <span class="step-media">
-              <img [src]="s.thumb" [alt]="s.t" />
-              <span class="play" aria-hidden="true"></span>
-            </span>
-          </button>
-        </div>
-        <h3>{{ s.t }}</h3>
-        <div class="step-more" [class.open]="openStep === i">
-          <div>
-            <p>{{ s.d }}</p>
-            <small>{{ s.m }}</small>
-          </div>
-        </div>
-      </article>
-    }
+    <!-- RIGHT: main video -->
+    <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()">
+      <span class="video-frame">
+        <span class="video-media">
+          <img [src]="videoThumb" alt="Featured trade-in" />
+          <span class="play" aria-hidden="true"></span>
+        </span>
+      </span>
+    </button>
   </div>
 </section>
 
 @if (videoOpen) {
   <div class="lightbox" (click)="closeVideo()">
     <div class="lightbox-box" (click)="$event.stopPropagation()">
-      <button class="lightbox-close" type="button" (click)="closeVideo()">Close</button>
-      <video [src]="activeSrc" [poster]="activeThumb" controls autoplay playsinline></video>
+      <div class="lightbox-bar">
+        @if (hasPrev) {
+          <button class="lightbox-prev" type="button" (click)="prevVideo()">&larr; Prev</button>
+        }
+        @if (hasNext) {
+          <button class="lightbox-next" type="button" (click)="nextVideo()">Next video &rarr;</button>
+        }
+        <button class="lightbox-close" type="button" (click)="closeVideo()">Close</button>
+      </div>
+      <div class="lightbox-stage">
+        <video #lbVideo [src]="activeSrc" [poster]="activeThumb" autoplay playsinline preload="auto"
+               (click)="toggleVideo(lbVideo)"
+               (loadstart)="onVideoStart()"
+               (loadeddata)="onVideoReady(lbVideo)" (canplay)="onVideoReady(lbVideo)" (playing)="onVideoReady(lbVideo)"
+               (waiting)="vLoading = true" (error)="onVideoError()"
+               (timeupdate)="onVideoTime(lbVideo)" (loadedmetadata)="onVideoTime(lbVideo)"
+               (play)="vPaused = false" (pause)="vPaused = true" (ended)="vPaused = true"></video>
+
+        @if (vLoading && !vError) {
+          <div class="video-loader" role="status" aria-live="polite">
+            <span class="loader-ring"></span>
+            <span class="loader-text">Loading video</span>
+          </div>
+        }
+
+        @if (vError) {
+          <div class="video-loader video-error" role="alert">
+            <span class="loader-text">Video unavailable</span>
+            <button class="v-retry" type="button" (click)="retryVideo(lbVideo)">Retry</button>
+          </div>
+        }
+
+        <div class="video-controls">
+          <button class="v-btn" type="button" (click)="toggleVideo(lbVideo)" [attr.aria-label]="vPaused ? 'Play' : 'Pause'">
+            @if (vPaused) {
+              <svg class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            } @else {
+              <svg class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+            }
+          </button>
+          <span class="v-time">{{ vCur }}</span>
+          <input class="v-seek" type="range" min="0" max="1000" [value]="vProgress" (input)="seekVideo(lbVideo, $event)" aria-label="Seek" />
+          <span class="v-time">{{ vDur }}</span>
+          <button class="v-btn" type="button" (click)="toggleMute(lbVideo)">{{ vMuted ? 'Muted' : 'Sound' }}</button>
+          <button class="v-btn" type="button" (click)="fullscreenVideo(lbVideo)" aria-label="Fullscreen">
+            <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 }
 
 <section class="quote" id="value">
-  <form class="form" #f="ngForm" (ngSubmit)="f.valid && submit()">
+  <form class="form" #f="ngForm" [class.tried]="tried" (ngSubmit)="attempt(f.valid)">
     <h2>Value your car</h2>
 
     <div class="sec"><b>01</b><strong>Your car</strong></div>
@@ -194,14 +232,16 @@
       <button class="btn hover-flip" type="submit">
         <span class="flip">
           <span class="face front">
-            <span>Book inspection</span>
+            <span>{{ submitted ? 'Inspection booked' : 'Book inspection' }}</span>
           </span>
           <span class="face back">
-            <span>Book inspection</span>
+            <span>{{ submitted ? 'Inspection booked' : 'Book inspection' }}</span>
           </span>
         </span>
       </button>
-      <p>{{ submitted ? 'Booked. We will confirm shortly.' : 'Free, with no obligation to trade in or buy.' }}</p>
+      <p aria-live="polite" [class.err]="tried && !f.valid">
+        {{ submitted ? 'Booked. We will confirm shortly.' : (tried && !f.valid ? 'Please add your name and phone number so we can confirm your slot.' : 'Free, with no obligation to trade in or buy.') }}
+      </p>
     </div>
   </form>
 
@@ -227,36 +267,4 @@
       <p class="panel-note">Indicative only. The final offer is confirmed after an in-person inspection and depends on the car's real condition and the market on the day.</p>
     </div>
   </aside>
-</section>
-
-<section class="know">
-  <header class="know-head">
-    <h2>Good to know</h2>
-    <p>What people ask before they trade in.</p>
-  </header>
-
-  <div class="know-body">
-    <ul class="faq-q" role="tablist" aria-label="Trade-in questions">
-      @for (f of faqs; track f.q; let i = $index) {
-        <li>
-          <button type="button" role="tab" [class.on]="openFaq === i"
-                  [attr.aria-selected]="openFaq === i" (click)="openFaq = i">
-            <span>{{ f.q }}</span>
-            <i class="arrow" aria-hidden="true"></i>
-          </button>
-        </li>
-      }
-    </ul>
-
-    <div class="faq-a" role="tabpanel" aria-live="polite">
-      @for (f of faqs; track f.q; let i = $index) {
-        @if (openFaq === i) {
-          <article class="answer">
-            <h3>{{ f.q }}</h3>
-            <p>{{ f.a }}</p>
-          </article>
-        }
-      }
-    </div>
-  </div>
 </section>

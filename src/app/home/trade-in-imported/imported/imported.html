@@ -3,6 +3,33 @@
   <div class="hero-main">
     <h1>IMPORT </h1>
 
+  <section class="steps">
+    <div class="steps-row">
+      @for (s of steps; track s.n; let i = $index) {
+        <article class="step">
+          <div class="step-top">
+            <span class="step-link">
+              <button class="step-num" type="button" [class.on]="openStep === i" [attr.aria-expanded]="openStep === i" [attr.aria-label]="'Step ' + s.n + ' details'" (click)="openStep = openStep === i ? -1 : i"><span>{{ s.n }}</span></button>
+            </span>
+            <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)">
+              <span class="step-media">
+                <img [src]="s.thumb" [alt]="s.t" />
+                <span class="play" aria-hidden="true"></span>
+              </span>
+            </button>
+          </div>
+          <h3>{{ s.t }}</h3>
+          <div class="step-more" [class.open]="openStep === i">
+            <div>
+              <p>{{ s.d }}</p>
+              <small>{{ s.m }}</small>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
     <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()">
       <span class="video-frame">
         <span class="video-media">
@@ -25,52 +52,60 @@
       </span>
     </button>
   </div>
-
-  <div class="hero-side">
-    <dl class="specs">
-      @for (s of specs; track s.k) {
-        <div>
-          <dt>{{ s.k }}</dt>
-          <dd>{{ s.v }}</dd>
-          @if (s.tag) { <span class="tag">{{ s.tag }}</span> }
-        </div>
-      }
-    </dl>
-  </div>
-</section>
-
-<section class="steps">
-  <div class="steps-row">
-    @for (s of steps; track s.n; let i = $index) {
-      <article class="step">
-        <div class="step-top">
-          <span class="step-link">
-            <button class="step-num" type="button" [class.on]="openStep === i" [attr.aria-expanded]="openStep === i" [attr.aria-label]="'Step ' + s.n + ' details'" (click)="openStep = openStep === i ? -1 : i"><span>{{ s.n }}</span></button>
-          </span>
-          <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)">
-            <span class="step-media">
-              <img [src]="s.thumb" [alt]="s.t" />
-              <span class="play" aria-hidden="true"></span>
-            </span>
-          </button>
-        </div>
-        <h3>{{ s.t }}</h3>
-        <div class="step-more" [class.open]="openStep === i">
-          <div>
-            <p>{{ s.d }}</p>
-            <small>{{ s.m }}</small>
-          </div>
-        </div>
-      </article>
-    }
-  </div>
 </section>
 
 @if (videoOpen) {
   <div class="lightbox" (click)="closeVideo()">
     <div class="lightbox-box" (click)="$event.stopPropagation()">
-      <button class="lightbox-close" type="button" (click)="closeVideo()">Close</button>
-      <video [src]="activeSrc" [poster]="activeThumb" controls autoplay playsinline></video>
+      <div class="lightbox-bar">
+        @if (hasPrev) {
+          <button class="lightbox-prev" type="button" (click)="prevVideo()">&larr; Prev</button>
+        }
+        @if (hasNext) {
+          <button class="lightbox-next" type="button" (click)="nextVideo()">Next video &rarr;</button>
+        }
+        <button class="lightbox-close" type="button" (click)="closeVideo()">Close</button>
+      </div>
+      <div class="lightbox-stage">
+        <video #lbVideo [src]="activeSrc" [poster]="activeThumb" autoplay playsinline preload="auto"
+               (click)="toggleVideo(lbVideo)"
+               (loadstart)="onVideoStart()"
+               (loadeddata)="onVideoReady(lbVideo)" (canplay)="onVideoReady(lbVideo)" (playing)="onVideoReady(lbVideo)"
+               (waiting)="vLoading = true" (error)="onVideoError()"
+               (timeupdate)="onVideoTime(lbVideo)" (loadedmetadata)="onVideoTime(lbVideo)"
+               (play)="vPaused = false" (pause)="vPaused = true" (ended)="vPaused = true"></video>
+
+        @if (vLoading && !vError) {
+          <div class="video-loader" role="status" aria-live="polite">
+            <span class="loader-ring"></span>
+            <span class="loader-text">Loading video</span>
+          </div>
+        }
+
+        @if (vError) {
+          <div class="video-loader video-error" role="alert">
+            <span class="loader-text">Video unavailable</span>
+            <button class="v-retry" type="button" (click)="retryVideo(lbVideo)">Retry</button>
+          </div>
+        }
+
+        <div class="video-controls">
+          <button class="v-btn" type="button" (click)="toggleVideo(lbVideo)" [attr.aria-label]="vPaused ? 'Play' : 'Pause'">
+            @if (vPaused) {
+              <svg class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            } @else {
+              <svg class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+            }
+          </button>
+          <span class="v-time">{{ vCur }}</span>
+          <input class="v-seek" type="range" min="0" max="1000" [value]="vProgress" (input)="seekVideo(lbVideo, $event)" aria-label="Seek" />
+          <span class="v-time">{{ vDur }}</span>
+          <button class="v-btn" type="button" (click)="toggleMute(lbVideo)">{{ vMuted ? 'Muted' : 'Sound' }}</button>
+          <button class="v-btn" type="button" (click)="fullscreenVideo(lbVideo)" aria-label="Fullscreen">
+            <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 }
@@ -183,36 +218,4 @@
       <p class="panel-note">Indicative only. Final duty is based on the KRA valuation and the rates in force when the car is entered, so your formal quote may differ.</p>
     </div>
   </aside>
-</section>
-
-<section class="know">
-  <header class="know-head">
-    <h2>Good to know</h2>
-    <p>The questions we hear most before an import.</p>
-  </header>
-
-  <div class="know-body">
-    <ul class="faq-q" role="tablist" aria-label="Import questions">
-      @for (f of faqs; track f.q; let i = $index) {
-        <li>
-          <button type="button" role="tab" [class.on]="openFaq === i"
-                  [attr.aria-selected]="openFaq === i" (click)="openFaq = i">
-            <span>{{ f.q }}</span>
-            <i class="arrow" aria-hidden="true"></i>
-          </button>
-        </li>
-      }
-    </ul>
-
-    <div class="faq-a" role="tabpanel" aria-live="polite">
-      @for (f of faqs; track f.q; let i = $index) {
-        @if (openFaq === i) {
-          <article class="answer">
-            <h3>{{ f.q }}</h3>
-            <p>{{ f.a }}</p>
-          </article>
-        }
-      }
-    </div>
-  </div>
 </section>

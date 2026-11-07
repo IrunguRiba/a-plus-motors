@@ -1,99 +1,128 @@
-<div class="about-us-container">
+<div class="privacy-page" (click)="close()">
+  <div class="privacy-card" #contentArea role="dialog" aria-modal="true" aria-label="Privacy and complaints" (click)="$event.stopPropagation()">
 
-    <nav class="nav-wrapper">
-      <div class="nav-item">PRIVACY & LEGAL</div>
-      <div class="nav-item" (click)="goToStore()">OUR STORE</div>
-      <div class="nav-item" (click)="goToFinance()">FINANCING</div>
-      <div class="nav-item" (click)="goToBlogs()">SUBSIDIARIES</div>
-      <div class="nav-item" (click)="goHome()">HOME</div>
-    </nav>
-  
-    <div class="section-tabs">
-      <div
-        *ngFor="let page of pages; let i = index"
-        class="tab-item"
-        [ngClass]="{'active': i === activeIndex}"
-        (click)="setActivePage(i)">
-        {{ page.navText }}
+    <!-- Close stays fixed -->
+    <button class="pv-close" type="button" (click)="close()" aria-label="Close">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+
+    <!-- ============ PINNED HEADER: logo + navs ============ -->
+    <div class="pv-head">
+      <div class="pv-brand">
+        <img [src]="logoImg" alt="A PLUS LTD" class="pv-logo" />
+        <span class="logo-tagline">Driving that suits you</span>
+      </div>
+
+      <div class="pv-switch" role="tablist" aria-label="Privacy view">
+        <button class="pv-switch-btn" role="tab" type="button"
+                [class.active]="view === 'data'" [attr.aria-selected]="view === 'data'"
+                (click)="setView('data')">
+          <span class="material-symbols-outlined">shield</span><span>Data protection</span>
+        </button>
+        <button class="pv-switch-btn" role="tab" type="button"
+                [class.active]="view === 'complaint'" [attr.aria-selected]="view === 'complaint'"
+                (click)="setView('complaint')">
+          <span class="material-symbols-outlined">edit_note</span><span>Complaint</span>
+        </button>
+      </div>
+
+      <div class="pv-tabs" role="tablist" aria-label="Privacy sections" *ngIf="view === 'data'">
+        <button class="pv-tab" role="tab" type="button" *ngFor="let p of pages; let i = index"
+                [class.active]="i === activeIndex" [attr.aria-selected]="i === activeIndex"
+                (click)="setActivePage(i)">{{ p.tab }}</button>
       </div>
     </div>
-  
-    <main class="content-area" #contentArea>
-  
-      <header class="page-header">
-        <h1>{{ pages[activeIndex].title }}</h1>
-        <div class="divider"></div>
-      </header>
-  
-      <div class="page-body">
-        <p>{{ pages[activeIndex].content }}</p>
-  
-        <div class="complaint-address-box">
-          <h3>Official Compliance & Complaint Address:</h3>
-          <p><strong>A-Plus Motors Limited - Data Protection & Legal Compliance Desk</strong></p>
-          <p>P.O. Box 45200 - 00100, Nairobi, Kenya</p>
-          <p>Physical Location: Main Showroom & Executive Offices, Nairobi, Kenya</p>
-          <p>Email for Formal Complaints: <a href="mailto:compliance@aplusmotors.co.ke">compliance@aplusmotors.co.ke</a> | DPO Direct Line: +254 700 000000</p>
-        </div>
-  
-        <div class="floating-modal-wrapper">
-          <div class="floating-report-box">
-  
-            <h3>Complaint or Inquiry</h3>
-            <p class="form-instructions">Kindly provide your vehicle purchase/inquiry details and specify your compliance issue below:</p>
-  
-            <div class="report-form">
-              <input
-                type="text"
-                class="form-input-field"
-                [(ngModel)]="clientName"
-                placeholder="Full Name (as per ID or Logbook)" />
-  
-              <input
-                type="email"
-                class="form-input-field"
-                [(ngModel)]="userEmail"
-                placeholder="Email Address" />
-  
-              <input
-                type="text"
-                class="form-input-field"
-                [(ngModel)]="vehicleDetails"
-                placeholder="Vehicle Model / Plate Number / File Reference (Optional)" />
-  
-              <select
-                class="form-input-field form-select"
-                [(ngModel)]="complaintCategory"
-                required>
-                <option value="" disabled selected>Select Complaint / Inquiry Category</option>
-                <option value="data-privacy">Data Protection & Privacy Breach</option>
-                <option value="logbook-transfer">NTSA / Logbook Transfer Delay</option>
-                <option value="financing">Asset Financing / Bank Dispute</option>
-                <option value="showroom-service">Showroom Service or Sales Issue</option>
-                <option value="other">Other Legal / Compliance Matter</option>
-              </select>
-  
-              <textarea
-                class="form-input-field"
-                [(ngModel)]="complaintMessage"
-                placeholder="Provide a detailed description of your complaint or violation report..."
-                rows="5"></textarea>
-  
-              <div class="form-footer-action" (click)="submitComplaint()">
-                <span class="next-step-trigger">SUBMIT COMPLAINT</span>
-                <div class="bottom-action-line"></div>
-              </div>
-  
-              <div *ngIf="successMessage" class="success-alert">{{ successMessage }}</div>
-            </div>
-  
+
+    <!-- ============ SCROLLING DETAILS ONLY ============ -->
+    <div class="pv-scroll" #scroller>
+
+      <!-- DATA PROTECTION -->
+      <div class="pv-pane" *ngIf="view === 'data'">
+        <section class="pv-body">
+          <span class="pv-eyebrow">Privacy &amp; Legal</span>
+          <h1 class="pv-title">{{ pages[activeIndex].title }}</h1>
+          <p class="pv-summary">{{ pages[activeIndex].summary }}</p>
+
+          <ul class="pv-points">
+            <li *ngFor="let pt of pages[activeIndex].points">{{ pt }}</li>
+          </ul>
+
+          <div class="pv-violated">
+            <b>If violated</b>
+            <ol>
+              <li *ngFor="let s of pages[activeIndex].steps">{{ s }}</li>
+            </ol>
           </div>
-        </div>
-  
-        <div class="commitment-footer-statement">
-          WE ARE COMMITED TO SERVE YOU
-        </div>
+        </section>
       </div>
-  
-    </main>
+
+      <!-- COMPLAINT: success state -->
+      <div class="pv-pane pv-done" *ngIf="view === 'complaint' && submitted">
+        <span class="material-symbols-outlined pv-done-icon">check</span>
+        <h3>Thank you, {{ clientName }}</h3>
+        <p>Your complaint has been noted. Send it to our team on WhatsApp so we can reach you faster.</p>
+        <a class="pv-submit" [href]="waLink" target="_blank" rel="noopener">Send via WhatsApp</a>
+        <button type="button" class="pv-ghost" (click)="close()">Close</button>
+      </div>
+
+      <!-- COMPLAINT: form -->
+      <div class="pv-pane" *ngIf="view === 'complaint' && !submitted">
+        <form class="pv-form" (ngSubmit)="submitComplaint()" novalidate>
+          <div class="pv-form-head">
+            <span class="pv-eyebrow">Complaint or inquiry</span>
+            <h2 class="pv-form-title">Tell us what happened</h2>
+          </div>
+
+          <div class="pv-field" [class.invalid]="attempted && !nameValid">
+            <label for="pvName">Full name</label>
+            <input id="pvName" name="name" type="text" autocomplete="name" [(ngModel)]="clientName" placeholder="As per ID or logbook" />
+            <small *ngIf="attempted && !nameValid">Please enter your name.</small>
+          </div>
+
+          <div class="pv-field" [class.invalid]="attempted && !emailValid">
+            <label for="pvEmail">Email address</label>
+            <input id="pvEmail" name="email" type="email" autocomplete="email" [(ngModel)]="userEmail" placeholder="you@example.com" />
+            <small *ngIf="attempted && !emailValid">Please enter a valid email.</small>
+          </div>
+
+          <div class="pv-field">
+            <label for="pvVehicle">Vehicle / plate / file ref (optional)</label>
+            <input id="pvVehicle" name="vehicle" type="text" [(ngModel)]="vehicleDetails" placeholder="e.g. BMW i4 · KDA 123A" />
+          </div>
+
+          <div class="pv-field" [class.invalid]="attempted && !categoryValid">
+            <label for="pvCat">Category</label>
+            <select id="pvCat" name="category" [(ngModel)]="complaintCategory">
+              <option value="" disabled>Select a category</option>
+              <option *ngFor="let c of categories" [value]="c.value">{{ c.label }}</option>
+            </select>
+            <small *ngIf="attempted && !categoryValid">Please choose a category.</small>
+          </div>
+
+          <div class="pv-field" [class.invalid]="attempted && !messageValid">
+            <label for="pvMsg">Details</label>
+            <textarea id="pvMsg" name="message" rows="4" [(ngModel)]="complaintMessage" placeholder="Describe your complaint or violation report"></textarea>
+            <small *ngIf="attempted && !messageValid">Please describe the issue.</small>
+          </div>
+
+          <button type="submit" class="pv-submit">Submit complaint</button>
+        </form>
+      </div>
+
+      <!-- COMPLIANCE DESK (the only contact block) -->
+      <div class="pv-desk">
+        <span class="pv-eyebrow">Compliance desk</span>
+        <p><strong>A-Plus Motors Limited · Data Protection &amp; Legal</strong></p>
+        <p>P.O. Box 45200 - 00100, Nairobi, Kenya</p>
+        <p><a href="mailto:compliance@aplusmotors.co.ke">compliance@aplusmotors.co.ke</a> · DPO +254 700 000000</p>
+      </div>
+    </div>
+
+    <!-- Pinned tagline -->
+    <footer class="pv-tagline">
+      <span class="tagline-rule"></span>
+      <p class="tagline-text">Committed to serving you</p>
+      <span class="tagline-rule"></span>
+    </footer>
   </div>
+</div>

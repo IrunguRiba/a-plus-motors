@@ -78,6 +78,15 @@ export class Imported implements OnDestroy {
   activeThumb = this.videoThumb;
   openStep = -1;
 
+  // Custom video controls (same as the specs review video)
+  vLoading = false;
+  vError = false;
+  vPaused = false;
+  vMuted = false;
+  vProgress = 0;
+  vCur = '0:00';
+  vDur = '0:00';
+
   faqs = [
     { q: 'How old can an imported car be?', a: 'Kenya generally allows used vehicles up to 8 years from the year of manufacture. We confirm eligibility for the exact car before you commit to anything.' },
     { q: 'How long does it take?', a: 'About eight weeks from brief to delivery: sourcing and inspection in week 1, shipping in weeks 2–6, clearing in week 7 and delivery in week 8.' },
@@ -136,12 +145,79 @@ export class Imported implements OnDestroy {
   openVideo(src: string = this.videoSrc, thumb: string = this.videoThumb): void {
     this.activeSrc = src;
     this.activeThumb = thumb;
+    if (!this.videoOpen) this.vMuted = false;   // keep the mute choice while moving between videos
+    this.vPaused = false; this.vProgress = 0; this.vCur = '0:00'; this.vDur = '0:00';
+    this.vLoading = true;    // shown until the browser has enough data to play
+    this.vError = false;
     this.videoOpen = true;
     document.body.style.overflow = 'hidden';
   }
 
+  // ---------- Video controls ----------
+  onVideoStart(): void { this.vLoading = true; this.vError = false; }
+
+  /** Enough data to play: hide the loader and sync the play/pause icon (autoplay may be blocked). */
+  onVideoReady(v: HTMLVideoElement): void {
+    this.vLoading = false;
+    this.vError = false;
+    this.vPaused = v.paused;
+    this.onVideoTime(v);
+  }
+  onVideoError(): void { this.vLoading = false; this.vError = true; }
+  retryVideo(v: HTMLVideoElement): void {
+    this.vError = false;
+    this.vLoading = true;
+    v.load();
+    v.play().catch(() => { /* autoplay blocked: user can press play */ });
+  }
+
+  private fmt(s: number): string {
+    if (!isFinite(s) || s < 0) return '0:00';
+    return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  }
+  onVideoTime(v: HTMLVideoElement): void {
+    this.vCur = this.fmt(v.currentTime);
+    this.vDur = this.fmt(v.duration);
+    this.vProgress = v.duration ? Math.round((v.currentTime / v.duration) * 1000) : 0;
+  }
+  toggleVideo(v: HTMLVideoElement): void { v.paused ? v.play() : v.pause(); }
+  seekVideo(v: HTMLVideoElement, e: Event): void {
+    const val = +(e.target as HTMLInputElement).value;
+    if (v.duration) v.currentTime = (v.duration * val) / 1000;
+  }
+  toggleMute(v: HTMLVideoElement): void { v.muted = !v.muted; this.vMuted = v.muted; }
+  fullscreenVideo(v: HTMLVideoElement): void { v.requestFullscreen?.().catch(() => {}); }
+
+  /** Playlist order: hero video, then steps 01 to 04. */
+  private get playlist(): { video: string; thumb: string }[] {
+    return [
+      { video: this.videoSrc, thumb: this.videoThumb },
+      ...this.steps.map(s => ({ video: s.video, thumb: s.thumb })),
+    ];
+  }
+  get videoIndex(): number {
+    return Math.max(0, this.playlist.findIndex(p => p.video === this.activeSrc));
+  }
+  /** Prev is hidden on the hero video; Next is hidden on the last step (only Prev is left there). */
+  get hasPrev(): boolean { return this.videoIndex > 0; }
+  get hasNext(): boolean { return this.videoIndex < this.playlist.length - 1; }
+
+  nextVideo(): void {
+    if (!this.hasNext) return;
+    const n = this.playlist[this.videoIndex + 1];
+    this.openVideo(n.video, n.thumb);
+  }
+
+  prevVideo(): void {
+    if (!this.hasPrev) return;
+    const p = this.playlist[this.videoIndex - 1];
+    this.openVideo(p.video, p.thumb);
+  }
+
   closeVideo(): void {
     this.videoOpen = false;
+    this.vLoading = false;
+    this.vError = false;
     document.body.style.overflow = '';
   }
 

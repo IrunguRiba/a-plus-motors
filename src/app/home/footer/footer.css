@@ -198,6 +198,7 @@
   border: 1px solid #000000;
   padding: 10px 28px;
   transition: border-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
 }
 
 .nav-links-list a:hover,

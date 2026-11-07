@@ -1,8 +1,19 @@
-import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef, HostListener, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { gsap } from 'gsap';
+
+type PrivacyView = 'data' | 'complaint';
+
+interface PrivacyPage {
+  id: string;
+  tab: string;
+  title: string;
+  summary: string;
+  points: string[];
+  steps: string[];
+}
 
 @Component({
   selector: 'app-privacy',
@@ -13,143 +24,194 @@ import { gsap } from 'gsap';
 export class PrivacyPolicy implements AfterViewInit, OnDestroy {
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
-  activeIndex: number = 0;
-  clientName: string = '';
-  userEmail: string = '';
-  vehicleDetails: string = '';
-  complaintCategory: string = '';
-  complaintMessage: string = '';
-  successMessage: string = '';
-  
-  @ViewChild('contentArea', { static: false }) contentArea!: ElementRef;
+  private location = inject(Location);
 
+  logoImg = 'fav3.png';
 
-  pages = [
+  view: PrivacyView = 'data';
+  activeIndex = 0;
+  clientName = '';
+  userEmail = '';
+  vehicleDetails = '';
+  complaintCategory = '';
+  complaintMessage = '';
+  attempted = false;
+  submitted = false;
+  whatsappNumber = '254707555666';
+
+  @ViewChild('contentArea', { static: false }) contentArea!: ElementRef<HTMLElement>;
+  @ViewChild('scroller', { static: false }) scroller!: ElementRef<HTMLElement>;
+
+  categories = [
+    { value: 'data-privacy', label: 'Data protection & privacy breach' },
+    { value: 'logbook-transfer', label: 'NTSA / logbook transfer delay' },
+    { value: 'financing', label: 'Asset financing / bank dispute' },
+    { value: 'showroom-service', label: 'Showroom service or sales issue' },
+    { value: 'other', label: 'Other legal / compliance matter' }
+  ];
+
+  pages: PrivacyPage[] = [
     {
       id: 'data-protection',
-      navText: 'I. Data Protection',
-      title: 'I. Data Protection Policy',
-      content: `DEAR ESTEEM CUSTOMER,
-
-      At A-Plus Motors Limited, we value your privacy and are fully committed to safeguarding your personal information.
-
-      • Constitutional & Legal Foundation: Guided by the fundamental right to privacy under Article 31 of the Constitution of Kenya and the Data Protection Act, any information collected during vehicle inquiries, test drives, or purchases (such as your name, contact details, ID/passport copy, and KRA PIN) is strictly processed for lawful business purposes.
-      • Security Protocols: We implement robust physical, technical, and administrative security measures to protect your records against unauthorized access, alteration, disclosure, or loss.
-
-      WHAT TO DO IF YOUR DATA IS VIOLATED:
-      (i) Notify our Data Protection Officer (DPO) immediately in writing via email or through our official main office. We are legally mandated to investigate and respond within 72 hours.
-      (ii) If you are unsatisfied with our resolution, you have the statutory right to lodge a formal complaint directly with the Office of the Data Protection Commissioner (ODPC).`
+      tab: 'Data',
+      title: 'Data Protection',
+      summary: 'We protect your personal information under Article 31 of the Constitution of Kenya and the Data Protection Act. Details from inquiries, test drives and purchases are used only for lawful business purposes.',
+      points: [
+        'Covers name, contacts, ID / passport copy and KRA PIN.',
+        'Physical, technical and administrative safeguards guard against loss or misuse.'
+      ],
+      steps: [
+        'Write to our Data Protection Officer; we respond within 72 hours.',
+        'Still unresolved? Lodge a complaint with the Office of the Data Protection Commissioner (ODPC).'
+      ]
     },
     {
       id: 'cookie-policy',
-      navText: 'II. Cookie Policy',
-      title: 'II. Cookie & Tracking Policy',
-      content: `Our website uses cookies and tracking technologies to enhance your browsing experience as you explore our inventory of new and second-hand vehicles.
-
-      • Purpose of Cookies: Cookies help us analyze site traffic, remember your user preferences, and personalize vehicle listings in alignment with consumer protection standards.
-      • Your Control: You retain full control over your tracking preferences and can disable cookies at any time via your individual browser settings. Note that disabling essential cookies may impact certain interactive site features.
-
-      WHAT TO DO IF VIOLATED:
-      (i) Clear your browser cookies immediately and report any tracking anomalies or security concerns to our IT and Compliance desk.
-      (ii) Block all non-essential site trackers via your browser controls or report persistent infractions to consumer protection authorities.`
+      tab: 'Cookies',
+      title: 'Cookies & Tracking',
+      summary: 'Our website uses cookies to analyse traffic, remember your preferences and personalise vehicle listings.',
+      points: [
+        'You can disable cookies any time in your browser settings.',
+        'Turning off essential cookies may limit some interactive features.'
+      ],
+      steps: [
+        'Clear your cookies and report tracking concerns to our IT & Compliance desk.',
+        'Block non-essential trackers, or report persistent issues to consumer protection authorities.'
+      ]
     },
     {
       id: 'information-collection',
-      navText: 'III. Information Collection',
-      title: 'III. Collection of Information',
-      content: `We collect information directly from you when you interact with A-Plus Motors Limited to ensure smooth vehicle transactions.
-
-      • When We Collect: Information is gathered when you fill out vehicle reservation forms, request asset financing support, register imported cars, or communicate with our customer support teams.
-      • Purpose of Collection: This data enables us to verify identities, process logbook transfers, coordinate clearing and registration documents seamlessly, and provide reliable after-sale maintenance reminders.
-
-      WHAT TO DO IF VIOLATED:
-      (i) If you discover we have collected information without your explicit consent or recorded inaccurate details, request immediate rectification.
-      (ii) Submit a written correction request to our customer management team specifying the errors, and we will update or purge your records within 7 business days.`
+      tab: 'Collection',
+      title: 'Information Collection',
+      summary: 'We collect information directly from you to keep vehicle transactions smooth and verifiable.',
+      points: [
+        'Collected through reservations, financing requests, import registrations and support chats.',
+        'Used to verify identity, process logbook transfers, handle clearing and registration, and send after-sale reminders.'
+      ],
+      steps: [
+        'Request rectification if data was taken without consent or is inaccurate.',
+        'Send a written correction request; we update or purge records within 7 business days.'
+      ]
     },
     {
       id: 'financing-privacy',
-      navText: 'IV. Financing & Third Parties',
-      title: 'IV. Asset Financing & Third Parties',
-      content: `When applying for vehicle loans or asset financing through our partner banking institutions, certain personal and financial records must be shared to facilitate credit appraisal.
-
-      • Trusted Partnerships: We only share necessary data with trusted financial partners, insurance providers, and regulatory authorities (such as the National Transport and Safety Authority - NTSA) under strict confidentiality agreements.
-      • Zero Resale Policy: We strictly never sell, rent, or trade your personal data to third-party marketing agencies.
-
-      WHAT TO DO IF VIOLATED:
-      (i) If your financial data or credit profile is shared outside the scope of your loan application, request an immediate audit trail of your data from our finance department.
-      (ii) If unauthorized disclosure is confirmed, you may seek statutory compensation or report the breach to the Central Bank of Kenya (CBK) financial consumer protection division and the ODPC.`
+      tab: 'Financing',
+      title: 'Financing & Third Parties',
+      summary: 'Loan and asset-finance applications require sharing certain records with partner banks for credit appraisal.',
+      points: [
+        'Data goes only to trusted financiers, insurers and regulators such as NTSA, under confidentiality agreements.',
+        'We never sell, rent or trade your data to marketing agencies.'
+      ],
+      steps: [
+        'Ask our finance department for an audit trail if data is shared beyond your application.',
+        'If disclosure is confirmed, seek compensation or report to the CBK consumer protection division and the ODPC.'
+      ]
     },
     {
       id: 'user-rights',
-      navText: 'V. Your Rights & Contact',
-      title: 'V. Your Rights & Contact Information',
-      content: `You retain full constitutional and legal rights regarding the handling of your personal information by A-Plus Motors Limited.
-
-      • Your Core Rights: You have the right to request access to, correction of, or complete erasure ("right to be forgotten") of any personal data we hold about you.
-      • Contact Compliance: For any inquiries, concerns, or formal requests regarding our privacy practices, reach out directly to our compliance department through our main office or official channels.
-
-      WHAT TO DO IF VIOLATED:
-      (i) If your formal data requests are ignored, delayed beyond statutory timeframes, or unlawfully denied, you have the absolute right to escalate the matter.
-      (ii) You can file a legal petition citing a breach of statutory data subject rights under the Data Protection Act or seek redress and compensation through the High Court of Kenya for infringement of your constitutional right to privacy.`
+      tab: 'Your rights',
+      title: 'Your Rights & Contact',
+      summary: 'You keep full legal rights over your personal data held by A-Plus Motors Limited.',
+      points: [
+        'Right to access, correct or erase your data ("right to be forgotten").',
+        'Send requests or concerns to our compliance department via the main office or official channels.'
+      ],
+      steps: [
+        'If a request is ignored, delayed or unlawfully denied, you may escalate it.',
+        'File a petition under the Data Protection Act or seek redress at the High Court of Kenya.'
+      ]
     }
   ];
 
+  // ---------- Validation ----------
+  get nameValid(): boolean { return this.clientName.trim().length >= 2; }
+  get emailValid(): boolean { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.userEmail.trim()); }
+  get categoryValid(): boolean { return !!this.complaintCategory; }
+  get messageValid(): boolean { return this.complaintMessage.trim().length >= 5; }
+  get formValid(): boolean { return this.nameValid && this.emailValid && this.categoryValid && this.messageValid; }
+
+  // ---------- Lifecycle ----------
   ngAfterViewInit(): void {
-    this.animateContentIn();
+    document.body.style.overflow = 'hidden';
+    gsap.fromTo(this.contentArea.nativeElement,
+      { opacity: 0, y: 18, scale: 0.98 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'power3.out', clearProps: 'transform,opacity' });
   }
 
-  setActivePage(index: number) {
-    if (this.activeIndex === index) return;
-    
-    this.resetForm();
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
+    gsap.killTweensOf(this.contentArea?.nativeElement);
+  }
 
-    // Animate out current content
-    gsap.to(this.contentArea.nativeElement, {
-      opacity: 0,
-      y: 15,
-      duration: 0.25,
+  // ---------- Views ----------
+  setView(v: PrivacyView): void {
+    if (v === this.view) return;
+    if (v === 'complaint' && this.submitted) this.resetForm();   // fresh form after a sent complaint
+    this.view = v;
+    this.cdr.detectChanges();
+    this.scroller?.nativeElement.scrollTo({ top: 0 });
+  }
+
+  setActivePage(index: number): void {
+    if (this.activeIndex === index) return;
+    const body = this.contentArea.nativeElement.querySelector('.pv-body');
+    if (!body) { this.activeIndex = index; return; }
+    gsap.to(body, {
+      opacity: 0, y: 10, duration: 0.2,
       onComplete: () => {
         this.activeIndex = index;
         this.cdr.detectChanges();
-        this.animateContentIn();
+        gsap.fromTo(body, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', clearProps: 'transform,opacity' });
       }
     });
   }
 
-  animateContentIn() {
-    if (!this.contentArea) return;
-    gsap.fromTo(
-      this.contentArea.nativeElement,
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-    );
+  // ---------- Form ----------
+  submitComplaint(): void {
+    this.attempted = true;
+    if (!this.formValid) return;
+    this.submitted = true;
+    this.cdr.detectChanges();
+    this.scroller?.nativeElement.scrollTo({ top: 0 });
   }
 
-  submitComplaint() {
-    if (!this.clientName.trim() || !this.userEmail.trim() || !this.complaintCategory || !this.complaintMessage.trim()) {
-      alert('Please fill out all required fields and select a complaint category before proceeding.');
-      return;
-    }
-    this.successMessage = '✓ Complaint sent successfully. Our Customer service will be in touch shortly...';
-    
-    setTimeout(() => {
-      this.successMessage = '';
-      this.resetForm();
-    }, 5000);
+  get categoryLabel(): string {
+    return this.categories.find(c => c.value === this.complaintCategory)?.label ?? '';
   }
 
-  resetForm() {
+  get waLink(): string {
+    const lines = [
+      `Hello A Plus Motors, I'd like to lodge a complaint / inquiry.`,
+      `Name: ${this.clientName.trim()}`,
+      `Email: ${this.userEmail.trim()}`,
+      `Category: ${this.categoryLabel}`
+    ];
+    if (this.vehicleDetails.trim()) lines.push(`Vehicle: ${this.vehicleDetails.trim()}`);
+    lines.push(`Details: ${this.complaintMessage.trim()}`);
+    return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
+  }
+
+  resetForm(): void {
     this.clientName = '';
     this.userEmail = '';
     this.vehicleDetails = '';
     this.complaintCategory = '';
     this.complaintMessage = '';
+    this.attempted = false;
+    this.submitted = false;
   }
 
-  goHome(): void { this.router.navigate(['']); }
-  goToStore() { this.router.navigate(['/store']); }
-  goToFinance() { this.router.navigate(['/financing']); }
-  goToBlogs() { this.router.navigate(['/blogs']); }
+  // ---------- Close ----------
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.close(); }
 
-  ngOnDestroy(): void {}
+  close(): void {
+    gsap.to(this.contentArea.nativeElement, {
+      opacity: 0, y: 14, scale: 0.98, duration: 0.3, ease: 'power2.inOut',
+      onComplete: () => {
+        if (window.history.length > 1) this.location.back();
+        else this.router.navigate(['']);
+      }
+    });
+  }
 }
