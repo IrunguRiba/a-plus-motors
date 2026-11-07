@@ -52,10 +52,9 @@ export class TradeIn implements OnDestroy {
   });
 
   specs = [
-    { k: 'Offer basis', v: 'Year, mileage, condition and market demand', tag: 'Instant range.' },
+    { k: 'Offer basis', v: 'Year, mileage, condition and market demand', tag: '' },
     { k: 'Inspection', v: 'A short in-person check at our yard', tag: 'Free inspection.' },
-    { k: 'Car on loan?', v: 'We can settle the balance for you', tag: '' },
-    { k: 'Paperwork', v: 'Logbook transfer handled by us', tag: 'Same-day swap' },
+    { k: 'Paperwork', v: 'Logbook transfer handled by us', tag: '' },
   ];
 
   videoOpen = false;
@@ -63,7 +62,6 @@ export class TradeIn implements OnDestroy {
   videoThumb = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop';
   activeSrc = this.videoSrc;
   activeThumb = this.videoThumb;
-  openStep = -1;
 
   // Custom video controls (same as the import page)
   vLoading = false;
@@ -81,7 +79,8 @@ export class TradeIn implements OnDestroy {
       d: 'Tell us about your car.',
       m: 'Briefly',
       thumb: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=800&auto=format&fit=crop',
-      video: 'assets/steps/describe.mp4'
+      video: 'assets/steps/describe.mp4',
+      points: ['Make, model, year and mileage', 'Fuel, transmission and condition', 'Add up to 6 photos (optional)']
     },
     {
       n: '02',
@@ -89,7 +88,8 @@ export class TradeIn implements OnDestroy {
       d: 'See an indicative offer instantly, no sign-up.',
       m: 'Instant',
       thumb: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=800&auto=format&fit=crop',
-      video: 'assets/steps/range.mp4'
+      video: 'assets/steps/range.mp4',
+      points: ['Low, mid and high offer range', 'Based on age, mileage and condition', 'See your balance on an upgrade car']
     },
     {
       n: '03',
@@ -97,7 +97,8 @@ export class TradeIn implements OnDestroy {
       d: 'Book a slot. We check the car and confirm the number.',
       m: 'At our yard',
       thumb: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800&auto=format&fit=crop',
-      video: 'assets/steps/inspect.mp4'
+      video: 'assets/steps/inspect.mp4',
+      points: ['Pick a day and time that suits you', 'Quick check of body, engine and papers', 'Free, with no obligation']
     },
     {
       n: '04',
@@ -105,7 +106,8 @@ export class TradeIn implements OnDestroy {
       d: 'Pick your next car. We handle the paperwork.',
       m: 'Same day',
       thumb: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?q=80&w=800&auto=format&fit=crop',
-      video: 'assets/steps/swap.mp4'
+      video: 'assets/steps/swap.mp4',
+      points: ['Final offer confirmed in person', 'We handle the paperwork and transfer', 'Drive away in your next car']
     },
   ];
 
@@ -240,6 +242,18 @@ export class TradeIn implements OnDestroy {
   }
   toggleMute(v: HTMLVideoElement): void { v.muted = !v.muted; this.vMuted = v.muted; }
   fullscreenVideo(v: HTMLVideoElement): void { v.requestFullscreen?.().catch(() => {}); }
+
+  // ---------- Hover previews (muted, looping) ----------
+  previewPlay(v: HTMLVideoElement): void {
+    v.muted = true;
+    v.play().catch(() => { /* blocked or interrupted: the thumbnail stays visible */ });
+  }
+  previewShow(v: HTMLVideoElement): void { v.style.opacity = '1'; }
+  previewStop(v: HTMLVideoElement): void {
+    v.pause();
+    v.currentTime = 0;
+    v.style.opacity = '0';
+  }
 
   /** Playlist order: hero video, then steps 01 to 04. */
   private get playlist(): { video: string; thumb: string }[] {

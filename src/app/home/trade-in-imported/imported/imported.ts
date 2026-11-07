@@ -36,49 +36,51 @@ export class Imported implements OnDestroy {
   ];
 
   steps = [
-    { 
-      n: '01', 
-      t: 'Brief', 
-      d: 'Tell us the car you want and we confirm it is eligible.', 
-      m: 'Approx. 1 Week', 
-      thumb: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800&auto=format&fit=crop', // Team meeting/briefing
-      video: 'assets/steps/brief.mp4' 
+    {
+      n: '01',
+      t: 'Brief',
+      d: 'Tell us the car you want and we confirm it is eligible.',
+      m: 'Approx. 1 Week',
+      thumb: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800&auto=format&fit=crop',
+      video: 'assets/steps/brief.mp4',
+      points: ['Tell us the make, model and year', 'We confirm it is eligible (up to 8 years)', 'Choose Japan, UK, UAE or South Africa']
     },
-    { 
-      n: '02', 
-      t: 'Source & inspect', 
-      d: 'We find the car overseas and send an inspection report before you commit.', 
-      m: 'Approx. 1 Week', 
-      thumb: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800&auto=format&fit=crop', // Car inspection
-      video: 'assets/steps/source.mp4' 
+    {
+      n: '02',
+      t: 'Source & inspect',
+      d: 'We find the car overseas and send an inspection report before you commit.',
+      m: 'Approx. 1 Week',
+      thumb: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800&auto=format&fit=crop',
+      video: 'assets/steps/source.mp4',
+      points: ['We find the car overseas', 'Inspection report before you commit', 'Free, with no obligation']
     },
-    { 
-      n: '03', 
-      t: 'Ship', 
-      d: 'Your car is shipped to Mombasa.', 
-      m: 'Approx. 2–6 Weeks', 
-      thumb: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?q=80&w=800&auto=format&fit=crop', // Cargo ship
-      video: 'assets/steps/ship.mp4' 
+    {
+      n: '03',
+      t: 'Ship',
+      d: 'Your car is shipped to Mombasa.',
+      m: 'Approx. 2–6 Weeks',
+      thumb: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?q=80&w=800&auto=format&fit=crop',
+      video: 'assets/steps/ship.mp4',
+      points: ['Shipped to Mombasa', 'Shipping and insurance in the estimate', 'Updates from our team along the way']
     },
-    { 
-      n: '04', 
-      t: 'Clear & deliver', 
-      d: 'We clear it through KRA and KEBS, register it and hand you the keys.', 
-      m: 'Approx. 7–8 Weeks', 
-      thumb: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=800&auto=format&fit=crop', // Handing over keys
-      video: 'assets/steps/deliver.mp4' 
+    {
+      n: '04',
+      t: 'Clear & deliver',
+      d: 'We clear it through KRA and KEBS, register it and hand you the keys.',
+      m: 'Approx. 7–8 Weeks',
+      thumb: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=800&auto=format&fit=crop',
+      video: 'assets/steps/deliver.mp4',
+      points: ['KRA duty and KEBS handled by us', 'Registration done for you', 'Keys handed over in Nairobi']
     },
   ];
 
   videoOpen = false;
   videoSrc = 'assets/hero.mp4';
-  // Replaced hero thumbnail with a high-quality car image
   videoThumb = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1200&auto=format&fit=crop';
   activeSrc = this.videoSrc;
   activeThumb = this.videoThumb;
-  openStep = -1;
 
-  // Custom video controls (same as the specs review video)
+  // Custom video controls (same as the trade-in page)
   vLoading = false;
   vError = false;
   vPaused = false;
@@ -142,6 +144,11 @@ export class Imported implements OnDestroy {
     document.getElementById('request')?.scrollIntoView({ behavior: 'smooth' });
   }
 
+  chooseOrigin(country: string): void {
+    this.origin = country;
+    this.toForm();
+  }
+
   openVideo(src: string = this.videoSrc, thumb: string = this.videoThumb): void {
     this.activeSrc = src;
     this.activeThumb = thumb;
@@ -187,6 +194,18 @@ export class Imported implements OnDestroy {
   }
   toggleMute(v: HTMLVideoElement): void { v.muted = !v.muted; this.vMuted = v.muted; }
   fullscreenVideo(v: HTMLVideoElement): void { v.requestFullscreen?.().catch(() => {}); }
+
+  // ---------- Hover previews (muted, looping) ----------
+  previewPlay(v: HTMLVideoElement): void {
+    v.muted = true;
+    v.play().catch(() => { /* blocked or interrupted: the thumbnail stays visible */ });
+  }
+  previewShow(v: HTMLVideoElement): void { v.style.opacity = '1'; }
+  previewStop(v: HTMLVideoElement): void {
+    v.pause();
+    v.currentTime = 0;
+    v.style.opacity = '0';
+  }
 
   /** Playlist order: hero video, then steps 01 to 04. */
   private get playlist(): { video: string; thumb: string }[] {

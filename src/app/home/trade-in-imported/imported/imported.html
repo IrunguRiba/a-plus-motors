@@ -1,44 +1,41 @@
 <section class="hero">
- 
-  <div class="hero-main">
-    <h1>IMPORT </h1>
+  <div class="hero-main" [style.--hero-bg]="'url(&quot;' + videoThumb + '&quot;)'">
 
-  <section class="steps">
-    <div class="steps-row">
-      @for (s of steps; track s.n; let i = $index) {
-        <article class="step">
-          <div class="step-top">
-            <span class="step-link">
-              <button class="step-num" type="button" [class.on]="openStep === i" [attr.aria-expanded]="openStep === i" [attr.aria-label]="'Step ' + s.n + ' details'" (click)="openStep = openStep === i ? -1 : i"><span>{{ s.n }}</span></button>
-            </span>
-            <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)">
-              <span class="step-media">
-                <img [src]="s.thumb" [alt]="s.t" />
-                <span class="play" aria-hidden="true"></span>
-              </span>
-            </button>
-          </div>
-          <h3>{{ s.t }}</h3>
-          <div class="step-more" [class.open]="openStep === i">
-            <div>
-              <p>{{ s.d }}</p>
-              <small>{{ s.m }}</small>
+    <!-- BELOW: steps in a row, each a card with its details always visible -->
+    <section class="steps">
+      <div class="steps-row">
+        @for (s of steps; track s.n; let i = $index) {
+          <article class="step">
+            <div class="step-top">
+              <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)"
+                      (mouseenter)="previewPlay(hv)" (mouseleave)="previewStop(hv)"
+                      (focus)="previewPlay(hv)" (blur)="previewStop(hv)">
+                <span class="step-media">
+                  <img [src]="s.thumb" [alt]="s.t" />
+                  <video class="hover-video" #hv [src]="s.video" [muted]="true" loop playsinline preload="none" aria-hidden="true" tabindex="-1" (playing)="previewShow(hv)"></video>
+                  <span class="play" aria-hidden="true"></span>
+                </span>
+              </button>
             </div>
-          </div>
-        </article>
-      }
-    </div>
-  </section>
+            <h3>{{ s.t }}</h3>
+            <div class="step-more">
+              <div>
+                <p>{{ s.d }}</p>
+                <small>{{ s.m }}</small>
+                <ul class="step-points">
+                  @for (p of s.points; track p) {
+                    <li>{{ p }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
 
-    <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()">
-      <span class="video-frame">
-        <span class="video-media">
-          <img [src]="videoThumb" alt="Featured import" />
-          <span class="play" aria-hidden="true"></span>
-        </span>
-      </span>
-    </button>
-
+    <!-- RIGHT: title, copy + CTA beside the big main video -->
+    <h1>IMPORT</h1>
     <p class="lede">Tell us what you want. We source it overseas, ship it, clear it through KRA and KEBS, and hand you the keys.</p>
 
     <button class="btn hover-flip" type="button" (click)="toForm()">
@@ -48,6 +45,28 @@
         </span>
         <span class="face back">
           <span>Request a quote</span>
+        </span>
+      </span>
+    </button>
+
+    <div class="hero-info">
+      <span class="info-label">We import from</span>
+      <div class="tags">
+        @for (c of countries; track c) {
+          <button class="tag" type="button" [class.on]="origin === c" (click)="chooseOrigin(c)">{{ c }}</button>
+        }
+      </div>
+      <p class="info-note">Cars up to 8 years old, shipped to Mombasa and delivered to Nairobi. Tap a country to start your request.</p>
+    </div>
+
+    <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()"
+            (mouseenter)="previewPlay(mv)" (mouseleave)="previewStop(mv)"
+            (focus)="previewPlay(mv)" (blur)="previewStop(mv)">
+      <span class="video-frame">
+        <span class="video-media">
+          <img [src]="videoThumb" alt="Featured import" />
+          <video class="hover-video" #mv [src]="videoSrc" [muted]="true" loop playsinline preload="none" aria-hidden="true" tabindex="-1" (playing)="previewShow(mv)"></video>
+          <span class="play" aria-hidden="true"></span>
         </span>
       </span>
     </button>
@@ -112,96 +131,94 @@
 
 <section class="quote" id="request">
   <form class="form" #f="ngForm" [class.tried]="tried" (ngSubmit)="attempt(f.valid)">
-    <div class="form-inner">
-      <h2>Request an import</h2>
+    <h2>Request an import</h2>
 
-      <div class="sec"><strong>Where from</strong></div>
-      <div class="seg">
-        @for (c of countries; track c) {
-          <button type="button" [class.on]="origin === c" (click)="origin = c"><span>{{ c }}</span></button>
-        }
-      </div>
+    <div class="sec"><b>01</b><strong>Where from</strong></div>
+    <div class="seg">
+      @for (c of countries; track c) {
+        <button type="button" [class.on]="origin === c" (click)="origin = c"><span>{{ c }}</span></button>
+      }
+    </div>
 
-      <div class="divider"></div>
+    <div class="divider"></div>
 
-      <div class="sec"><strong>The car</strong><span class="hint">Up to 8 years old</span></div>
-      <div class="grid-3">
-        <label class="field">
-          <span class="label">Make</span>
-          <select class="input" name="make" [(ngModel)]="make">
-            @for (m of makes; track m) { <option [value]="m">{{ m }}</option> }
-          </select>
-        </label>
-        <label class="field">
-          <span class="label">Model</span>
-          <input class="input" name="model" [(ngModel)]="model" autocomplete="off" />
-        </label>
-        <label class="field">
-          <span class="label">Year</span>
-          <select class="input" name="year" [(ngModel)]="year">
-            @for (y of years; track y) { <option [ngValue]="y">{{ y }}</option> }
-          </select>
-        </label>
-      </div>
+    <div class="sec"><b>02</b><strong>The car</strong><span class="hint">Up to 8 years old</span></div>
+    <div class="grid-3">
+      <label class="field">
+        <span class="label">Make</span>
+        <select class="input" name="make" [(ngModel)]="make">
+          @for (m of makes; track m) { <option [value]="m">{{ m }}</option> }
+        </select>
+      </label>
+      <label class="field">
+        <span class="label">Model</span>
+        <input class="input" name="model" [(ngModel)]="model" autocomplete="off" />
+      </label>
+      <label class="field">
+        <span class="label">Year</span>
+        <select class="input" name="year" [(ngModel)]="year">
+          @for (y of years; track y) { <option [ngValue]="y">{{ y }}</option> }
+        </select>
+      </label>
+    </div>
 
-      <div class="grid-2 end">
-        <div class="field">
-          <span class="label">Fuel</span>
-          <div class="seg">
-            @for (x of fuels; track x) {
-              <button type="button" [class.on]="fuel === x" (click)="fuel = x"><span>{{ x }}</span></button>
-            }
-          </div>
+    <div class="grid-2 end">
+      <div class="field">
+        <span class="label">Fuel</span>
+        <div class="seg">
+          @for (x of fuels; track x) {
+            <button type="button" [class.on]="fuel === x" (click)="fuel = x"><span>{{ x }}</span></button>
+          }
         </div>
-        <label class="field">
-          <span class="label">Engine (cc), optional</span>
-          <input class="input" name="engine" [(ngModel)]="engine" inputmode="numeric" autocomplete="off" />
-        </label>
       </div>
-
-      <label class="field block">
-        <span class="label">Vehicle price at source, FOB (KES)</span>
-        <input class="input" name="price" [ngModel]="priceText" (ngModelChange)="onPrice($event)" inputmode="numeric" autocomplete="off" />
-        <small class="help">The car's price before shipping and duty. Drives the estimate on the right.</small>
+      <label class="field">
+        <span class="label">Engine (cc), optional</span>
+        <input class="input" name="engine" [(ngModel)]="engine" inputmode="numeric" autocomplete="off" />
       </label>
+    </div>
 
-      <div class="divider"></div>
+    <label class="field block">
+      <span class="label">Vehicle price at source, FOB (KES)</span>
+      <input class="input" name="price" [ngModel]="priceText" (ngModelChange)="onPrice($event)" inputmode="numeric" autocomplete="off" />
+      <small class="help">The car's price before shipping and duty. Drives the estimate on the right.</small>
+    </label>
 
-      <div class="sec"><strong>Your details</strong></div>
-      <div class="grid-2">
-        <label class="field">
-          <span class="label">Full name</span>
-          <input class="input" name="name" [(ngModel)]="name" required autocomplete="name" />
-        </label>
-        <label class="field">
-          <span class="label">Phone / WhatsApp</span>
-          <input class="input" name="phone" [(ngModel)]="phone" required type="tel" placeholder="07xx xxx xxx" autocomplete="tel" />
-        </label>
-      </div>
-      <label class="field block">
-        <span class="label">Email, optional</span>
-        <input class="input" name="email" [(ngModel)]="email" type="email" autocomplete="email" />
+    <div class="divider"></div>
+
+    <div class="sec"><b>03</b><strong>Your details</strong></div>
+    <div class="grid-2">
+      <label class="field">
+        <span class="label">Full name</span>
+        <input class="input" name="name" [(ngModel)]="name" required autocomplete="name" />
       </label>
-      <label class="field block">
-        <span class="label">Anything specific? Optional</span>
-        <textarea class="input area" name="notes" [(ngModel)]="notes" rows="2" placeholder="Colour, trim, must-have features..."></textarea>
+      <label class="field">
+        <span class="label">Phone / WhatsApp</span>
+        <input class="input" name="phone" [(ngModel)]="phone" required type="tel" placeholder="07xx xxx xxx" autocomplete="tel" />
       </label>
+    </div>
+    <label class="field block">
+      <span class="label">Email, optional</span>
+      <input class="input" name="email" [(ngModel)]="email" type="email" autocomplete="email" />
+    </label>
+    <label class="field block">
+      <span class="label">Anything specific? Optional</span>
+      <textarea class="input area" name="notes" [(ngModel)]="notes" rows="2" placeholder="Colour, trim, must-have features..."></textarea>
+    </label>
 
-      <div class="submit">
-        <button class="btn hover-flip" type="submit">
-          <span class="flip">
-            <span class="face front">
-              <span>{{ submitted ? 'Request sent' : 'Request a quote' }}</span>
-            </span>
-            <span class="face back">
-              <span>{{ submitted ? 'Request sent' : 'Request a quote' }}</span>
-            </span>
+    <div class="submit">
+      <button class="btn hover-flip" type="submit">
+        <span class="flip">
+          <span class="face front">
+            <span>{{ submitted ? 'Request sent' : 'Request a quote' }}</span>
           </span>
-        </button>
-        <p aria-live="polite" [class.err]="tried && !f.valid">
-          {{ submitted ? 'Thank you. We will reply shortly.' : (tried && !f.valid ? 'Please add your name and phone number so we can reply.' : 'No payment now. We only use your details to reply about this request.') }}
-        </p>
-      </div>
+          <span class="face back">
+            <span>{{ submitted ? 'Request sent' : 'Request a quote' }}</span>
+          </span>
+        </span>
+      </button>
+      <p aria-live="polite" [class.err]="tried && !f.valid">
+        {{ submitted ? 'Thank you. We will reply shortly.' : (tried && !f.valid ? 'Please add your name and phone number so we can reply.' : 'No payment now. We only use your details to reply about this request.') }}
+      </p>
     </div>
   </form>
 

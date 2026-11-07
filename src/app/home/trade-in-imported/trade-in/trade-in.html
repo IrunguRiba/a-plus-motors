@@ -1,27 +1,32 @@
 <section class="hero">
-  <div class="hero-main">
+  <div class="hero-main" [style.--hero-bg]="'url(&quot;' + videoThumb + '&quot;)'">
 
-    <!-- LEFT: steps, 2 by 2, above the text -->
+    <!-- BELOW: steps in a row, each a card with its details always visible -->
     <section class="steps">
       <div class="steps-row">
         @for (s of steps; track s.n; let i = $index) {
           <article class="step">
             <div class="step-top">
-              <span class="step-link">
-                <button class="step-num" type="button" [class.on]="openStep === i" [attr.aria-expanded]="openStep === i" [attr.aria-label]="'Step ' + s.n + ' details'" (click)="openStep = openStep === i ? -1 : i"><span>{{ s.n }}</span></button>
-              </span>
-              <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)">
+              <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)"
+                      (mouseenter)="previewPlay(hv)" (mouseleave)="previewStop(hv)"
+                      (focus)="previewPlay(hv)" (blur)="previewStop(hv)">
                 <span class="step-media">
                   <img [src]="s.thumb" [alt]="s.t" />
+                  <video class="hover-video" #hv [src]="s.video" [muted]="true" loop playsinline preload="none" aria-hidden="true" tabindex="-1" (playing)="previewShow(hv)"></video>
                   <span class="play" aria-hidden="true"></span>
                 </span>
               </button>
             </div>
             <h3>{{ s.t }}</h3>
-            <div class="step-more" [class.open]="openStep === i">
+            <div class="step-more">
               <div>
                 <p>{{ s.d }}</p>
                 <small>{{ s.m }}</small>
+                <ul class="step-points">
+                  @for (p of s.points; track p) {
+                    <li>{{ p }}</li>
+                  }
+                </ul>
               </div>
             </div>
           </article>
@@ -29,9 +34,10 @@
       </div>
     </section>
 
-    <!-- LEFT: heading, copy + CTA under the steps -->
+    <!-- RIGHT: title, copy + CTA beside the big main video -->
     <h1>TRADE-IN</h1>
-    <p class="lede">Get an instant valuation range for your current vehicle, book a quick inspection, and seamlessly drive away in your next car with all paperwork handled.</p>
+    <p class="lede">Get an instant valuation with all paperwork handled.
+    </p>
 
     <button class="btn hover-flip" type="button" (click)="toForm()">
       <span class="flip">
@@ -44,11 +50,28 @@
       </span>
     </button>
 
-    <!-- RIGHT: main video -->
-    <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()">
+    <div class="hero-info">
+      <span class="info-label">What to expect</span>
+      <dl class="info-list">
+        @for (sp of specs; track sp.k) {
+          <div class="info-row">
+            <dt>{{ sp.k }}</dt>
+            <dd>
+              {{ sp.v }}
+              @if (sp.tag) { <small>{{ sp.tag }}</small> }
+            </dd>
+          </div>
+        }
+      </dl>
+    </div>
+
+    <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()"
+            (mouseenter)="previewPlay(mv)" (mouseleave)="previewStop(mv)"
+            (focus)="previewPlay(mv)" (blur)="previewStop(mv)">
       <span class="video-frame">
         <span class="video-media">
           <img [src]="videoThumb" alt="Featured trade-in" />
+          <video class="hover-video" #mv [src]="videoSrc" [muted]="true" loop playsinline preload="none" aria-hidden="true" tabindex="-1" (playing)="previewShow(mv)"></video>
           <span class="play" aria-hidden="true"></span>
         </span>
       </span>
