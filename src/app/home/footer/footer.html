@@ -2,48 +2,27 @@
   <h1>What Clients Say</h1>
 
   <div class="comments-wrapper">
-    <!-- Connecting Line -->
     <div class="connecting-line"></div>
 
-    <div class="comments">
-      <div class="comment-card">
-        <div class="rating">
-          <span class="star">★</span>
-          <span class="star">★</span>
-          <span class="star">★</span>
-          <span class="star">★</span>
-          <span class="star">★</span>
-          <span class="verified-badge">Verified Buyer</span>
-        </div>
-        <p class="quote">"Absolute five-star experience from start to finish."</p>
-        <p class="body-text">
-          The paperwork was handled efficiently, and I drove off the lot in my new vehicle the same afternoon with a full tank of gas. Highly recommend them if you want a transparent, stress-free dealership experience!
-        </p>
-        <div class="client-meta">
-          <span class="author">— David K.</span>
-          <span class="purchase-info">Purchased: 2026 Toyota RAV4</span>
-          <span class="review-date">Reviewed 2 weeks ago</span>
-        </div>
-      </div>
-
-      <div class="comment-card">
-        <div class="rating">
-          <span class="star">★</span>
-          <span class="star">★</span>
-          <span class="star">★</span>
-          <span class="star">★</span>
-          <span class="star">★</span>
-          <span class="verified-badge">Verified Buyer</span>
-        </div>
-        <p class="quote">"Absolute five-star experience from start to finish."</p>
-        <p class="body-text">
-          The paperwork was handled efficiently, and I drove off the lot in my new vehicle the same afternoon with a full tank of gas. Highly recommend them if you want a transparent, stress-free dealership experience!
-        </p>
-        <div class="client-meta">
-          <span class="author">— David K.</span>
-          <span class="purchase-info">Purchased: 2026 Mazda CX-5</span>
-          <span class="review-date">Reviewed 1 month ago</span>
-        </div>
+    <div class="marquee" aria-label="Client reviews">
+      <div class="marquee-track">
+        @for (review of marqueeReviews; track $index) {
+          <div class="comment-card" [attr.aria-hidden]="$index >= reviews.length ? 'true' : null">
+            <div class="rating">
+              @for (s of starScale; track s) {
+                <span class="star" [class.empty]="s > review.rating">★</span>
+              }
+              <span class="verified-badge">Verified Buyer</span>
+            </div>
+            <p class="quote">"{{ review.quote }}"</p>
+            <p class="body-text">{{ review.body }}</p>
+            <div class="client-meta">
+              <span class="author">— {{ review.author }}</span>
+              <span class="purchase-info">Purchased: {{ review.purchase }}</span>
+              <span class="review-date">Reviewed {{ review.date }}</span>
+            </div>
+          </div>
+        }
       </div>
     </div>
   </div>
