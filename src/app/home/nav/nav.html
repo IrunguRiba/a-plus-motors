@@ -1,11 +1,23 @@
-<div class="nav-container" [class.menu-open]="isMenuOpen || searchWindowOpened">
+<div class="nav-container" [class.menu-open]="isMenuOpen || searchWindowOpened" [class.search-open]="searchWindowOpened">
 
   <div class="nav-items-wrapper"
        [class.nav-lifted]="isMenuOpen || scrolled"
        [class.above-search]="searchWindowOpened">
 
-    <div class="search-box" (click)="openSearch()" [class.is-open]="searchWindowOpened">
-      <span class="material-symbols-outlined">search</span>
+    <div class="search-box"
+         [class.is-open]="searchWindowOpened"
+         (click)="searchWindowOpened ? closeSearch($event) : openSearch()"
+         role="button"
+         tabindex="0"
+         [attr.aria-label]="searchWindowOpened ? 'Close search' : 'Open search'"
+         [attr.aria-expanded]="searchWindowOpened"
+         (keydown.enter)="searchWindowOpened ? closeSearch($event) : openSearch()">
+
+      <span class="search-icon-slot">
+        <span class="material-symbols-outlined icon-search">search</span>
+        <span class="cross-icon icon-close"><span></span><span></span></span>
+      </span>
+
       <span class="search-tag" #searchTag>Search Anything</span>
     </div>
 
@@ -15,8 +27,8 @@
     </div>
 
     <div class="menu-bar"
-         (click)="searchWindowOpened ? closeSearch($event) : toggleMenu()"
-         [class.is-open]="isMenuOpen || searchWindowOpened">
+         (click)="toggleMenu()"
+         [class.is-open]="isMenuOpen">
       <span class="top-bar"></span>
       <span class="bottom-bar"></span>
     </div>
@@ -29,24 +41,19 @@
 
   <div class="menu-overlay" [class.is-open]="isMenuOpen">
     <div class="menu-opened" [class.search-active]="searchWindowOpened">
-
       <nav class="menu-nav" aria-label="Main navigation">
         <ul class="menu-list">
-
           <li class="has-submenu"
               *ngFor="let item of menu; let i = index; trackBy: trackByKey"
               [style.--i]="i"
               [class.active]="activeSubmenu === item.key">
-
             <a role="button" tabindex="0"
                (click)="toggleSubmenu(item.key, $event)"
                (keydown.enter)="toggleSubmenu(item.key, $event)"
                [attr.aria-expanded]="activeSubmenu === item.key">
               <span class="nav-label">{{ item.label }}</span>
             </a>
-
             <div class="submenu-panel" *ngIf="activeSubmenu === item.key">
-
               <div class="submenu-main">
                 <span class="submenu-label">{{ item.title }}</span>
                 <ul class="submenu-links">
@@ -58,7 +65,6 @@
                   <ng-container *ngTemplateOutlet="extras"></ng-container>
                 </div>
               </div>
-
               <div class="submenu-aside">
                 <div class="submenu-feature" role="link" tabindex="0"
                      (click)="go(item.feature)" (keydown.enter)="go(item.feature)">
@@ -73,21 +79,14 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </li>
-
         </ul>
       </nav>
-
     </div>
   </div>
 
   <div class="search-overlay" [class.is-open]="searchWindowOpened">
-    <button type="button" class="close-search-btn" (click)="closeSearch($event)" aria-label="Close search">
-      <span class="close-label">Close</span>
-      <span class="cross-icon"><span></span><span></span></span>
-    </button>
     <app-search class="search-panel" [active]="searchWindowOpened"></app-search>
   </div>
 

@@ -49,6 +49,7 @@ export class Nav implements AfterViewInit, OnDestroy {
     this.scrolled = window.scrollY > 20;
   }
   scrolled = false;
+  
 
   @Input() cookiesClicked = false;
   @Input() searchWindowOpened = false;
@@ -208,9 +209,10 @@ export class Nav implements AfterViewInit, OnDestroy {
 
   toggleSubmenu(menu: string, event?: Event): void {
     if (event) event.preventDefault();
-    this.activeSubmenu = this.activeSubmenu === menu ? '' : menu;
+    if (this.activeSubmenu !== menu) {
+      this.activeSubmenu = menu;
+    }
   }
-
   /** Navigates and closes the menu so the page opens full view (works for desktop and mobile). */
   go(target: MenuTarget): void {
     if (!target.path) return;
