@@ -1,63 +1,74 @@
-<div class="search-overlay">
+<div class="search-view">
 
-    <!-- Center Search Bar -->
-    <div class="search-container">
-      <div class="input-wrapper">
-        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  <div class="search-container">
+    <div class="input-wrapper">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        #searchInput
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+        placeholder="Search Anything. . ."
+        aria-label="Search Anything"
+      />
+      <button
+        type="button"
+        class="mic-btn"
+        [class.listening]="isListening"
+        (click)="toggleVoiceSearch()"
+        [title]="isListening ? 'Listening...' : 'Click to speak'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
         </svg>
-        
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery" 
-          (keyup.enter)="onSearch()" 
-          placeholder="Search Anything. . ." 
-          aria-label="Search Anything"
-        />
-  
-        <!-- Voice Search Button (Mic) -->
-        <button 
-          type="button" 
-          class="mic-btn" 
-          [class.listening]="isListening" 
-          (click)="toggleVoiceSearch()" 
-          [title]="isListening ? 'Listening...' : 'Click to speak'"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-            <line x1="12" y1="19" x2="12" y2="23"></line>
-            <line x1="8" y1="23" x2="16" y2="23"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
-  
-    <!-- Category Quick Links with Arrow Animations -->
-    <div class="categories">
-      <a href="#sale" class="category-link">
-        <span>Sale</span>
-        <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="21" x2="20" y2="4"></line>
-          <polyline points="9 4 20 4 20 15"></polyline>
-        </svg>
-      </a>
-    
-      <a href="#brand-new" class="category-link">
-        <span>Brand New</span>
-        <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="21" x2="20" y2="4"></line>
-          <polyline points="9 4 20 4 20 15"></polyline>
-        </svg>
-      </a>
-    
-      <a href="#pre-owned" class="category-link">
-        <span>Pre-Owned</span>
-        <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="21" x2="20" y2="4"></line>
-          <polyline points="9 4 20 4 20 15"></polyline>
-        </svg>
-      </a>
+      </button>
     </div>
   </div>
+
+  <div class="ideas">
+    <button type="button" class="idea" *ngFor="let idea of ideas" (click)="searchFor(idea)">
+      <svg class="idea-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path>
+        <path d="M19 16v4M17 18h4"></path>
+      </svg>
+      <span>{{ idea }}</span>
+    </button>
+  </div>
+
+  <div class="most-searched">
+    <span class="most-label">Most searched</span>
+    <div class="top-cars">
+      <article class="car-card" *ngFor="let car of topCars" (click)="searchFor(car.name)">
+        <div class="car-photo">
+          <span class="car-flag" *ngIf="car.flag" [class.is-new]="car.flag === 'New arrival'">{{ car.flag }}</span>
+          <img [src]="car.image" [alt]="car.name">
+        </div>
+
+        <div class="car-head">
+          <span class="car-year">{{ car.year }}</span>
+          <span class="car-name">{{ car.name }}</span>
+          <span class="car-price">
+            <s class="car-was" *ngIf="car.was">{{ car.was }}</s>
+            <span>{{ car.price }}</span>
+          </span>
+        </div>
+
+        <div class="car-specs">
+          <div><span class="spec-label">Mileage</span><span class="spec-value">{{ car.mileage }}</span></div>
+          <div><span class="spec-label">Gearbox</span><span class="spec-value">{{ car.gearbox }}</span></div>
+          <div><span class="spec-label">Fuel</span><span class="spec-value">{{ car.fuel }}</span></div>
+          <div><span class="spec-label">Engine</span><span class="spec-value">{{ car.engine }}</span></div>
+        </div>
+
+        <button type="button" class="car-inquire" (click)="$event.stopPropagation(); searchFor(car.name)">Inquire</button>
+      </article>
+    </div>
+  </div>
+
+</div>

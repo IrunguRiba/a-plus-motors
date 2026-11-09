@@ -1,47 +1,31 @@
-<div class="nav-container" [class.menu-open]="isMenuOpen">
-  <div class="nav-items-wrapper" [class.nav-lifted]="isMenuOpen || scrolled">
+<div class="nav-container" [class.menu-open]="isMenuOpen || searchWindowOpened">
 
-    <div class="search-box"
-         (click)="openSearch()"
-         [class.is-open]="searchWindowOpened"
-         [class.above-search]="searchWindowOpened">
+  <div class="nav-items-wrapper"
+       [class.nav-lifted]="isMenuOpen || scrolled"
+       [class.above-search]="searchWindowOpened">
+
+    <div class="search-box" (click)="openSearch()" [class.is-open]="searchWindowOpened">
       <span class="material-symbols-outlined">search</span>
-      <span class="search-tag">Describe it! We got it!</span>
+      <span class="search-tag" #searchTag>Search Anything</span>
     </div>
 
-    <p class="item-1-label" [class.above-search]="searchWindowOpened">A-PLUS MOTORS LTD</p>
-
-    <p class="bottom-slogan" [class.is-visible]="isMenuOpen && !searchWindowOpened">15+ years of trust and excellence</p>
-
-    <div class="logo-wrapper" (click)="goHome()" [class.above-search]="searchWindowOpened">
+    <div class="logo-wrapper" (click)="goHome()">
       <img [src]="logoImg" alt="A plus Motors" class="image-icon">
-      <span class="slogan" [class.above-search]="searchWindowOpened">Driving That Suits You ...</span>
+      <span class="slogan">Driving That Suits You ...</span>
     </div>
 
-    <div class="side-bar item item-3">
-      <div class="sidebar-top">
-        <div class="menu-bar"
-             (click)="toggleMenu()"
-             [class.is-open]="isMenuOpen"
-             [class.above-search]="searchWindowOpened">
-          <span class="top-bar"></span>
-          <span class="bottom-bar"></span>
-        </div>
-      </div>
-      <div class="sidebar-socials" [class.is-visible]="isMenuOpen && !searchWindowOpened">
-        <a class="social-link" href="tel:+254700000000" aria-label="Phone"><img class="ico" [src]="phone" alt="Phone"><span class="social-name">Call</span></a>
-        <a class="social-link" href="https://wa.me/254700000000" aria-label="WhatsApp"><img class="ico" [src]="whatsapp" alt="WhatsApp"><span class="social-name">WhatsApp</span></a>
-        <a class="social-link" href="mailto:info@aplusmotors.co.ke" aria-label="Email"><img class="ico" [src]="email" alt="Email"><span class="social-name">Email</span></a>
-        <a class="social-link" href="#" aria-label="Instagram"><img class="ico" [src]="ig" alt="Instagram"><span class="social-name">Instagram</span></a>
-        <a class="social-link" href="#" aria-label="Facebook"><img class="ico" [src]="facebook" alt="Facebook"><span class="social-name">Facebook</span></a>
-        <a class="social-link" href="#" aria-label="X"><img class="ico" [src]="twitter" alt="X"><span class="social-name">X</span></a>
-        <a class="social-link" href="#" aria-label="YouTube"><img class="ico" [src]="youtube" alt="YouTube"><span class="social-name">YouTube</span></a>
-      </div>
-      <div class="sidebar-bottom">
-       
-      </div>
+    <div class="menu-bar"
+         (click)="searchWindowOpened ? closeSearch($event) : toggleMenu()"
+         [class.is-open]="isMenuOpen || searchWindowOpened">
+      <span class="top-bar"></span>
+      <span class="bottom-bar"></span>
     </div>
+
   </div>
+
+  <p class="item-1-label" [class.above-search]="searchWindowOpened">A-PLUS MOTORS LTD</p>
+
+  <p class="bottom-slogan" [class.is-visible]="isMenuOpen && !searchWindowOpened">15+ years of trust and excellence</p>
 
   <div class="menu-overlay" [class.is-open]="isMenuOpen">
     <div class="menu-opened" [class.search-active]="searchWindowOpened">
@@ -50,7 +34,8 @@
         <ul class="menu-list">
 
           <li class="has-submenu"
-              *ngFor="let item of menu; trackBy: trackByKey"
+              *ngFor="let item of menu; let i = index; trackBy: trackByKey"
+              [style.--i]="i"
               [class.active]="activeSubmenu === item.key">
 
             <a role="button" tabindex="0"
@@ -62,11 +47,10 @@
 
             <div class="submenu-panel" *ngIf="activeSubmenu === item.key">
 
-              <!-- left: links + contact + socials in one block -->
               <div class="submenu-main">
                 <span class="submenu-label">{{ item.title }}</span>
                 <ul class="submenu-links">
-                  <li *ngFor="let link of item.links">
+                  <li *ngFor="let link of item.links; let n = index" [style.--n]="n + 1">
                     <a tabindex="0" (click)="go(link)" (keydown.enter)="go(link)">{{ link.label }}</a>
                   </li>
                 </ul>
@@ -75,12 +59,13 @@
                 </div>
               </div>
 
-              <!-- right: the blog feature on its own -->
               <div class="submenu-aside">
                 <div class="submenu-feature" role="link" tabindex="0"
                      (click)="go(item.feature)" (keydown.enter)="go(item.feature)">
-       
-                  <img [src]="item.feature.image" [alt]="item.feature.title">
+                  <div class="feature-media">
+                    <span class="feature-tag">From the blog</span>
+                    <img [src]="item.feature.image" [alt]="item.feature.title">
+                  </div>
                   <div class="feature-text">
                     <span class="feature-title" [class.is-long]="item.feature.long">{{ item.feature.title }}</span>
                     <span class="feature-sub">{{ item.feature.text }}</span>
@@ -95,24 +80,19 @@
         </ul>
       </nav>
 
-
     </div>
   </div>
 
   <div class="search-overlay" [class.is-open]="searchWindowOpened">
-    <div class="close-search-btn" (click)="closeSearch($event)">
-      <span>Close Search</span>
-      <div class="cross-icon">
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-    <app-search class="search-panel"></app-search>
+    <button type="button" class="close-search-btn" (click)="closeSearch($event)" aria-label="Close search">
+      <span class="close-label">Close</span>
+      <span class="cross-icon"><span></span><span></span></span>
+    </button>
+    <app-search class="search-panel" [active]="searchWindowOpened"></app-search>
   </div>
 
 </div>
 
-<!-- Contact details. Replace the placeholder phone, email and address (and the rail links above) with the real ones -->
 <ng-template #extras>
   <span class="contact-title">Contact A-Plus Motors</span>
   <div class="contact">
@@ -131,5 +111,11 @@
     <a class="contact-row is-wide" href="mailto:info@aplusmotors.co.ke">
       <img class="ico" [src]="email" alt="Email"><span>info@aplusmotors.co.ke</span>
     </a>
+  </div>
+  <div class="contact-socials">
+    <a class="social-circle" href="#" aria-label="Instagram"><img class="ico" [src]="ig" alt="Instagram"></a>
+    <a class="social-circle" href="#" aria-label="Facebook"><img class="ico" [src]="facebook" alt="Facebook"></a>
+    <a class="social-circle" href="#" aria-label="X"><img class="ico" [src]="twitter" alt="X"></a>
+    <a class="social-circle" href="#" aria-label="YouTube"><img class="ico" [src]="youtube" alt="YouTube"></a>
   </div>
 </ng-template>

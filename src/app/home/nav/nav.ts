@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, Output, inject, HostListener } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnDestroy, Output, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Search } from '../search/search';
+import { Typewriter, prefersReducedMotion } from '../../typewriting';
 
 interface MenuTarget {
   path?: string;
@@ -34,7 +35,7 @@ interface MenuItem {
   templateUrl: './nav.html',
   styleUrl: './nav.css',
 })
-export class Nav {
+export class Nav implements AfterViewInit, OnDestroy {
   email = 'gmail.png';
   ig = 'ig.png';
   twitter = 'twitter.png';
@@ -62,6 +63,26 @@ export class Nav {
   @Output() toggleChatEvent = new EventEmitter<void>();
 
   private router = inject(Router);
+  private zone = inject(NgZone);
+
+  /** Closed-state search box: types example searches (what the car is for, features) on a loop. */
+  @ViewChild('searchTag') searchTag?: ElementRef<HTMLElement>;
+
+  /** Keep these short (about 24 characters): the box has a fixed width so the bar never shifts. */
+  readonly searchHints = [
+    '7-seater family, under 2.5M. . .',
+    'fuel efficient  for town. . . ',
+    'tough enough for upcountry roads. . .',
+    'automatic, low mileage, Nairobi registered. . . ',
+    'An SUV under Ksh 3M',
+    'Best car for suprises',
+    'First car for a fresh graduate',
+    'safari-ready 4x4, diesel',
+    'A matatu-free commute, cheap to run',
+    'car for Mombasa heat, strong AC',
+  ];
+
+  private hintTyper?: Typewriter;
 
   car1 = '1.png';
 
@@ -156,6 +177,29 @@ export class Nav {
       long,
       path: '/blogs',
     };
+  }
+
+  ngAfterViewInit(): void {
+    const el = this.searchTag?.nativeElement;
+    if (!el) return;
+    if (prefersReducedMotion()) {
+      el.textContent = this.searchHints[0];
+      return;
+    }
+    // Runs outside Angular and writes straight to the element, so typing never triggers change detection.
+    this.zone.runOutsideAngular(() => {
+      this.hintTyper = new Typewriter({
+        phrases: this.searchHints,
+        render: text => { el.textContent = text; },
+        // pauses while the search overlay is open (the overlay has its own typing)
+        canRun: () => !this.searchWindowOpened,
+      });
+      this.hintTyper.start();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.hintTyper?.stop();
   }
 
   trackByKey(_: number, item: MenuItem): string {
