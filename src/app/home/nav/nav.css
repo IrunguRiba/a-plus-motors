@@ -410,7 +410,7 @@
     background-color: var(--c-light);
     z-index: 999;
     overflow: hidden;
-    transition: height 0.6s cubic-bezier(0.77, 0, 0.175, 1), max-height 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+    transition: height 0.4s cubic-bezier(0.77, 0, 0.175, 1), max-height 0.4s cubic-bezier(0.77, 0, 0.175, 1);
     will-change: height, max-height;
   }
   
@@ -423,7 +423,8 @@
   
   /* DESKTOP: curtain reveal. The panel keeps its full size and is uncovered top-down with
      clip-path (GPU), so nothing inside it moves. visibility keeps the hidden menu out of
-     the tab order once the close has finished. Phones keep the height animation. */
+     the tab order once the close has finished. Phones keep the height animation.
+     The clip-path duration and the visibility delay on the closed state must match. */
   @media (min-width: 769px) {
     .menu-overlay {
       height: 100vh;
@@ -431,7 +432,7 @@
       max-height: none;
       clip-path: inset(0 0 100% 0);
       visibility: hidden;
-      transition: clip-path 0.85s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s linear 0.85s;
+      transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s linear 0.5s;
       will-change: clip-path;
     }
   
@@ -441,7 +442,7 @@
       max-height: none;
       clip-path: inset(0 0 0 0);
       visibility: visible;
-      transition: clip-path 0.85s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s linear 0s;
+      transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s linear 0s;
       will-change: auto;
     }
   }
@@ -562,18 +563,18 @@
   .menu-overlay.is-open .menu-list > li:nth-child(5) { animation-delay: 0.17s; }
   .menu-overlay.is-open .menu-list > li:nth-child(6) { animation-delay: 0.20s; }
   
-  /* DESKTOP: the links fade and rise gently once the panel is mostly open, one after
+  /* DESKTOP: the links fade in once the panel is mostly open, one after
      another, instead of popping in while it is still sliding down. */
   @media (min-width: 769px) {
     .menu-overlay.is-open .menu-list > li {
-      animation: menuRiseSoft 0.75s var(--ease) backwards;
+      animation: menuRiseSoft 0.45s var(--ease) backwards;
     }
-    .menu-overlay.is-open .menu-list > li:nth-child(1) { animation-delay: 0.30s; }
-    .menu-overlay.is-open .menu-list > li:nth-child(2) { animation-delay: 0.36s; }
-    .menu-overlay.is-open .menu-list > li:nth-child(3) { animation-delay: 0.42s; }
-    .menu-overlay.is-open .menu-list > li:nth-child(4) { animation-delay: 0.48s; }
-    .menu-overlay.is-open .menu-list > li:nth-child(5) { animation-delay: 0.54s; }
-    .menu-overlay.is-open .menu-list > li:nth-child(6) { animation-delay: 0.60s; }
+    .menu-overlay.is-open .menu-list > li:nth-child(1) { animation-delay: 0.18s; }
+    .menu-overlay.is-open .menu-list > li:nth-child(2) { animation-delay: 0.22s; }
+    .menu-overlay.is-open .menu-list > li:nth-child(3) { animation-delay: 0.26s; }
+    .menu-overlay.is-open .menu-list > li:nth-child(4) { animation-delay: 0.30s; }
+    .menu-overlay.is-open .menu-list > li:nth-child(5) { animation-delay: 0.34s; }
+    .menu-overlay.is-open .menu-list > li:nth-child(6) { animation-delay: 0.38s; }
   }
   
   @keyframes menuRiseSoft {
