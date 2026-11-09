@@ -1,4 +1,4 @@
-<div class="nav-container">
+<div class="nav-container" [class.menu-open]="isMenuOpen">
   <div class="nav-items-wrapper" [class.nav-lifted]="isMenuOpen || scrolled">
 
     <div class="search-box"
@@ -79,7 +79,7 @@
               <div class="submenu-aside">
                 <div class="submenu-feature" role="link" tabindex="0"
                      (click)="go(item.feature)" (keydown.enter)="go(item.feature)">
-                  <span class="feature-tag">From the Blog</span>
+       
                   <img [src]="item.feature.image" [alt]="item.feature.title">
                   <div class="feature-text">
                     <span class="feature-title" [class.is-long]="item.feature.long">{{ item.feature.title }}</span>

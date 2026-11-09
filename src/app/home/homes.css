@@ -45,7 +45,7 @@
     --light: #D8DADB;
     --gold: #A55704;
     --gold-dark: #FFCB56;
-    --find: rgba(165, 87, 4, 0.7);
+    --find: rgb(212 109 37 / 0.5);
     --find-text: #EBE2CC;
     --panel: #0F1010;
     --panel-hover: #1B1D1D;
@@ -63,14 +63,40 @@
     display: grid;
     grid-template-columns: 0.6fr auto 0.2fr;
     grid-template-rows: 1fr;
-    min-height: 100vh;
+  
+    /* ── PIN-SAFE SIZING ──────────────────────────────────────
+       Lock height with a single source of truth (--hero-h).
+       Do NOT use min-height: 100vh alongside height: 100vh —
+       the double-count is what makes the pin jump one frame. */
+    --hero-h: 100vh;
+    --hero-h: 100svh;
+    height: var(--hero-h);
+    min-height: 0;
+  
     box-sizing: border-box;
     padding: 40px 20px;
     padding-right: calc(50px + 80px);
     background: linear-gradient(160deg, #E4E6E7 0%, #D8DADB 45%, #A9ADAD 100%);
     color: var(--ink);
     position: relative;
-    will-change: auto;
+    z-index: 1; /* sits below .cover-layer (z-index: 3) */
+
+    /* ── PIN STABILITY ────────────────────────────────────────
+       Promote to its own compositor layer and isolate layout so
+       ScrollTrigger's measurement stays identical across passes. */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    contain: layout paint;
+    isolation: isolate;
+    will-change: transform;
+  }
+
+  /* Inner hero content is animated on scroll (scrubbed) – keep it on its own
+     GPU layer so it never repaints or jitters while the pin engages. */
+  .hero-container > .item-2 {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
   
   .hero-container::after {
@@ -97,6 +123,31 @@
   .hero-container > .search {
     position: relative;
     z-index: 2;
+  }
+  
+  /* Keep will-change on while pinned so the layer is never re-promoted
+     mid-scroll (that re-promotion is what shows up as a shake). */
+  .hero-container.is-pinned {
+    will-change: transform;
+  }
+
+  /* ScrollTrigger's pin-spacer must not inherit hero margins. */
+  .pin-spacer > .hero-container {
+    margin: 0 !important;
+  }
+
+  /* ============================================================
+     COVER LAYER – scrolls up over the pinned hero
+     ============================================================ */
+  .cover-layer {
+    will-change: transform;
+    backface-visibility: hidden;
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    background: #E4E6E7;
+    /* soft shadow along the leading edge so the slide-over reads clearly */
+    box-shadow: 0 -24px 60px rgba(15, 16, 16, 0.18);
   }
   
   .item-1 {
@@ -159,22 +210,18 @@
     grid-row: 1;
     pointer-events: none;
   }
-  
-  /* ============================================================
-     INTRO TEXT STYLING
-     ============================================================ */
+
   .into-txt {
     width: 100%;
     max-width: 980px;
     margin: 0 auto;
-    background: #E4E6E7; 
-    padding: 80px 24px 0px; 
+    background: #E4E6E7;
+    padding: 80px 24px 0px;
     position: relative;
     z-index: 2;
     box-sizing: border-box;
     text-align: center;
-    border-top: 1px solid #09251C; 
-    border-bottom: 1px solid #09251C; 
+    transform: translate3d(0, 0, 0);
   }
   
   .into-title {
@@ -205,7 +252,7 @@
   }
   
   .into-txt .highlight {
-    color: #2A1A0E; 
+    color: #2A1A0E;
     font-weight: 400;
   }
   
@@ -213,7 +260,7 @@
   .reveal {
     opacity: 0;
     transform: translateY(30px);
-    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
+    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
                 transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform;
   }
@@ -370,12 +417,10 @@
     border-right: none;
   }
   
-  /* Hover: subtle colour change */
   .search-segment:hover {
     background: var(--soft-hover);
   }
   
-  /* Active (dropdown open / pressed): border only, no colour change */
   .search-segment.active,
   .search-segment.active:hover,
   .search-segment:active {
@@ -659,9 +704,10 @@
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      min-height: 100vh;
-      min-height: 100svh;
-      padding: 0 18px 40px; /* Fixed gap */
+      --hero-h: 100svh;
+      height: var(--hero-h);
+      min-height: 0;
+      padding: 0 18px 40px;
       color: var(--ink);
     }
   
@@ -686,15 +732,15 @@
     }
   
     .into-txt {
-      padding: 30px 20px 20px; 
-      border-top: none; 
+      padding: 30px 20px 20px;
+      border-top: none;
     }
-    
+  
     .into-title {
       font-size: 1.8rem;
       margin-bottom: 1.5rem;
     }
-    
+  
     .into-txt p {
       font-size: 1.15rem;
       line-height: 1.6;
@@ -990,8 +1036,6 @@
       padding-top: 20px;
     }
   }
-
-  /* MODLA*/
   
   /* ============================================================
      SMALL PHONES (≤ 380px)

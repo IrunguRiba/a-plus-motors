@@ -1,4 +1,4 @@
-import { Component, inject, AfterViewInit, OnInit } from '@angular/core';
+import { Component, inject, AfterViewInit, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { Portfolio } from './portfolio/portfolio';
@@ -18,15 +18,17 @@ gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
   templateUrl: './homes.html',
   styleUrl: './homes.css',
 })
-export class Home implements OnInit, AfterViewInit {
+export class Home implements OnInit, AfterViewInit, OnDestroy {
   cookiesClicked = false;
   searchWindowOpened = false;
   isChatOpen = false;
   isMenuOpen = false;
   logoImg = 'fav3.png';
 
-  private smoother!: ScrollSmoother;
+  private smoother?: ScrollSmoother;
+  private gsapCtx?: gsap.Context;
   private router = inject(Router);
+  private docClickHandler = () => this.closeDropdown();
 
   brands: string[] = [
     'Toyota', 'Honda', 'Nissan', 'Mazda', 'Subaru',
@@ -50,8 +52,10 @@ export class Home implements OnInit, AfterViewInit {
   activeDropdown: 'brand' | 'model' | 'year' | null = null;
 
   ngOnInit(): void {
+    // Opacity only: ScrollSmoother owns the transform on #smooth-content,
+    // so tweening y/scale here would fight it and break the pin.
     gsap.from('#smooth-content', {
-      opacity: 0, y: 25, scale: 0.99, duration: 1.2, ease: 'power3.out', delay: 0.1
+      opacity: 0, duration: 1.2, ease: 'power3.out', delay: 0.1, clearProps: 'opacity'
     });
   }
 
@@ -62,7 +66,98 @@ export class Home implements OnInit, AfterViewInit {
       smooth: 1.6,
       effects: true
     });
-    document.addEventListener('click', () => this.closeDropdown());
+
+    this.gsapCtx = gsap.context(() => {
+      this.setupHeroPin();
+      this.setupNavBlend();
+      this.setupReveals();
+    });
+
+    // Re-measure once fonts/images have settled so the pin end point is exact.
+    if ((document as any).fonts?.ready) {
+      (document as any).fonts.ready.then(() => ScrollTrigger.refresh());
+    }
+    window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
+
+    document.addEventListener('click', this.docClickHandler);
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('click', this.docClickHandler);
+    this.gsapCtx?.revert();
+    this.smoother?.kill();
+  }
+
+  /**
+   * Hero stays pinned at the top of the viewport while .cover-layer
+   * (pride text, portfolio, footer) scrolls up over it.
+   * pinSpacing:false => no extra blank scroll space; the cover layer
+   * simply slides on top of the pinned hero.
+   */
+  private setupHeroPin(): void {
+    ScrollTrigger.create({
+      trigger: '#hero',
+      start: 'top top',
+      endTrigger: '.cover-layer',
+      end: 'top top',
+      pin: true,
+      pinSpacing: false,
+      anticipatePin: 1,
+      invalidateOnRefresh: true
+    });
+
+    // Subtle depth: hero recedes slightly as it gets covered.
+    // No scale here: scaling a pinned layer re-rasterises text each frame
+    // and causes sub-pixel shimmer. Opacity + y stay on the GPU.
+    gsap.to('#hero .item-2', {
+      opacity: 0.55,
+      y: -30,
+      ease: 'none',
+      force3D: true,
+      overwrite: 'auto',
+      scrollTrigger: {
+        trigger: '.cover-layer',
+        start: 'top bottom',
+        end: 'top top',
+        scrub: true
+      }
+    });
+  }
+
+  /**
+   * Header colour follows the scroll: it starts transparent (so it is exactly
+   * the hero colour) and blends to the solid body colour by the time the body
+   * (.cover-layer) reaches the bottom edge of the header. Scrubbed, so it moves
+   * at the same pace as the content sliding up.
+   */
+  private setupNavBlend(): void {
+    const nav = document.querySelector('.nav-container') as HTMLElement | null;
+    if (!nav) return;
+
+    gsap.fromTo(nav,
+      { '--nav-mix': 0 },
+      {
+        '--nav-mix': 1,
+        ease: 'none',
+        immediateRender: true,
+        scrollTrigger: {
+          trigger: '.cover-layer',
+          start: 'top bottom',
+          end: () => `top ${nav.offsetHeight}px`,
+          scrub: true,
+          invalidateOnRefresh: true
+        }
+      }
+    );
+  }
+
+  /** Adds .is-visible to .reveal elements as they scroll into view. */
+  private setupReveals(): void {
+    ScrollTrigger.batch('.reveal', {
+      start: 'top 88%',
+      once: true,
+      onEnter: (els) => els.forEach(el => el.classList.add('is-visible'))
+    });
   }
 
   hideCookies(): void { this.cookiesClicked = true; }
@@ -73,11 +168,7 @@ export class Home implements OnInit, AfterViewInit {
 
   goHome(): void {
     if (this.smoother) {
-      this.smoother.scrollTo(0, true, 'power2.inOut');
-      gsap.fromTo('#smooth-content',
-        { opacity: 0.94, scale: 0.995 },
-        { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out', clearProps: 'opacity,transform' }
-      );
+      this.smoother.scrollTo(0, true);
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
