@@ -1,16 +1,27 @@
+// src/app/home/portfolio/specs/specs.ts
 import {
   Component, ElementRef, AfterViewInit, OnDestroy, ViewChild, HostListener, inject
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, CanDeactivateFn } from '@angular/router';
+import { ActivatedRoute, Router, CanDeactivateFn } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { gsap } from 'gsap';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
+import { ApiServices, ksh } from '../../../services/api-services';
+import { ApiCar } from '../../../interfaces/car-interface';
 
 type CarView = 'exterior' | 'interior';
 interface SpecRow { label: string; value: string; }
 interface SpecGroup { title: string; rows: SpecRow[]; }
-interface SimilarCar { id: number; name: string; brand: string; year: string; price: string; meta: string; why: string; image: string; }
+interface SimilarCar {
+  id: string; name: string; brand: string; year: string;
+  price: string; meta: string; why: string; image: string;
+}
+
+/** Normalise body strings from the API ("SUV", "Pickup", "Hatchback", …) into buckets. */
+type BodyBucket = 'suv' | 'truck' | 'van' | 'coupe' | 'hatchback' | 'sedan' | 'other';
 
 @Component({
   selector: 'app-specs',
@@ -20,109 +31,66 @@ interface SimilarCar { id: number; name: string; brand: string; year: string; pr
   host: { style: 'overflow: clip' }
 })
 export class Specs implements AfterViewInit, OnDestroy {
-  constructor(private router: Router) { this.jumpToTop(); }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private api: ApiServices
+  ) {
+    this.jumpToTop();
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed())
+      .subscribe(params => this.loadCar(params.get('id')));
+  }
 
   private location = inject(Location);
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @ViewChild('modalRoot') modalRoot!: ElementRef<HTMLElement>;
 
+  private viewReady = false;
+  private loadSub?: Subscription;
+
   private jumpToTop(): void {
     ScrollSmoother.get()?.scrollTo(0, false);
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
   }
 
-  // ---------- Car data ----------
-  seriesName = 'BMW i4 Series';
-  carName = 'BMW i4 eDrive40';
-  carPrice = 'Ksh 7,056,395';
+  /* ============================================================
+     CAR DATA
+     ============================================================ */
+
+  loading = true;
+  notFound = false;
+
+  car?: ApiCar;
+
+  seriesName = '';
+  carName = '';
+  carPrice = '';
+
+  /** True when the API says financing is actually enabled for this car. */
+  get financingEnabled(): boolean {
+    return !!(this.car?.financing && this.car?.finance?.enabled);
+  }
+
+  /** Text shown in finance chips (left panel + interest modal). */
+  get financingLabel(): string {
+    return this.financingEnabled ? 'Financing available' : 'Financing on request';
+  }
 
   views: CarView[] = ['exterior', 'interior'];
 
-  exteriorSpecs: SpecGroup[] = [
-    { title: 'Engine & Performance', rows: [
-      { label: 'Powertrain', value: 'Pure electric' },
-      { label: 'Horsepower', value: '335 hp' },
-      { label: 'Torque', value: '317 lb-ft' },
-      { label: '0–60 mph', value: '5.5 s' },
-      { label: 'Top speed', value: '118 mph' },
-      { label: 'Drivetrain', value: 'Rear-wheel drive' }] },
-    { title: 'Battery & Range', rows: [
-      { label: 'Battery', value: '83.9 kWh lithium-ion' },
-      { label: 'Range', value: '301 mi (EPA)' },
-      { label: 'DC fast charge', value: '10–80% in 31 min' },
-      { label: 'AC charge', value: '11 kW onboard' }] },
-    { title: 'Exterior Dimensions', rows: [
-      { label: 'Length', value: '188.5 in' },
-      { label: 'Width', value: '72.9 in' },
-      { label: 'Height', value: '57.0 in' },
-      { label: 'Wheelbase', value: '112.2 in' },
-      { label: 'Wheels', value: '18" aero alloy' }] },
-    { title: 'Exterior Features', rows: [
-      { label: 'Headlights', value: 'Adaptive LED' },
-      { label: 'Roof', value: 'Body-colour with sunroof' },
-      { label: 'Mirrors', value: 'Heated, power-folding' },
-      { label: 'Paint', value: 'Alpine White Metallic' }] }
-  ];
+  exteriorSpecs: SpecGroup[] = [];
+  interiorSpecs: SpecGroup[] = [];
 
-  interiorSpecs: SpecGroup[] = [
-    { title: 'Comfort & Seating', rows: [
-      { label: 'Seats', value: 'Heated, 4-way lumbar' },
-      { label: 'Upholstery', value: 'Vernasca leather' },
-      { label: 'Front seats', value: 'Power, memory' },
-      { label: 'Rear seats', value: '40/20/40 split' }] },
-    { title: 'Infotainment', rows: [
-      { label: 'Display', value: '12.3" + 14.9" curved' },
-      { label: 'System', value: 'BMW OS 8.5' },
-      { label: 'Audio', value: 'Harman Kardon 16-speaker' },
-      { label: 'Connectivity', value: 'Wireless Apple CarPlay / Android Auto' },
-      { label: 'Charging', value: 'Wireless + USB-C' }] },
-    { title: 'Cabin Features', rows: [
-      { label: 'Climate', value: 'Dual-zone auto' },
-      { label: 'Roof', value: 'Panoramic glass' },
-      { label: 'Lighting', value: 'Ambient LED' },
-      { label: 'Cargo', value: '10.0 cu ft' }] },
-    { title: 'Driver Assistance', rows: [
-      { label: 'Cruise', value: 'Adaptive with stop & go' },
-      { label: 'Parking', value: 'Rear camera + sensors' },
-      { label: 'Safety', value: 'Lane keep, blind spot' },
-      { label: 'Airbags', value: '8 total' }] }
-  ];
+  exteriorImages: string[] = [];
+  interiorImages: string[] = [];
 
-  exteriorImages = [
-    'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1200&auto=format&fit=crop&q=80',
-    '1.png',
-    'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1200&auto=format&fit=crop&q=80'
-  ];
-  interiorImages = ['interior-1.jpg', 'interior-2.jpg', 'interior-3.jpg', 'interior-4.jpg', 'interior-5.jpg', 'interior-6.jpg'];
+  reviewVid = '';
 
-  reviewVid = '2.mp4';
+  pickCriteria = ['Same brand or class', 'Similar body style', 'Comparable price', 'Close model year'];
 
-  /** Criteria shown in the similar-cars header. */
-  pickCriteria = ['Electric powertrain', 'Comparable power & range', 'Same brand & generation', 'Similar body style'];
-
-  similarVehicles: SimilarCar[] = [
-    { id: 1, name: 'i4 M50', brand: 'BMW', year: '2023', price: 'Ksh 1,367,300', meta: 'Electric · 536 hp · AWD',
-      why: 'Same i4 body and platform, with the performance tune.', image: '1.png' },
-    { id: 2, name: 'iX xDrive50', brand: 'BMW', year: '2023', price: 'Ksh 1,087,100', meta: 'Electric · 516 hp · SUV',
-      why: 'Electric with similar range, in a taller SUV body.',
-      image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&auto=format&fit=crop&q=80' },
-    { id: 3, name: 'i7 xDrive60', brand: 'BMW', year: '2023', price: 'Ksh 2,119,300', meta: 'Electric · 536 hp · Saloon',
-      why: 'The flagship step up: same brand, saloon layout, more luxury.',
-      image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80' },
-    { id: 4, name: 'i5 eDrive40', brand: 'BMW', year: '2024', price: 'Ksh 1,540,000', meta: 'Electric · 335 hp · Saloon',
-      why: 'Identical 335 hp output in a roomier saloon.',
-      image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&auto=format&fit=crop&q=80' },
-    { id: 5, name: 'iX1 xDrive30', brand: 'BMW', year: '2024', price: 'Ksh 980,000', meta: 'Electric · 313 hp · SUV',
-      why: 'Close on power, more compact and practical.',
-      image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&auto=format&fit=crop&q=80' },
-    { id: 6, name: 'i4 eDrive35', brand: 'BMW', year: '2023', price: 'Ksh 1,250,000', meta: 'Electric · 281 hp · RWD',
-      why: 'Same i4 gran coupé with a smaller battery and motor.',
-      image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&auto=format&fit=crop&q=80' }
-  ];
+  similarVehicles: SimilarCar[] = [];
 
   footerLinks = [
     { label: 'Explore our financing', route: '/financing' },
@@ -133,20 +101,258 @@ export class Specs implements AfterViewInit, OnDestroy {
     { label: 'Book a test drive', route: '/test-drive' }
   ];
 
-  // ---------- Gallery state ----------
+  private loadCar(id: string | null): void {
+    this.loading = true;
+    this.notFound = false;
+    this.loadSub?.unsubscribe();
+    this.loadSub = this.api.getAllCars().subscribe({
+      next: all => {
+        const web = all.filter(c => c.showOnWeb);
+        const car = id
+          ? (all.find(c => c._id === id) ?? web.find(c => c.recommended) ?? web[0])
+          : (web.find(c => c.recommended) ?? web[0] ?? all[0]);
+
+        this.loading = false;
+        if (!car) {
+          this.notFound = true;
+          return;
+        }
+        this.applyCar(car, web);
+      },
+      error: () => {
+        this.loading = false;
+        this.notFound = true;
+      }
+    });
+  }
+
+  private applyCar(c: ApiCar, pool: ApiCar[]): void {
+    this.notFound = false;
+    this.car = c;
+    this.seriesName = `${c.make} ${c.model}`;
+    this.carName = `${c.year} ${c.make} ${c.model}`;
+    this.carPrice = ksh(c.price);
+
+    const photos = Array.from(new Set((c.photos ?? []).filter(Boolean)));
+    this.exteriorImages = photos;
+    this.interiorImages = photos;
+    this.reviewVid = (c.reviewVideoUrl ?? '').trim();
+
+    this.exteriorSpecs = this.buildExterior(c);
+    this.interiorSpecs = this.buildInterior(c);
+    this.similarVehicles = this.buildSimilar(c, pool);
+
+    this.view = 'exterior';
+    this.activeIndex = 0;
+    this.stackExpanded = false;
+    this.videoPlaying = false;
+    this.zoom = 100;
+    this.resetPan();
+
+    if (this.viewReady) {
+      this.jumpToTop();
+      setTimeout(() => {
+        this.observeReveals();
+        this.observeCardImages();
+      }, 0);
+    }
+  }
+
+  /* ============================================================
+     SPEC BUILDERS
+     ============================================================ */
+
+  private buildExterior(c: ApiCar): SpecGroup[] {
+    const groups: SpecGroup[] = [
+      {
+        title: 'Engine & Performance',
+        rows: [
+          { label: 'Engine', value: this.num(c.engine, ' cc') },
+          { label: 'Fuel', value: c.fuel },
+          { label: 'Transmission', value: c.transmission },
+          { label: 'Drivetrain', value: c.drive }
+        ]
+      },
+      {
+        title: 'Vehicle',
+        rows: [
+          { label: 'Body', value: c.body },
+          { label: 'Colour', value: c.colour },
+          { label: 'Year', value: c.year ? String(c.year) : '' },
+          { label: 'Mileage', value: this.num(c.mileage, ' km') }
+        ]
+      },
+      {
+        title: 'Pricing',
+        rows: [
+          { label: 'Price', value: ksh(c.price) },
+          { label: 'Negotiable', value: c.negotiable ? 'Yes' : 'No' },
+          { label: 'Financing', value: this.financingEnabled ? 'Available' : 'On request' }
+        ]
+      },
+      {
+        title: 'Listing',
+        rows: [
+          { label: 'Stock no', value: c.stockNo },
+          { label: 'Branch', value: c.branch },
+          { label: 'Source', value: c.source },
+          { label: 'VIN', value: c.vin }
+        ]
+      }
+    ];
+
+    return groups
+      .map(g => ({ ...g, rows: g.rows.filter(r => this.hasValue(r.value)) }))
+      .filter(g => g.rows.length > 0);
+  }
+
+  private buildInterior(c: ApiCar): SpecGroup[] {
+    const groups: SpecGroup[] = [];
+
+    const features = (c.features ?? []).filter(Boolean);
+    if (features.length) {
+      groups.push({
+        title: 'Features',
+        rows: features.map(f => ({ label: f, value: 'Included' }))
+      });
+    }
+
+    if (this.financingEnabled && c.finance) {
+      const f = c.finance;
+      const partner =
+        f.bankDetails?.[0]?.fullName ??
+        f.bankFullName ??
+        f.primaryBank ??
+        f.banks?.[0];
+
+      const financeRows: SpecRow[] = [
+        { label: 'Partner', value: partner ?? '' },
+        { label: 'Rate', value: f.rate != null ? `${f.rate}%` : '' },
+        { label: 'Deposit', value: f.deposit != null ? `${f.deposit}%` : '' },
+        { label: 'Term', value: f.term != null ? `${f.term} months` : '' },
+        { label: 'Max financed', value: f.maxAmount != null ? ksh(f.maxAmount) : '' },
+        { label: 'Est. monthly', value: f.monthly != null ? ksh(f.monthly) : '' }
+      ].filter(r => this.hasValue(r.value));
+
+      if (financeRows.length) {
+        groups.push({ title: 'Finance', rows: financeRows });
+      }
+    } else if (c.financing === false || c.finance?.enabled === false) {
+      groups.push({
+        title: 'Finance',
+        rows: [{ label: 'Financing', value: 'On request' }]
+      });
+    }
+
+    if (c.notes?.trim()) {
+      groups.push({
+        title: 'Notes',
+        rows: [{ label: 'Details', value: c.notes.trim() }]
+      });
+    }
+
+    return groups;
+  }
+
+  private buildSimilar(c: ApiCar, pool: ApiCar[]): SimilarCar[] {
+    const targetBody = this.bucket(c.body);
+    const scored = pool
+      .filter(o => o._id !== c._id)
+      .map(o => {
+        const reasons: string[] = [];
+        let score = 0;
+
+        if (o.make && o.make === c.make) {
+          score += 3;
+          reasons.push(`the same ${c.make} brand`);
+        }
+        if (targetBody !== 'other' && this.bucket(o.body) === targetBody) {
+          score += 2;
+          reasons.push(`a similar ${targetBody} body`);
+        }
+        if (c.price > 0 && Math.abs(o.price - c.price) <= c.price * 0.25) {
+          score += 2;
+          reasons.push('a comparable price');
+        }
+        if (Math.abs(o.year - c.year) <= 2) {
+          score += 1;
+          reasons.push('a close model year');
+        }
+        return { o, score, reasons };
+      })
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6);
+
+    return scored.map(({ o, reasons }) => ({
+      id: o._id,
+      name: o.model,
+      brand: o.make,
+      year: String(o.year),
+      price: ksh(o.price),
+      meta: [o.fuel, this.num(o.engine, ' cc'), o.drive].filter(Boolean).join(' · '),
+      why: reasons.length
+        ? `Matches on ${this.joinReasons(reasons)}.`
+        : 'Another strong option from our yard.',
+      image: o.photos?.[0] ?? ''
+    }));
+  }
+
+  /* ============================================================
+     HELPERS
+     ============================================================ */
+
+  private hasValue(v: string | undefined | null): boolean {
+    return v != null && String(v).trim().length > 0;
+  }
+
+  private num(n: number | undefined | null, suffix = ''): string {
+    if (n == null || !isFinite(n) || n <= 0) return '';
+    return `${n.toLocaleString('en-US')}${suffix}`;
+  }
+
+  private bucket(body: string | undefined): BodyBucket {
+    const v = (body ?? '').toLowerCase();
+    if (v.includes('suv') || v.includes('crossover')) return 'suv';
+    if (v.includes('pickup') || v.includes('truck')) return 'truck';
+    if (v.includes('van') || v.includes('mpv')) return 'van';
+    if (v.includes('coupe') || v.includes('coupé')) return 'coupe';
+    if (v.includes('hatch')) return 'hatchback';
+    if (v.includes('sedan') || v.includes('saloon')) return 'sedan';
+    return 'other';
+  }
+
+  private joinReasons(reasons: string[]): string {
+    if (reasons.length === 1) return reasons[0];
+    if (reasons.length === 2) return `${reasons[0]} and ${reasons[1]}`;
+    return `${reasons.slice(0, -1).join(', ')}, and ${reasons[reasons.length - 1]}`;
+  }
+
+  /* ============================================================
+     GALLERY STATE
+     ============================================================ */
+
   view: CarView = 'exterior';
   activeIndex = 0;
   stackExpanded = false;
 
-  get images(): string[] { return this.view === 'exterior' ? this.exteriorImages : this.interiorImages; }
-  get activeSpecs(): SpecGroup[] { return this.view === 'exterior' ? this.exteriorSpecs : this.interiorSpecs; }
-  get activeImage(): string { return this.images[this.activeIndex] ?? ''; }
+  get images(): string[] {
+    return this.view === 'exterior' ? this.exteriorImages : this.interiorImages;
+  }
+  get activeSpecs(): SpecGroup[] {
+    return this.view === 'exterior' ? this.exteriorSpecs : this.interiorSpecs;
+  }
+  get activeImage(): string {
+    return this.images[this.activeIndex] ?? '';
+  }
 
-  // ---------- Trim empty transparent margins so every car fills the same box ----------
+  /* ---- Image trim ---- */
   private trimmed = new Map<string, string>();
   private tried = new Set<string>();
 
-  get displayImage(): string { return this.trimmed.get(this.activeImage) ?? this.activeImage; }
+  get displayImage(): string {
+    return this.trimmed.get(this.activeImage) ?? this.activeImage;
+  }
 
   trimImage(e: Event): void {
     const img = e.target as HTMLImageElement;
@@ -171,16 +377,17 @@ export class Specs implements AfterViewInit, OnDestroy {
         }
       }
       if (x1 < 0) return;
-      if ((x1 - x0 + 1) * (y1 - y0 + 1) > sw * sh * 0.97) return; // nothing worth trimming
+      if ((x1 - x0 + 1) * (y1 - y0 + 1) > sw * sh * 0.97) return;
       const pad = 0.01;
-      const cx = Math.max(0, Math.floor((x0 / sw - pad) * W)), cy = Math.max(0, Math.floor((y0 / sh - pad) * H));
+      const cx = Math.max(0, Math.floor((x0 / sw - pad) * W));
+      const cy = Math.max(0, Math.floor((y0 / sh - pad) * H));
       const cw = Math.min(W - cx, Math.ceil(((x1 + 1) / sw - x0 / sw + pad * 2) * W));
       const ch = Math.min(H - cy, Math.ceil(((y1 + 1) / sh - y0 / sh + pad * 2) * H));
       const out = document.createElement('canvas');
       out.width = cw; out.height = ch;
       out.getContext('2d')!.drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch);
       this.trimmed.set(src, out.toDataURL('image/png'));
-    } catch { /* cross-origin or unsupported: keep the original */ }
+    } catch { /* cross-origin: keep original */ }
   }
 
   get counter(): string {
@@ -197,13 +404,25 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.resetPan();
     this.revealActiveThumb();
   }
-  next(): void { this.activeIndex = (this.activeIndex + 1) % this.images.length; this.afterNav(); }
-  prev(): void { this.activeIndex = (this.activeIndex - 1 + this.images.length) % this.images.length; this.afterNav(); }
+
+  next(): void {
+    if (!this.images.length) return;
+    this.activeIndex = (this.activeIndex + 1) % this.images.length;
+    this.afterNav();
+  }
+  prev(): void {
+    if (!this.images.length) return;
+    this.activeIndex = (this.activeIndex - 1 + this.images.length) % this.images.length;
+    this.afterNav();
+  }
   selectImage(i: number): void { this.activeIndex = i; this.afterNav(); }
   toggleStack(): void { this.stackExpanded = !this.stackExpanded; this.revealActiveThumb(); }
 
-  /** Navigating returns to photos and recentres the image (zoom level is kept). */
-  private afterNav(): void { this.videoPlaying = false; this.resetPan(); this.revealActiveThumb(); }
+  private afterNav(): void {
+    this.videoPlaying = false;
+    this.resetPan();
+    this.revealActiveThumb();
+  }
 
   private revealActiveThumb(): void {
     setTimeout(() => {
@@ -228,7 +447,10 @@ export class Specs implements AfterViewInit, OnDestroy {
     event.preventDefault();
   }
 
-  // ---------- Zoom + pan (60 / 100 / 150 / 200 %) ----------
+  /* ============================================================
+     ZOOM + PAN
+     ============================================================ */
+
   zoomLevels = [60, 100, 150, 200];
   zoom = 100;
   panX = 0;
@@ -236,13 +458,14 @@ export class Specs implements AfterViewInit, OnDestroy {
   dragging = false;
   private drag?: { x: number; y: number; px: number; py: number };
 
-  get zoomTransform(): string { return `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom / 100})`; }
+  get zoomTransform(): string {
+    return `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom / 100})`;
+  }
 
   setZoom(z: number): void { this.zoom = z; this.clampPan(); }
-  toggleZoom(): void { this.setZoom(this.zoom >= 150 ? 100 : 200); }          // double-click
+  toggleZoom(): void { this.setZoom(this.zoom >= 150 ? 100 : 200); }
   resetPan(): void { this.panX = 0; this.panY = 0; }
 
-  /** Ctrl / ⌘ + wheel steps through the zoom levels; plain wheel still scrolls the page. */
   onStageWheel(e: WheelEvent): void {
     if (!(e.ctrlKey || e.metaKey)) return;
     e.preventDefault();
@@ -250,7 +473,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.setZoom(this.zoomLevels[Math.min(this.zoomLevels.length - 1, Math.max(0, i + (e.deltaY < 0 ? 1 : -1)))]);
   }
 
-  /** Keep the picture from being dragged out of the space. */
   private clampPan(): void {
     const stage = this.host.nativeElement.querySelector<HTMLElement>('.image-wrapper');
     const img = this.host.nativeElement.querySelector<HTMLElement>('.car-img');
@@ -275,7 +497,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.clampPan();
   }
 
-  /** When not zoomed in, a horizontal swipe / drag changes the image. */
   onPointerUp(e: PointerEvent): void {
     const d = this.drag;
     this.drag = undefined;
@@ -290,7 +511,10 @@ export class Specs implements AfterViewInit, OnDestroy {
   @HostListener('document:keydown.arrowleft')
   onArrowLeft(): void { if (!this.modalOpen && !this.videoPlaying) this.prev(); }
 
-  // ---------- Review video (plays in the main space, custom controls, loader) ----------
+  /* ============================================================
+     REVIEW VIDEO
+     ============================================================ */
+
   videoPlaying = false;
   vLoading = false;
   vError = false;
@@ -300,16 +524,27 @@ export class Specs implements AfterViewInit, OnDestroy {
   vCur = '0:00';
   vDur = '0:00';
 
+  get hasReview(): boolean { return !!this.reviewVid; }
+
   openVideo(event: Event): void {
     event.stopPropagation();
-    this.vPaused = false; this.vMuted = false; this.vProgress = 0; this.vCur = '0:00'; this.vDur = '0:00';
-    this.vLoading = true;   // shown until the browser has enough data to play
+    if (!this.reviewVid) return;
+    this.vPaused = false;
+    this.vMuted = false;
+    this.vProgress = 0;
+    this.vCur = '0:00';
+    this.vDur = '0:00';
+    this.vLoading = true;
     this.vError = false;
     this.videoPlaying = true;
   }
-  closeVideo(): void { this.videoPlaying = false; this.vLoading = false; this.vError = false; }
 
-  /** Enough data to play: hide the loader and sync the play/pause icon (autoplay may be blocked). */
+  closeVideo(): void {
+    this.videoPlaying = false;
+    this.vLoading = false;
+    this.vError = false;
+  }
+
   onVideoReady(v: HTMLVideoElement): void {
     this.vLoading = false;
     this.vError = false;
@@ -321,7 +556,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.vError = false;
     this.vLoading = true;
     v.load();
-    v.play().catch(() => { /* autoplay blocked: user can press play */ });
+    v.play().catch(() => { /* autoplay blocked */ });
   }
 
   private fmt(s: number): string {
@@ -341,7 +576,10 @@ export class Specs implements AfterViewInit, OnDestroy {
   toggleMute(v: HTMLVideoElement): void { v.muted = !v.muted; this.vMuted = v.muted; }
   fullscreenVideo(v: HTMLVideoElement): void { v.requestFullscreen?.().catch(() => {}); }
 
-  // ---------- Interest modal ----------
+  /* ============================================================
+     INTEREST MODAL
+     ============================================================ */
+
   logoImg = 'fav3.png';
   phoneImg = 'call.png';
   whatsappImg = 'whatsapp.png';
@@ -354,7 +592,6 @@ export class Specs implements AfterViewInit, OnDestroy {
   attempted = false;
   shareLabel = 'Share car link';
 
-  /** When set, the modal enquires about this similar car instead of the main one. */
   inquiry: { name: string; price: string } | null = null;
   get modalName(): string { return this.inquiry?.name ?? this.carName; }
   get modalPrice(): string { return this.inquiry?.price ?? this.carPrice; }
@@ -364,7 +601,10 @@ export class Specs implements AfterViewInit, OnDestroy {
   form = this.emptyForm();
 
   private emptyForm() {
-    return { name: '', phone: '', schedule: false, date: '', time: '10:00', tradeIn: false, tradeMake: '', tradeYear: '', tradeMileage: '' };
+    return {
+      name: '', phone: '', schedule: false, date: '', time: '10:00',
+      tradeIn: false, tradeMake: '', tradeYear: '', tradeMileage: ''
+    };
   }
 
   get nameValid(): boolean { return this.form.name.trim().length >= 2; }
@@ -382,7 +622,8 @@ export class Specs implements AfterViewInit, OnDestroy {
     ];
     if (f.schedule) lines.push(`Viewing: ${f.date} at ${f.time}`);
     if (f.tradeIn) {
-      const extra = [f.tradeYear.trim(), f.tradeMileage.trim() ? f.tradeMileage.trim() + ' km' : ''].filter(Boolean).join(', ');
+      const extra = [f.tradeYear.trim(), f.tradeMileage.trim() ? f.tradeMileage.trim() + ' km' : '']
+        .filter(Boolean).join(', ');
       lines.push(`Trade-in: ${f.tradeMake.trim()}${extra ? ' (' + extra + ')' : ''}`);
     }
     return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
@@ -397,7 +638,10 @@ export class Specs implements AfterViewInit, OnDestroy {
     }
     this.modalOpen = true;
     this.lockScroll(true);
-    setTimeout(() => this.modalRoot?.nativeElement.querySelector<HTMLInputElement>('input')?.focus(), 450);
+    setTimeout(
+      () => this.modalRoot?.nativeElement.querySelector<HTMLInputElement>('input')?.focus(),
+      450
+    );
   }
 
   closeModal(): void {
@@ -415,7 +659,11 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   async shareCar(): Promise<void> {
     const url = window.location.href;
-    const data = { title: this.modalName, text: `${this.modalName} · ${this.modalPrice} — A Plus Motors`, url };
+    const data = {
+      title: this.modalName,
+      text: `${this.modalName} · ${this.modalPrice} — A Plus Motors`,
+      url
+    };
     try {
       if (navigator.share) { await navigator.share(data); return; }
       await navigator.clipboard.writeText(url);
@@ -426,22 +674,32 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   goModal(route: string): void { this.closeModal(); this.leaveAndGo([route]); }
 
-  // ---------- Similar-card actions (toggle state) ----------
-  liked = new Set<number>();
-  saved = new Set<number>();
-  copiedId: number | null = null;
+  /* ============================================================
+     SIMILAR-CAR ACTIONS
+     ============================================================ */
 
-  private toggle(set: Set<number>, id: number): void { set.has(id) ? set.delete(id) : set.add(id); }
+  liked = new Set<string>();
+  saved = new Set<string>();
+  copiedId: string | null = null;
+
+  private toggle(set: Set<string>, id: string): void {
+    set.has(id) ? set.delete(id) : set.add(id);
+  }
 
   likeCar(car: SimilarCar, e: Event): void { e.stopPropagation(); this.toggle(this.liked, car.id); }
   bookmarkCar(car: SimilarCar, e: Event): void { e.stopPropagation(); this.toggle(this.saved, car.id); }
 
   async shareCarItem(car: SimilarCar, e: Event): Promise<void> {
     e.stopPropagation();
-    const url = window.location.href;
+    const tree = this.router.createUrlTree(['/specs'], { queryParams: { id: car.id } });
+    const url = window.location.origin + this.location.prepareExternalUrl(this.router.serializeUrl(tree));
     try {
       if (navigator.share) {
-        await navigator.share({ title: car.name, text: `Check out this ${car.brand} ${car.name} at A Plus Motors`, url });
+        await navigator.share({
+          title: car.name,
+          text: `Check out this ${car.brand} ${car.name} at A Plus Motors`,
+          url
+        });
         return;
       }
       await navigator.clipboard.writeText(url);
@@ -455,7 +713,15 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.openModal({ name: `${car.brand} ${car.name}`, price: car.price });
   }
 
-  // ---------- Escape / scroll ----------
+  openSimilar(car: SimilarCar, e?: Event): void {
+    e?.stopPropagation();
+    this.router.navigate(['/specs'], { queryParams: { id: car.id } });
+  }
+
+  /* ============================================================
+     ESC / SCROLL
+     ============================================================ */
+
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.modalOpen) this.closeModal();
@@ -467,11 +733,15 @@ export class Specs implements AfterViewInit, OnDestroy {
     ScrollSmoother.get()?.paused(lock);
   }
 
-  // ---------- Scroll reveal for the similar-cars section ----------
+  /* ============================================================
+     SCROLL REVEAL
+     ============================================================ */
+
   private io?: IntersectionObserver;
 
   private observeReveals(): void {
-    const els = this.host.nativeElement.querySelectorAll('.reveal');
+    this.io?.disconnect();
+    const els = this.host.nativeElement.querySelectorAll('.reveal:not(.in)');
     if (!('IntersectionObserver' in window)) {
       els.forEach(el => el.classList.add('in'));
       this.startRoad();
@@ -488,9 +758,10 @@ export class Specs implements AfterViewInit, OnDestroy {
     els.forEach(el => this.io!.observe(el));
   }
 
-  // ---------- Lazy loading for the similar-car images ----------
-  // Native loading="lazy" can stay stuck inside transformed / scroll-smoothed wrappers,
-  // so an observer sets src itself, well before the card reaches the screen.
+  /* ============================================================
+     LAZY IMAGES
+     ============================================================ */
+
   private imgIo?: IntersectionObserver;
   private imgSafetyTimer?: ReturnType<typeof setTimeout>;
 
@@ -501,7 +772,10 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
 
   private observeCardImages(): void {
-    const imgs = Array.from(this.host.nativeElement.querySelectorAll<HTMLImageElement>('img[data-src]'));
+    this.imgIo?.disconnect();
+    if (this.imgSafetyTimer) clearTimeout(this.imgSafetyTimer);
+    const imgs = Array.from(this.host.nativeElement.querySelectorAll<HTMLImageElement>('img[data-src]'))
+      .filter(i => !i.getAttribute('src'));
     if (!('IntersectionObserver' in window)) { imgs.forEach(i => this.loadLazyImg(i)); return; }
 
     this.imgIo = new IntersectionObserver(entries => {
@@ -513,7 +787,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     }, { rootMargin: '600px 0px' });
     imgs.forEach(i => this.imgIo!.observe(i));
 
-    // Safety net: whatever is still unloaded after a moment gets loaded anyway.
     this.imgSafetyTimer = setTimeout(() => imgs.forEach(i => this.loadLazyImg(i)), 3000);
   }
 
@@ -524,17 +797,22 @@ export class Specs implements AfterViewInit, OnDestroy {
   onCardImgError(e: Event): void {
     const img = e.target as HTMLImageElement;
     const wrap = img.closest('.car-image-wrapper');
-    if (!img.getAttribute('src')) return;       // nothing was requested yet
-    if (img.dataset['retried'] !== '1') {       // one retry, with a cache-buster
+    if (!img.getAttribute('src')) return;
+    if (img.dataset['retried'] !== '1') {
       img.dataset['retried'] = '1';
       const base = img.dataset['src'] ?? '';
-      setTimeout(() => { img.src = base + (base.includes('?') ? '&' : '?') + 'r=' + Date.now(); }, 600);
+      setTimeout(() => {
+        img.src = base + (base.includes('?') ? '&' : '?') + 'r=' + Date.now();
+      }, 600);
       return;
     }
     wrap?.classList.add('failed');
   }
 
-  // ---------- Car on the road: reveals the criteria items as it passes ----------
+  /* ============================================================
+     ROAD ANIMATION
+     ============================================================ */
+
   private roadTween?: gsap.core.Tween;
 
   private startRoad(): void {
@@ -575,14 +853,21 @@ export class Specs implements AfterViewInit, OnDestroy {
     );
   }
 
-  // ---------- Lifecycle + transitions ----------
+  /* ============================================================
+     LIFECYCLE
+     ============================================================ */
+
   ngAfterViewInit(): void {
+    this.viewReady = true;
     this.jumpToTop();
     document.body.appendChild(this.modalRoot.nativeElement);
     this.observeReveals();
     this.observeCardImages();
-    gsap.fromTo(this.panels, { scale: 1.15, transformOrigin: 'center center' },
-      { scale: 1, duration: 0.8, ease: 'power3.out', clearProps: 'transform' });
+    gsap.fromTo(
+      this.panels,
+      { scale: 1.15, transformOrigin: 'center center' },
+      { scale: 1, duration: 0.8, ease: 'power3.out', clearProps: 'transform' }
+    );
   }
 
   private get panels(): Element[] {
@@ -608,11 +893,15 @@ export class Specs implements AfterViewInit, OnDestroy {
     const navigated = await this.router.navigate(commands);
     if (!navigated) {
       this.leavePromise = undefined;
-      gsap.to(this.panels, { opacity: 1, scale: 1, duration: 0.65, ease: 'power2.inOut', clearProps: 'opacity,transform' });
+      gsap.to(this.panels, {
+        opacity: 1, scale: 1, duration: 0.65,
+        ease: 'power2.inOut', clearProps: 'opacity,transform'
+      });
     }
   }
 
   ngOnDestroy(): void {
+    this.loadSub?.unsubscribe();
     this.io?.disconnect();
     this.imgIo?.disconnect();
     if (this.imgSafetyTimer) clearTimeout(this.imgSafetyTimer);
@@ -622,7 +911,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.lockScroll(false);
   }
 
-  // ---------- Navigation ----------
   async goBack() { await this.playLeave(); this.location.back(); }
   goTo(route: string): void { this.leaveAndGo([route]); }
   goToMainStore(): void { this.goTo('/store'); }

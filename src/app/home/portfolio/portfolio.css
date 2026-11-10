@@ -27,7 +27,7 @@
   margin-bottom: 48px;
 }
 
-/* ---------- SECTION HEADINGS (Recommended + Main Store) ---------- */
+/* ---------- SECTION HEADINGS ---------- */
 .recommended-heading,
 .main-store {
   display: flex;
@@ -49,7 +49,6 @@
   font-weight: 500;
   letter-spacing: 0.01em;
   color: #09251C;
-  
   font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   white-space: nowrap;
 }
@@ -64,7 +63,6 @@
   margin: 0;
   font-size: 0;
   font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-
 }
 
 .recommended-heading h2 span,
@@ -99,13 +97,13 @@
   color: #F4F5F5;
 }
 
-/* ---------- BELT (auto-scroll + drag) ---------- */
+/* ---------- BELT ---------- */
 .belt-viewport {
   position: relative;
   width: 100%;
   overflow: hidden;
   margin-top: 24px;
-  touch-action: pan-y; /* allow vertical scroll, capture horizontal drags */
+  touch-action: pan-y;
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
@@ -118,9 +116,17 @@
 .belt-track {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   width: max-content;
   will-change: transform;
   transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.belt-track > .car-card,
+.belt-track > .bridge-line {
+  flex: 0 0 auto;
 }
 
 .belt-track.is-dragging {
@@ -144,6 +150,8 @@
   border-radius: 0;
   overflow: hidden;
   box-sizing: border-box;
+  content-visibility: auto;
+  contain-intrinsic-size: 880px 340px;
 }
 
 .car-card::before,
@@ -260,10 +268,13 @@
 .car-finance {
   flex-basis: auto;
   margin-top: 4px;
-  font-size: 13px;
-  line-height: 18px;
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 11px;
+  line-height: 14px;
   font-weight: 500;
-  color: var(--ink);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 .car-details .inquire-btn {
@@ -340,7 +351,7 @@
 
 .store-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
   width: 100%;
 }
@@ -435,8 +446,12 @@
 }
 
 .store-car-finance {
-  font-size: 13px;
-  font-weight: 300;
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--ink-soft);
 }
 
@@ -529,17 +544,9 @@
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.brand-card:nth-child(2n) {
-  animation-delay: -1.4s;
-}
-
-.brand-card:nth-child(3n) {
-  animation-delay: -2.8s;
-}
-
-.brand-card:nth-child(5n) {
-  animation-delay: -4.2s;
-}
+.brand-card:nth-child(2n) { animation-delay: -1.4s; }
+.brand-card:nth-child(3n) { animation-delay: -2.8s; }
+.brand-card:nth-child(5n) { animation-delay: -4.2s; }
 
 .brand-card::before,
 .brand-card::after {
@@ -718,28 +725,14 @@ app-specs {
 }
 
 @media (hover: hover) {
-  .card-action:hover {
-    background-color: rgba(15, 16, 16, 0.08);
-  }
-  .card-action.like:hover {
-    color: #4A943E;
-  }
-  .card-action.bookmark:hover {
-    color: #790D16;
-  }
+  .card-action:hover { background-color: rgba(15, 16, 16, 0.08); }
+  .card-action.like:hover { color: #4A943E; }
+  .card-action.bookmark:hover { color: #790D16; }
 }
 
-.card-action.like.active {
-  color: #4A943E;
-}
-
-.card-action.bookmark.active {
-  color: #790D16;
-}
-
-.card-action.active svg {
-  fill: currentColor;
-}
+.card-action.like.active { color: #4A943E; }
+.card-action.bookmark.active { color: #790D16; }
+.card-action.active svg { fill: currentColor; }
 
 .store-finance-row {
   display: flex;
@@ -765,9 +758,7 @@ app-specs {
 }
 
 @media (max-width: 1100px) {
-  .brand-row {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .brand-row { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 900px) {
@@ -779,9 +770,7 @@ app-specs {
     gap: 12px;
   }
   .recommended-heading h2,
-  .main-store h2 {
-    justify-content: flex-start;
-  }
+  .main-store h2 { justify-content: flex-start; }
 }
 
 @media (max-width: 800px) {
@@ -789,44 +778,26 @@ app-specs {
     grid-template-columns: 1fr;
     width: 86vw;
     min-width: 300px;
+    contain-intrinsic-size: 320px 480px;
   }
   .car-image-container {
     min-height: 220px;
     border-right: none;
     border-bottom: 1px solid var(--ink);
   }
-  .car-details {
-    padding: 24px 20px;
-  }
-  .car-title {
-    font-size: 26px;
-    line-height: 32px;
-  }
-  .car-price {
-    font-size: 26px;
-    line-height: 32px;
-  }
-  .store-row {
-    grid-template-columns: 1fr;
-  }
-  .brand-display {
-    padding: 16px;
-  }
-  .brand-row {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
+  .car-details { padding: 24px 20px; }
+  .car-title { font-size: 26px; line-height: 32px; }
+  .car-price { font-size: 26px; line-height: 32px; }
+  .store-row { grid-template-columns: 1fr; }
+  .brand-display { padding: 16px; }
+  .brand-row { grid-template-columns: repeat(2, 1fr); gap: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .brand-card {
-    animation: none;
-  }
+  .brand-card { animation: none; }
   .brand-card::before,
   .brand-card::after,
   .brand-bg,
   .brand-logo-container img,
-  .brand-name {
-    transition: none;
-  }
+  .brand-name { transition: none; }
 }

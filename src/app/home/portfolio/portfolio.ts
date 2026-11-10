@@ -1,3 +1,4 @@
+// src/app/home/portfolio/portfolio.ts
 import {
   Component,
   ViewChildren,
@@ -12,12 +13,15 @@ import {
 import { CommonModule } from '@angular/common';
 import { Specs } from './specs/specs';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { ApiServices } from '../../services/api-services';
+import { ApiCar } from '../../interfaces/car-interface';
 
 type CarBody = 'sedan' | 'suv' | 'truck' | 'van' | 'coupe' | 'hatchback';
 type CarFilter = 'all' | CarBody;
 
 interface Car {
-  id: number;
+  id: string;
   year: number;
   make: string;
   mileage: string;
@@ -28,13 +32,12 @@ interface Car {
   engineCC: string;
   fuelType: string;
   transmission: string;
-  monthlyFinance: string;
-  /** Base likes recorded (from backend). */
+  financing: boolean;
   likes: number;
-  /** Base shares recorded (from backend). */
   shares: number;
-  /** Body style for filtering. Optional; untyped cars fall back to matching by text. */
   body?: CarBody;
+  recommended: boolean;
+  stockNo: string;
 }
 
 interface Brand {
@@ -53,44 +56,52 @@ interface Brand {
 export class Portfolio implements AfterViewInit, OnDestroy {
   openedSpecs = false;
 
-  /** Reference to DOM elements for the scroll-reveal animation. */
+  readonly recommendedTarget = 6;
+  readonly storeMax = 21;
+  private static readonly STORE_COLS = 3;
+
+  loading = true;
+  error = '';
+
   @ViewChildren('reveal') revealElements!: QueryList<ElementRef>;
 
-  /** Belt drag refs. */
   @ViewChild('beltViewport', { static: false }) beltViewport?: ElementRef<HTMLElement>;
   @ViewChild('beltTrack', { static: false }) beltTrack?: ElementRef<HTMLElement>;
 
-  /** Track user interactions locally (to be synced with backend later). */
-  private likedIds = new Set<number>();
-  private bookmarkedIds = new Set<number>();
-  private sharedExtra = new Map<number, number>();
+  private likedIds = new Set<string>();
+  private bookmarkedIds = new Set<string>();
+  private sharedExtra = new Map<string, number>();
 
-  /** State for the "Link copied" clipboard fallback. */
-  copiedId: number | null = null;
+  copiedId: string | null = null;
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /** Base shuffled car list (single copy). */
-  private baseCars: Car[] = [];
+  private carsSub?: Subscription;
 
-  /** What the template renders. Repeats baseCars enough times to overflow the viewport. */
+  /** Recommended pool: flagged first, then newest-cheapest fillers to reach 6. */
+  recommendedCars: Car[] = [];
+
+  private storeBaseCars: Car[] = [];
+  filteredStoreCars: Car[] = [];
+
+  /** What the belt renders — recommended repeated for a seamless marquee. */
   displayCars: Car[] = [];
-  displayBrands: Brand[] = [];
 
-  /** Currently selected filter. */
+  displayBrands: Brand[] = [];
   activeFilter: CarFilter = 'all';
 
-  /** ---- Belt drag state ---- */
+  private beltBase: Car[] = [];
+  private filteredBaseLength = 1;
+
+  /* ---- Belt state ---- */
   beltDragging = false;
   beltTransform = '';
   private dragStartX = 0;
   private dragStartOffset = 0;
   private currentOffset = 0;
-  /** Width of ONE copy of the repeated list — the wrap distance. */
   private loopWidth = 0;
   private pointerId: number | null = null;
   private rafId: number | null = null;
   private lastFrameTime = 0;
-  /** Auto-scroll speed in px per second. */
   private readonly autoSpeed = 60;
   private readonly reducedMotion =
     typeof window !== 'undefined' &&
@@ -100,16 +111,164 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private zone: NgZone
+    private zone: NgZone,
+    private api: ApiServices
   ) {
-    // Shuffle once so all views share the same ordering.
-    this.baseCars = [...this.cars].sort(() => Math.random() - 0.5);
-    this.displayCars = this.repeatToFill(this.baseCars);
     this.displayBrands = [...this.brands];
+    this.fetchCars();
   }
 
+  /* ============================================================
+     DATA FETCH
+     ============================================================ */
+
+  fetchCars(): void {
+    this.loading = true;
+    this.error = '';
+    this.carsSub?.unsubscribe();
+
+    this.carsSub = this.api.getAllCars().subscribe({
+      next: (all) => {
+        const web = all.filter((c) => c.showOnWeb);
+
+        const flagged = web.filter((c) => c.recommended);
+        const flaggedIds = new Set(flagged.map((c) => c._id));
+
+        const fillCount = Math.max(0, this.recommendedTarget - flagged.length);
+        const fillers = fillCount
+          ? web
+              .filter((c) => !flaggedIds.has(c._id))
+              .sort((a, b) => {
+                const dt =
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime();
+                if (dt !== 0) return dt;
+                return (a.price ?? 0) - (b.price ?? 0);
+              })
+              .slice(0, fillCount)
+          : [];
+
+        const recommendedPool = [...flagged, ...fillers];
+
+        this.recommendedCars = this.dedupeById(
+          recommendedPool.map((c) => this.toCar(c))
+        );
+
+        const recommendedIds = new Set(recommendedPool.map((c) => c._id));
+        const storeCars = this.dedupeById(
+          web
+            .filter((c) => !recommendedIds.has(c._id))
+            .map((c) => this.toCar(c))
+        );
+
+        this.storeBaseCars = this.shuffle([...storeCars]).slice(0, this.storeMax);
+        this.filteredStoreCars = [...this.storeBaseCars];
+
+        this.buildRecommendedBelt();
+
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.error = 'We could not load the cars right now. Please try again.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private dedupeById(cars: Car[]): Car[] {
+    const seen = new Set<string>();
+    const out: Car[] = [];
+    for (const c of cars) {
+      if (seen.has(c.id)) continue;
+      seen.add(c.id);
+      out.push(c);
+    }
+    return out;
+  }
+
+  private shuffle<T>(arr: T[]): T[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  private toCar(c: ApiCar): Car {
+    const financingEnabled = !!(c.financing && c.finance?.enabled);
+    return {
+      id: c._id,
+      year: c.year,
+      make: c.make,
+      mileage: `${(c.mileage ?? 0).toLocaleString('en-US')} km`,
+      model: c.model,
+      description: c.notes ?? '',
+      price: `KSH ${(c.price ?? 0).toLocaleString('en-US')}`,
+      image: c.photos?.[0] ?? '',
+      engineCC: `${(c.engine ?? 0).toLocaleString('en-US')} CC`,
+      fuelType: c.fuel,
+      transmission: c.transmission,
+      financing: financingEnabled,
+      likes: 0,
+      shares: 0,
+      body: this.toBody(c.body),
+      recommended: !!c.recommended,
+      stockNo: c.stockNo,
+    };
+  }
+
+  private toBody(value: string | undefined): CarBody | undefined {
+    const v = (value ?? '').toLowerCase();
+    if (v.includes('suv') || v.includes('crossover')) return 'suv';
+    if (v.includes('pickup') || v.includes('truck')) return 'truck';
+    if (v.includes('van') || v.includes('mpv')) return 'van';
+    if (v.includes('coupe') || v.includes('coupé')) return 'coupe';
+    if (v.includes('hatch')) return 'hatchback';
+    if (v.includes('sedan') || v.includes('saloon')) return 'sedan';
+    return undefined;
+  }
+
+  /* ============================================================
+     BELT / MARQUEE
+     ============================================================ */
+
+  private buildRecommendedBelt(): void {
+    this.beltBase = [...this.recommendedCars];
+
+    if (!this.beltBase.length) {
+      this.displayCars = [];
+      this.filteredBaseLength = 1;
+      this.loopWidth = 0;
+      return;
+    }
+
+    this.filteredBaseLength = this.beltBase.length;
+    this.displayCars = [...this.beltBase];
+
+    this.currentOffset = 0;
+    this.cdr.markForCheck();
+    setTimeout(() => this.setupBelt(), 0);
+  }
+
+  get storeRows(): Car[][] {
+    const flat = this.filteredStoreCars.slice(0, this.storeMax);
+    const rows: Car[][] = [];
+    for (let i = 0; i < flat.length; i += Portfolio.STORE_COLS) {
+      rows.push(flat.slice(i, i + Portfolio.STORE_COLS));
+    }
+    return rows;
+  }
+
+  trackById = (_: number, car: Car) => car.id;
+  trackByRow = (_: number, row: Car[]) => row.map((c) => c.id).join('|');
+
+  /* ============================================================
+     LIFECYCLE
+     ============================================================ */
+
   ngAfterViewInit() {
-    // Scroll-reveal for text paragraphs (kept from original).
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -122,18 +281,17 @@ export class Portfolio implements AfterViewInit, OnDestroy {
       { threshold: 0.15 }
     );
 
-    const textNodes = document.querySelectorAll('.into-txt .reveal');
-    textNodes.forEach((node) => observer.observe(node));
+    document.querySelectorAll('.into-txt .reveal').forEach((node) => observer.observe(node));
 
-    // Kick off the belt once layout is ready.
     setTimeout(() => this.setupBelt(), 0);
-    // Re-measure on resize so the loop distance stays accurate.
+
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this.onResize, { passive: true });
     }
   }
 
   ngOnDestroy() {
+    this.carsSub?.unsubscribe();
     this.stopBeltLoop();
     if (typeof window !== 'undefined') {
       window.removeEventListener('resize', this.onResize);
@@ -141,14 +299,16 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   }
 
   private onResize = () => {
-    // Re-measure loop width after layout settles.
     setTimeout(() => this.measureLoop(), 0);
   };
 
-  /** Navigation handlers */
-  openSpecs() {
+  /* ============================================================
+     NAVIGATION
+     ============================================================ */
+
+  openSpecs(car?: Car) {
     this.openedSpecs = !this.openedSpecs;
-    this.router.navigate(['/specs']);
+    this.router.navigate(['/specs'], car ? { queryParams: { id: car.id } } : {});
   }
 
   goToStore() {
@@ -156,42 +316,21 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   }
 
   /* ============================================================
-     FILTERS
+     FILTERS — store grid only
      ============================================================ */
 
   setFilter(filter: CarFilter) {
     this.activeFilter = filter;
 
     if (filter === 'all') {
-      this.displayCars = this.repeatToFill(this.baseCars);
+      this.filteredStoreCars = [...this.storeBaseCars];
     } else {
-      const matches = this.baseCars.filter((car) => this.matchesBody(car, filter));
-      this.displayCars = this.repeatToFill(matches);
+      this.filteredStoreCars = this.storeBaseCars.filter((car) =>
+        this.matchesBody(car, filter)
+      );
     }
 
-    this.currentOffset = 0;
     this.cdr.markForCheck();
-    setTimeout(() => this.setupBelt(), 0);
-  }
-
-  /**
-   * Repeats the list enough times that the total track is at least twice the
-   * viewport width, guaranteeing it overflows even with very few matches.
-   * The result is treated as N copies of the same sequence; the loop width is
-   * the width of one copy (total / copies).
-   */
-  private repeatToFill(list: Car[]): Car[] {
-    if (list.length === 0) return [];
-    const viewportW =
-      this.beltViewport?.nativeElement?.clientWidth ||
-      (typeof window !== 'undefined' ? window.innerWidth : 1920);
-    // Estimate one card + bridge width so we can pick a copy count up front.
-    const perItem = 920; // 880 card + 40 bridge
-    const estListWidth = Math.max(list.length * perItem, 1);
-    const copiesNeeded = Math.max(3, Math.ceil((viewportW * 2) / estListWidth) + 1);
-    const out: Car[] = [];
-    for (let i = 0; i < copiesNeeded; i++) out.push(...list);
-    return out;
   }
 
   private matchesBody(car: Car, body: CarBody): boolean {
@@ -207,26 +346,15 @@ export class Portfolio implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** Check if a specific car has been liked/bookmarked by the user. */
-  isLiked(id: number): boolean {
-    return this.likedIds.has(id);
-  }
+  /* ============================================================
+     INTERACTIONS
+     ============================================================ */
 
-  isBookmarked(id: number): boolean {
-    return this.bookmarkedIds.has(id);
-  }
+  isLiked(id: string): boolean { return this.likedIds.has(id); }
+  isBookmarked(id: string): boolean { return this.bookmarkedIds.has(id); }
+  likeCount(car: Car): number { return car.likes + (this.likedIds.has(car.id) ? 1 : 0); }
+  shareCount(car: Car): number { return car.shares + (this.sharedExtra.get(car.id) ?? 0); }
 
-  /** Calculate total likes (base + user interaction). */
-  likeCount(car: Car): number {
-    return car.likes + (this.likedIds.has(car.id) ? 1 : 0);
-  }
-
-  /** Calculate total shares (base + user interaction). */
-  shareCount(car: Car): number {
-    return car.shares + (this.sharedExtra.get(car.id) ?? 0);
-  }
-
-  /** Format large numbers elegantly: 950 -> "950", 1240 -> "1.2K", 15300 -> "15K". */
   formatCount(n: number): string {
     if (n >= 1_000_000) return this.trim(n / 1_000_000) + 'M';
     if (n >= 1_000) return this.trim(n / 1_000) + 'K';
@@ -237,18 +365,16 @@ export class Portfolio implements AfterViewInit, OnDestroy {
     return (value >= 10 ? Math.round(value) : Math.round(value * 10) / 10).toString();
   }
 
-  /** Toggle local state for likes and bookmarks. */
-  toggleLike(id: number, event: Event) {
+  toggleLike(id: string, event: Event) {
     event.stopPropagation();
     this.likedIds.has(id) ? this.likedIds.delete(id) : this.likedIds.add(id);
   }
 
-  toggleBookmark(id: number, event: Event) {
+  toggleBookmark(id: string, event: Event) {
     event.stopPropagation();
     this.bookmarkedIds.has(id) ? this.bookmarkedIds.delete(id) : this.bookmarkedIds.add(id);
   }
 
-  /** Handle sharing via native OS share sheet, or fallback to clipboard. */
   async shareCar(car: Car, event: Event) {
     event.stopPropagation();
 
@@ -260,9 +386,7 @@ export class Portfolio implements AfterViewInit, OnDestroy {
       try {
         await navigator.share({ title, text, url });
         this.countShare(car.id);
-      } catch {
-        // User dismissed the share sheet: do not count
-      }
+      } catch { /* dismissed */ }
       return;
     }
 
@@ -270,20 +394,17 @@ export class Portfolio implements AfterViewInit, OnDestroy {
       await navigator.clipboard.writeText(url);
       this.countShare(car.id);
       this.copiedId = car.id;
-
       if (this.copiedTimer) clearTimeout(this.copiedTimer);
       this.copiedTimer = setTimeout(() => (this.copiedId = null), 1600);
-    } catch {
-      // Clipboard access blocked: fail silently
-    }
+    } catch { /* blocked */ }
   }
 
-  private countShare(id: number) {
+  private countShare(id: string) {
     this.sharedExtra.set(id, (this.sharedExtra.get(id) ?? 0) + 1);
   }
 
   /* ============================================================
-     BELT · drag + gentle auto scroll (infinite)
+     BELT · loop logic
      ============================================================ */
 
   private setupBelt() {
@@ -294,33 +415,40 @@ export class Portfolio implements AfterViewInit, OnDestroy {
     this.currentOffset = 0;
     this.beltTransform = 'translate3d(0px, 0, 0)';
     this.applyTransform();
-
     this.startBeltLoop();
   }
 
-  /** Measure the width of ONE copy of the repeated sequence. */
+  /** Pads belt copies so it always overflows the viewport by ≥ one full copy. */
   private measureLoop() {
     const track = this.beltTrack?.nativeElement;
-    if (!track || this.displayCars.length === 0) return;
+    if (!track || this.beltBase.length === 0) return;
 
-    // How many copies did we render? Derive from baseCars length vs total length.
-    const baseLen = this.baseCars.length || 1;
+    const baseLen = this.beltBase.length;
+    if (baseLen <= 0) return;
+
     const total = this.displayCars.length;
     const copies = Math.max(1, Math.round(total / baseLen));
-    this.loopWidth = track.scrollWidth / copies;
+    const oneCopyWidth = track.scrollWidth / copies;
+    if (oneCopyWidth <= 0) return;
 
-    // Ensure the loop width is at least the viewport; if not, widen by duplicating.
     const viewportW = this.beltViewport?.nativeElement?.clientWidth || 0;
-    if (this.loopWidth > 0 && this.loopWidth < viewportW * 1.5) {
-      // Duplicate the rendered sequence again so the track fills properly.
-      const doubled = [...this.displayCars, ...this.displayCars];
-      this.displayCars = doubled;
+
+    const neededCopies = Math.max(
+      2,
+      Math.min(6, Math.ceil((viewportW + oneCopyWidth) / oneCopyWidth))
+    );
+
+    if (neededCopies > copies || total % baseLen !== 0) {
+      const next: Car[] = [];
+      for (let i = 0; i < neededCopies; i++) next.push(...this.beltBase);
+      this.displayCars = next;
       this.cdr.markForCheck();
-      // Re-measure on next frame.
       setTimeout(() => this.measureLoop(), 0);
       return;
     }
 
+    this.loopWidth = oneCopyWidth;
+    this.filteredBaseLength = baseLen;
     this.wrapOffset();
   }
 
@@ -354,16 +482,13 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
   private wrapOffset() {
     if (this.loopWidth <= 0) return;
-    // Normalise so currentOffset is in (-loopWidth, 0].
     while (this.currentOffset <= -this.loopWidth) this.currentOffset += this.loopWidth;
     while (this.currentOffset > 0) this.currentOffset -= this.loopWidth;
   }
 
   private applyTransform() {
     const el = this.beltTrack?.nativeElement;
-    if (el) {
-      el.style.transform = `translate3d(${this.currentOffset}px, 0, 0)`;
-    }
+    if (el) el.style.transform = `translate3d(${this.currentOffset}px, 0, 0)`;
   }
 
   onBeltPointerDown(event: PointerEvent) {
@@ -374,7 +499,6 @@ export class Portfolio implements AfterViewInit, OnDestroy {
     if (!track) return;
 
     event.preventDefault();
-
     this.pointerId = event.pointerId;
     this.beltDragging = true;
     this.dragStartX = event.clientX;
@@ -382,7 +506,6 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
     const vp = this.beltViewport?.nativeElement;
     vp?.setPointerCapture?.(event.pointerId);
-
     this.cdr.markForCheck();
   }
 
@@ -391,7 +514,6 @@ export class Portfolio implements AfterViewInit, OnDestroy {
     if (this.pointerId !== null && event.pointerId !== this.pointerId) return;
 
     event.preventDefault();
-
     const dx = event.clientX - this.dragStartX;
     this.currentOffset = this.dragStartOffset + dx;
     this.wrapOffset();
@@ -408,85 +530,12 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
     const vp = this.beltViewport?.nativeElement;
     vp?.releasePointerCapture?.(event.pointerId);
-
     this.cdr.markForCheck();
   }
 
-  // --- Data ---
-
-  cars: Car[] = [
-    {
-      id: 1,
-      year: 2019,
-      make: 'B M W',
-      mileage: 'Second Hand',
-      model: ' i4 M50',
-      description: 'With its aerodynamic curves and bold lines, this car is a standout on the road, turning heads and making a statement wherever it goes.',
-      price: 'KSH 8,880,000',
-      image: '3.jpg',
-      engineCC: '1,998 CC',
-      fuelType: 'Electric',
-      transmission: 'Automatic',
-      monthlyFinance: 'KSH 148,000',
-      likes: 1240,
-      shares: 86,
-      body: 'sedan'
-    },
-    {
-      id: 2,
-      year: 2021,
-      make: 'B M W',
-      mileage: 'New',
-      model: ' i4 M50',
-      description: 'With its aerodynamic curves and bold lines, this car is a standout on the road, turning heads and making a statement wherever it goes.',
-      price: 'KSH 8,880,000',
-      image: '3.jpg',
-      engineCC: '1,998 CC',
-      fuelType: 'Electric',
-      transmission: 'Automatic',
-      monthlyFinance: 'KSH 148,000',
-      likes: 932,
-      shares: 54,
-      body: 'coupe'
-    },
-    {
-      id: 3,
-      year: 2022,
-      make: 'B M W',
-      mileage: 'New',
-      model: ' i4 M50',
-      description: 'With its aerodynamic curves and bold lines, this car is a standout on the road, turning heads and making a statement wherever it goes.',
-      price: 'KSH 8,880,000',
-      image: '3.jpg',
-      engineCC: '1,998 CC',
-      fuelType: 'Electric',
-      transmission: 'Automatic',
-      monthlyFinance: 'KSH 148,000',
-      likes: 2150,
-      shares: 140,
-      body: 'suv'
-    }
-  ];
-
-  storeCars: Car[] = [
-    {
-      id: 1,
-      year: 2013,
-      make: 'Audi A4',
-      mileage: 'Good',
-      model: 'A4',
-      description: 'Clean executive vehicle.',
-      price: 'Ksh 8,695,000',
-      image: '3.jpg',
-      engineCC: '1,984 CC',
-      fuelType: 'Petrol',
-      transmission: 'Automatic',
-      monthlyFinance: 'KSH 145,000',
-      likes: 312,
-      shares: 21,
-      body: 'sedan'
-    }
-  ];
+  /* ============================================================
+     BRANDS
+     ============================================================ */
 
   brands: Brand[] = [
     { id: 1, name: 'Toyota', logo: 'https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/optimized/toyota.png' },

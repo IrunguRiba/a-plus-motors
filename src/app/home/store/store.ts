@@ -1,37 +1,11 @@
 import { Component, ElementRef, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import gsap from 'gsap';
 import { Nav2 } from '../nav-2/nav-2';
-
-interface RawCar {
-  year: string;
-  make: string;
-  name: string;
-  price: number;
-  was?: number;
-  km: number;
-  gearbox: string;
-  fuel: string;
-  engine: string;
-  isNew?: boolean;
-}
-
-interface StoreCar {
-  id: number;
-  image: string;
-  year: string;
-  make: string;
-  name: string;
-  price: string;
-  oldPrice: string;
-  mileage: string;
-  gearbox: string;
-  fuel: string;
-  engine: string;
-  isNew: boolean;
-  deal: boolean;
-}
+import { ApiServices } from '../../services/api-services';
+import { StoreCar } from '../../interfaces/car-interface';
 
 @Component({
   selector: 'app-store',
@@ -47,104 +21,78 @@ export class Store implements AfterViewInit, OnDestroy {
   private ctx!: gsap.Context;
   private navCtx!: gsap.Context;
   private destroyed = false;
+  private carsSub?: Subscription;
 
   private readonly LIKED_KEY = 'aplus.store.liked';
   private readonly SAVED_KEY = 'aplus.store.saved';
 
-  constructor(private router: Router, private location: Location) {
+  constructor(
+    private router: Router,
+    private location: Location,
+    private api: ApiServices
+  ) {
     this.liked = this.load(this.LIKED_KEY);
     this.saved = this.load(this.SAVED_KEY);
-    this.refresh(false);
+    this.fetchCars();
   }
 
-  private photos = [
-    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=600&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1542282088-fe8426682b8f?q=80&w=600&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=600&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=600&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=600&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=600&auto=format&fit=crop'
-  ];
-
-  private raw: RawCar[] = [
-    { year: '2013', make: 'Audi', name: 'A4', price: 2450000, km: 96000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.0L' },
-    { year: '2018', make: 'BMW', name: '320i', price: 3850000, was: 4100000, km: 58000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.0L' },
-    { year: '2020', make: 'Toyota', name: 'Harrier', price: 5200000, km: 34000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.0L', isNew: true },
-    { year: '2016', make: 'Mercedes-Benz', name: 'C200', price: 3300000, was: 3550000, km: 72000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.0L' },
-    { year: '2019', make: 'Mazda', name: 'CX-5', price: 3450000, km: 45000, gearbox: 'Automatic', fuel: 'Diesel', engine: '2.2L' },
-    { year: '2022', make: 'Subaru', name: 'Forester', price: 4750000, km: 18000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.0L', isNew: true },
-    { year: '2015', make: 'Land Rover', name: 'Discovery Sport', price: 3900000, km: 88000, gearbox: 'Automatic', fuel: 'Diesel', engine: '2.2L' },
-    { year: '2021', make: 'Volkswagen', name: 'Tiguan', price: 4300000, was: 4600000, km: 29000, gearbox: 'Automatic', fuel: 'Petrol', engine: '1.4L' },
-    { year: '2017', make: 'Honda', name: 'Vezel', price: 2150000, km: 61000, gearbox: 'Automatic', fuel: 'Hybrid', engine: '1.5L' },
-    { year: '2023', make: 'Lexus', name: 'NX 250', price: 8200000, km: 9000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.5L', isNew: true },
-    { year: '2014', make: 'Nissan', name: 'X-Trail', price: 1750000, was: 1900000, km: 112000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.0L' },
-    { year: '2024', make: 'Hyundai', name: 'Tucson', price: 4950000, km: 5000, gearbox: 'Automatic', fuel: 'Petrol', engine: '1.6L', isNew: true },
-    { year: '2019', make: 'Audi', name: 'Q5', price: 5600000, km: 49000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.0L' },
-    { year: '2020', make: 'BMW', name: 'X3', price: 6100000, was: 6450000, km: 41000, gearbox: 'Automatic', fuel: 'Diesel', engine: '2.0L' },
-    { year: '2018', make: 'Toyota', name: 'Land Cruiser Prado', price: 7300000, km: 67000, gearbox: 'Automatic', fuel: 'Diesel', engine: '2.8L' },
-    { year: '2016', make: 'Mazda', name: 'Demio', price: 1050000, km: 78000, gearbox: 'Automatic', fuel: 'Petrol', engine: '1.3L' },
-    { year: '2021', make: 'Mercedes-Benz', name: 'GLC 300', price: 8900000, km: 26000, gearbox: 'Automatic', fuel: 'Petrol', engine: '2.0L', isNew: true },
-    { year: '2012', make: 'Subaru', name: 'Impreza', price: 1250000, was: 1400000, km: 121000, gearbox: 'Manual', fuel: 'Petrol', engine: '1.6L' }
-  ];
-
-  private allCars: StoreCar[] = this.raw.map((r, i) => ({
-    id: i + 1,
-    image: this.photos[i % this.photos.length],
-    year: r.year,
-    make: r.make,
-    name: r.name,
-    price: this.money(r.price),
-    oldPrice: r.was ? this.money(r.was) : '',
-    mileage: `${r.km.toLocaleString('en-US')} km`,
-    gearbox: r.gearbox,
-    fuel: r.fuel,
-    engine: r.engine,
-    isNew: !!r.isNew,
-    deal: !!r.was
-  }));
+  private allCars: StoreCar[] = [];
 
   cars: StoreCar[] = [];
+
+  loading = true;
+  error = '';
 
   readonly pageSize = 6;
   page = 1;
   totalPages = 1;
 
-  liked = new Set<number>();
-  saved = new Set<number>();
-  copiedId: number | null = null;
+  liked = new Set<string>();
+  saved = new Set<string>();
+  copiedId: string | null = null;
 
   activeFilterDropdown: 'brand' | 'year' | null = null;
   selectedBrandFilter: string = '';
   selectedYearFilter: string = '';
 
-  brands: string[] = [
-    'Toyota', 'Honda', 'Nissan', 'Mazda', 'Subaru',
-    'Mitsubishi', 'Isuzu', 'Suzuki', 'BMW', 'Mercedes-Benz',
-    'Audi', 'Volkswagen', 'Ford', 'Chevrolet', 'Hyundai',
-    'Kia', 'Peugeot', 'Renault', 'Land Rover', 'Lexus'
-  ];
-
-  years: string[] = Array.from({ length: 30 }, (_, i) => `${2025 - i}`);
+  brands: string[] = [];
+  years: string[] = [];
 
   activeView: 'all' | 'favorites' = 'all';
 
-  trackById(_: number, car: StoreCar): number {
+  trackById(_: number, car: StoreCar): string {
     return car.id;
   }
 
-  private money(n: number): string {
-    return `Ksh ${n.toLocaleString('en-US')}`;
+  fetchCars(): void {
+    this.loading = true;
+    this.error = '';
+    this.carsSub?.unsubscribe();
+    this.carsSub = this.api.getStoreCars().subscribe({
+      next: list => {
+        this.allCars = list;
+        this.brands = Array.from(new Set(list.map(c => c.make))).sort();
+        this.years = Array.from(new Set(list.map(c => c.year))).sort((a, b) => +b - +a);
+        this.loading = false;
+        this.refresh();
+      },
+      error: () => {
+        this.loading = false;
+        this.error = 'We could not load the cars right now. Please try again.';
+      }
+    });
   }
 
-  private load(key: string): Set<number> {
+  private load(key: string): Set<string> {
     try {
-      return new Set<number>(JSON.parse(localStorage.getItem(key) ?? '[]'));
+      const parsed = JSON.parse(localStorage.getItem(key) ?? '[]') as unknown[];
+      return new Set<string>(parsed.map(String));
     } catch {
-      return new Set<number>();
+      return new Set<string>();
     }
   }
 
-  private persist(key: string, set: Set<number>): void {
+  private persist(key: string, set: Set<string>): void {
     try {
       localStorage.setItem(key, JSON.stringify(Array.from(set)));
     } catch { }
@@ -260,6 +208,7 @@ export class Store implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.ctx = gsap.context(() => {
+      if (!this.smoothContent.nativeElement.querySelector('.car-card')) return;
       gsap.from('.car-card', {
         opacity: 0,
         x: -60,
@@ -299,6 +248,7 @@ export class Store implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.carsSub?.unsubscribe();
     this.ctx?.revert();
     this.navCtx?.revert();
     document.removeEventListener('click', this.onDocumentClick, true);

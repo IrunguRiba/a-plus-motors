@@ -1,12 +1,15 @@
+<!-- src/app/home/portfolio/portfolio.html -->
 <div class="recommended" tabindex="0" role="region" aria-label="Featured Vehicles Carousel">
   <div class="recommended">
 
-
+    <!-- ============================================================
+         RECOMMENDED BELT — flagged cars + newest-cheapest fillers
+         ============================================================ -->
     <div class="recommended-heading">
       <h1>Recommended For You</h1>
       <h2>
-        <span> Based on Insights: Most Liked</span><span>On Sale</span><span>Most Reviewed Cars</span
-        ><span>Social Engagements</span>
+        <span>Based on Insights: Most Liked</span><span>On Sale</span
+        ><span>Most Reviewed Cars</span><span>Social Engagements</span>
       </h2>
     </div>
 
@@ -24,9 +27,8 @@
         #beltTrack
         [class.is-dragging]="beltDragging"
         [style.transform]="beltTransform"
-        [style.animation-play-state]="beltDragging ? 'paused' : 'running'"
       >
-        <ng-container *ngFor="let car of displayCars; let i = index">
+        <ng-container *ngFor="let car of displayCars; trackBy: trackById">
           <div
             class="car-card"
             role="group"
@@ -47,9 +49,7 @@
 
               <h2 class="car-title">{{ car.model }}</h2>
 
-              <p class="car-description">
-                {{ car.description }}
-              </p>
+              <p class="car-description">{{ car.description }}</p>
 
               <div class="car-specs">
                 <span class="spec-chip">{{ car.engineCC }}</span>
@@ -61,10 +61,12 @@
               <div class="car-pricing">
                 <span class="starting-label">Starting From</span>
                 <span class="car-price">{{ car.price }}</span>
-                <span class="car-finance">Financing available</span>
+                <span class="car-finance">
+                  {{ car.financing ? 'FINANCING AVAILABLE' : 'FINANCING ON REQUEST' }}
+                </span>
               </div>
 
-              <button class="inquire-btn" type="button" (click)="openSpecs()">INQUIRE</button>
+              <button class="inquire-btn" type="button" (click)="openSpecs(car)">INQUIRE</button>
             </div>
           </div>
           <div class="bridge-line"></div>
@@ -73,6 +75,9 @@
     </div>
   </div>
 
+  <!-- ============================================================
+       STORE — up to 21 cars (3 columns × 7 rows)
+       ============================================================ -->
   <div class="cars-store">
     <div class="main-store">
       <h1>Main Store</h1>
@@ -82,11 +87,11 @@
       </h2>
     </div>
 
-    <div class="car-rows-container" *ngFor="let rowIndex of [0, 1, 2]">
-      <div class="store-row">
-        <ng-container *ngFor="let car of displayCars">
+    <div class="car-rows-container">
+      <div class="store-row" *ngFor="let row of storeRows; trackBy: trackByRow">
+        <ng-container *ngFor="let car of row; trackBy: trackById">
           <div class="store-car-card" role="group" [attr.aria-label]="car.model">
-            <div class="store-image-container" (click)="openSpecs()">
+            <div class="store-image-container" (click)="openSpecs(car)">
               <img [src]="car.image" [alt]="car.model" />
             </div>
 
@@ -107,7 +112,9 @@
                 <div class="store-car-price">{{ car.price }}</div>
 
                 <div class="store-finance-row">
-                  <div class="store-car-finance">Financing available</div>
+                  <div class="store-car-finance">
+                    {{ car.financing ? 'FINANCING AVAILABLE' : 'FINANCING ON REQUEST' }}
+                  </div>
 
                   <div class="card-actions">
                     <button
@@ -118,7 +125,9 @@
                       aria-label="Like"
                       (click)="toggleLike(car.id, $event)"
                     >
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3.2 12.2A5.4 5.4 0 0 1 11 4.6l1 1 1-1a5.4 5.4 0 0 1 7.8 7.6z"/></svg>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 21 3.2 12.2A5.4 5.4 0 0 1 11 4.6l1 1 1-1a5.4 5.4 0 0 1 7.8 7.6z" />
+                      </svg>
                       <span class="action-count">{{ formatCount(likeCount(car)) }}</span>
                     </button>
                     <button
@@ -127,7 +136,9 @@
                       aria-label="Share"
                       (click)="shareCar(car, $event)"
                     >
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M12 3 7.5 7.5M12 3l4.5 4.5M5 12v8h14v-8"/></svg>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 15V3M12 3 7.5 7.5M12 3l4.5 4.5M5 12v8h14v-8" />
+                      </svg>
                       <span class="action-count">{{ formatCount(shareCount(car)) }}</span>
                     </button>
                     <button
@@ -138,7 +149,9 @@
                       aria-label="Bookmark"
                       (click)="toggleBookmark(car.id, $event)"
                     >
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 3h12v18l-6-4.5L6 21z" />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -146,7 +159,7 @@
                 <span class="copied-note" *ngIf="copiedId === car.id" role="status">Link copied</span>
               </div>
 
-              <button class="inquire-btn" type="button" (click)="openSpecs()">INQUIRE</button>
+              <button class="inquire-btn" type="button" (click)="openSpecs(car)">INQUIRE</button>
             </div>
           </div>
         </ng-container>
@@ -158,6 +171,9 @@
     </div>
   </div>
 
+  <!-- ============================================================
+       BRANDS
+       ============================================================ -->
   <div class="brand-display">
     <div class="brand-row">
       <div

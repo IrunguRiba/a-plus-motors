@@ -731,6 +731,20 @@
      font-weight: 500;
      color: var(--muted);
    }
+   /* "Financing on request" reads slightly quieter than "Financing available" */
+.meta-item--soft {
+  color: var(--muted);
+}
+.meta-item--soft i {
+  background: var(--muted);
+}
+
+.im-badge--soft {
+  color: var(--muted);
+}
+.im-badge--soft i {
+  background: var(--muted);
+}
    
    /* ---------- RIGHT: gallery ---------- */
    .gallery-col {
