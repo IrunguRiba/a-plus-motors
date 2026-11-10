@@ -22,7 +22,7 @@ export const routes: Routes = [
   { path: 'blogs', component: Blog },
   { path: 'store', component: Store },
   { path: 'financing', component: Financing },
-  { path: 'specs', component: Specs, canDeactivate: [specsLeaveGuard] },
+{ path: 'specs', component: Specs },
   { path: 'privacy-policy', component: PrivacyPolicy },
   { path: 'floating-nav', component: Nav2 },
   {

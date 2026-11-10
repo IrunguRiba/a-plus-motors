@@ -11,7 +11,6 @@ import {
   NgZone,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Specs } from './specs/specs';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ApiServices } from '../../services/api-services';
@@ -46,27 +45,44 @@ interface Brand {
   logo: string;
 }
 
+interface DragSample {
+  x: number;
+  t: number;
+}
+
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, Specs],
+  imports: [CommonModule],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.css',
 })
 export class Portfolio implements AfterViewInit, OnDestroy {
-  openedSpecs = false;
-
   readonly recommendedTarget = 6;
   readonly storeMax = 21;
   private static readonly STORE_COLS = 3;
+
+  /* ---------- belt tuning ---------- */
+  /** Pixels the pointer must move before a press becomes a drag (otherwise it's a click). */
+  private static readonly DRAG_THRESHOLD = 6;
+  /** Glide length: distance travelled after release ≈ release speed (px/ms) × GLIDE_MS. Higher = longer glide. */
+  private static readonly GLIDE_MS = 325;
+  /** Cap on release speed (px/ms) so a violent flick can't launch across the whole belt. */
+  private static readonly MAX_VELOCITY = 3;
+  /** Only samples from the last N ms are used to measure release speed. */
+  private static readonly VELOCITY_WINDOW_MS = 100;
+  /** If true, the glide lands exactly on the nearest card's left edge. If false, it glides freely. */
+  private static readonly SNAP_TO_CARD = false;
+  /** How far (px) the intro hint nudges the belt to show it can be dragged. */
+  private static readonly HINT_NUDGE_PX = 140;
+  /** How long (ms) the "Drag" hint pill stays visible. */
+  private static readonly HINT_VISIBLE_MS = 4200;
 
   loading = true;
   error = '';
 
   @ViewChildren('reveal') revealElements!: QueryList<ElementRef>;
-
-  @ViewChild('beltViewport', { static: false }) beltViewport?: ElementRef<HTMLElement>;
-  @ViewChild('beltTrack', { static: false }) beltTrack?: ElementRef<HTMLElement>;
+  @ViewChild('beltViewport') beltViewport?: ElementRef<HTMLDivElement>;
 
   private likedIds = new Set<string>();
   private bookmarkedIds = new Set<string>();
@@ -77,49 +93,47 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
   private carsSub?: Subscription;
 
-  /** Recommended pool: flagged first, then newest-cheapest fillers to reach 6. */
   recommendedCars: Car[] = [];
 
   private storeBaseCars: Car[] = [];
   filteredStoreCars: Car[] = [];
 
-  /** What the belt renders — recommended repeated for a seamless marquee. */
-  displayCars: Car[] = [];
-
   displayBrands: Brand[] = [];
   activeFilter: CarFilter = 'all';
 
-  private beltBase: Car[] = [];
-  private filteredBaseLength = 1;
+  /* ---------- belt arrows + hint state ---------- */
+  canScrollLeft = false;
+  canScrollRight = false;
+  hintVisible = false;
+  private beltInView = false;
+  private hintPlayed = false;
+  private hintTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /* ---- Belt state ---- */
-  beltDragging = false;
-  beltTransform = '';
+  /* ---------- belt drag state ---------- */
+  private dragPointerDown = false;
+  private dragActive = false;
+  private suppressClick = false;
+  private dragPressX = 0;
   private dragStartX = 0;
-  private dragStartOffset = 0;
-  private currentOffset = 0;
-  private loopWidth = 0;
-  private pointerId: number | null = null;
-  private rafId: number | null = null;
-  private lastFrameTime = 0;
-  private readonly autoSpeed = 60;
-  private readonly reducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private dragStartScroll = 0;
+  private dragTargetX = 0;
+  private dragRaf: number | null = null;
+  private samples: DragSample[] = [];
+  private settleRaf: number | null = null;
+  private teardownFns: Array<() => void> = [];
 
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private zone: NgZone,
-    private api: ApiServices
+    private api: ApiServices,
+    private zone: NgZone
   ) {
     this.displayBrands = [...this.brands];
     this.fetchCars();
   }
 
   /* ============================================================
-     DATA FETCH
+     DATA
      ============================================================ */
 
   fetchCars(): void {
@@ -164,10 +178,14 @@ export class Portfolio implements AfterViewInit, OnDestroy {
         this.storeBaseCars = this.shuffle([...storeCars]).slice(0, this.storeMax);
         this.filteredStoreCars = [...this.storeBaseCars];
 
-        this.buildRecommendedBelt();
-
         this.loading = false;
         this.cdr.markForCheck();
+
+        // Cards render on the next tick: refresh arrows and maybe play the intro hint.
+        setTimeout(() => {
+          this.updateArrows();
+          this.tryPlayHint();
+        }, 0);
       },
       error: () => {
         this.loading = false;
@@ -231,26 +249,8 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   }
 
   /* ============================================================
-     BELT / MARQUEE
+     STORE GRID
      ============================================================ */
-
-  private buildRecommendedBelt(): void {
-    this.beltBase = [...this.recommendedCars];
-
-    if (!this.beltBase.length) {
-      this.displayCars = [];
-      this.filteredBaseLength = 1;
-      this.loopWidth = 0;
-      return;
-    }
-
-    this.filteredBaseLength = this.beltBase.length;
-    this.displayCars = [...this.beltBase];
-
-    this.currentOffset = 0;
-    this.cdr.markForCheck();
-    setTimeout(() => this.setupBelt(), 0);
-  }
 
   get storeRows(): Car[][] {
     const flat = this.filteredStoreCars.slice(0, this.storeMax);
@@ -283,32 +283,415 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
     document.querySelectorAll('.into-txt .reveal').forEach((node) => observer.observe(node));
 
-    setTimeout(() => this.setupBelt(), 0);
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', this.onResize, { passive: true });
-    }
+    this.initBeltDrag();
+    this.initBeltNav();
   }
 
   ngOnDestroy() {
     this.carsSub?.unsubscribe();
-    this.stopBeltLoop();
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('resize', this.onResize);
+    this.stopSettle();
+    if (this.dragRaf !== null) cancelAnimationFrame(this.dragRaf);
+    this.teardownFns.forEach((fn) => fn());
+    this.teardownFns = [];
+    if (this.copiedTimer) clearTimeout(this.copiedTimer);
+    if (this.hintTimer) clearTimeout(this.hintTimer);
+  }
+
+  /* ============================================================
+     BELT — mouse/pen drag + smooth settle.
+     • Drag position is applied once per animation frame (no jitter
+       from uneven mouse event rates).
+     • Release speed is measured over the last ~100ms of movement.
+     • The settle is a single time-based ease-out whose starting
+       speed matches the release speed, so there is no jolt when
+       you let go. It is frame-rate independent.
+     • Touch uses native horizontal scrolling.
+     • A press that moves < DRAG_THRESHOLD px is a normal click and
+       navigates to /specs?id=<car.id>.
+     ============================================================ */
+
+  private initBeltDrag() {
+    const el = this.beltViewport?.nativeElement;
+    if (!el) return;
+
+    // Run outside Angular so pointer events don't trigger change detection.
+    this.zone.runOutsideAngular(() => {
+      const maxScroll = () => Math.max(0, el.scrollWidth - el.clientWidth);
+      const clamp = (v: number) => Math.min(Math.max(v, 0), maxScroll());
+
+      const renderDrag = () => {
+        this.dragRaf = null;
+        if (!this.dragActive) return;
+        el.scrollLeft = clamp(this.dragStartScroll - (this.dragTargetX - this.dragStartX));
+      };
+
+      const onPointerDown = (e: PointerEvent) => {
+        if (e.pointerType === 'touch') return; // native scroll handles touch
+        if (e.button !== 0) return;
+
+        this.stopSettle();
+        this.dragPointerDown = true;
+        this.dragActive = false;
+        this.dragPressX = e.clientX;
+        this.samples = [{ x: e.clientX, t: performance.now() }];
+      };
+
+      const onPointerMove = (e: PointerEvent) => {
+        if (!this.dragPointerDown) return;
+
+        if (!this.dragActive) {
+          if (Math.abs(e.clientX - this.dragPressX) < Portfolio.DRAG_THRESHOLD) return;
+          // Start the drag from the current pointer position so there is no 6px "jump".
+          this.dragActive = true;
+          this.dragStartX = e.clientX;
+          this.dragStartScroll = el.scrollLeft;
+          el.classList.add('is-dragging');
+        }
+
+        e.preventDefault();
+        this.dragTargetX = e.clientX;
+
+        const now = performance.now();
+        this.samples.push({ x: e.clientX, t: now });
+        const cutoff = now - Portfolio.VELOCITY_WINDOW_MS;
+        while (this.samples.length > 2 && this.samples[0].t < cutoff) this.samples.shift();
+
+        if (this.dragRaf === null) this.dragRaf = requestAnimationFrame(renderDrag);
+      };
+
+      const endDrag = () => {
+        if (!this.dragPointerDown) return;
+        this.dragPointerDown = false;
+
+        if (!this.dragActive) return; // it was a click — let it through
+
+        this.dragActive = false;
+        el.classList.remove('is-dragging');
+
+        if (this.dragRaf !== null) {
+          cancelAnimationFrame(this.dragRaf);
+          this.dragRaf = null;
+        }
+        // Apply the final pointer position before settling.
+        el.scrollLeft = clamp(this.dragStartScroll - (this.dragTargetX - this.dragStartX));
+
+        // Swallow the click the browser fires right after a drag.
+        this.suppressClick = true;
+        setTimeout(() => (this.suppressClick = false), 0);
+
+        this.settle(el, this.releaseVelocity());
+      };
+
+      // Capture phase on the viewport: blocks the card's (click) after a drag.
+      const onClickCapture = (e: MouseEvent) => {
+        if (this.suppressClick) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      };
+
+      const onDragStart = (e: Event) => e.preventDefault(); // no ghost image
+      const onSelectStart = (e: Event) => {
+        if (this.dragActive) e.preventDefault();
+      };
+      const onInterrupt = () => this.stopSettle();
+
+      el.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove, { passive: false });
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+      el.addEventListener('click', onClickCapture, true);
+      el.addEventListener('dragstart', onDragStart);
+      document.addEventListener('selectstart', onSelectStart);
+      el.addEventListener('wheel', onInterrupt, { passive: true });
+      el.addEventListener('touchstart', onInterrupt, { passive: true });
+
+      this.teardownFns.push(() => {
+        el.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', endDrag);
+        window.removeEventListener('pointercancel', endDrag);
+        el.removeEventListener('click', onClickCapture, true);
+        el.removeEventListener('dragstart', onDragStart);
+        document.removeEventListener('selectstart', onSelectStart);
+        el.removeEventListener('wheel', onInterrupt);
+        el.removeEventListener('touchstart', onInterrupt);
+      });
+    });
+  }
+
+  /** Release speed in scrollLeft px/ms, measured over the last ~100ms of the drag. */
+  private releaseVelocity(): number {
+    const s = this.samples;
+    if (s.length < 2) return 0;
+
+    const first = s[0];
+    const last = s[s.length - 1];
+
+    // Pointer rested before release → no fling.
+    if (performance.now() - last.t > 60) return 0;
+
+    const dt = last.t - first.t;
+    if (dt <= 0) return 0;
+
+    const v = (first.x - last.x) / dt; // dragging left => scrollLeft increases
+    return Math.max(-Portfolio.MAX_VELOCITY, Math.min(Portfolio.MAX_VELOCITY, v));
+  }
+
+  /**
+   * Smooth settle: ease-out cubic from the current position to a landing point.
+   * Duration is chosen so the curve's starting speed equals the release speed
+   * (ease-out cubic starts at 3·D/T), so the hand-off from drag to glide is seamless.
+   */
+  private settle(el: HTMLElement, velocity: number) {
+    this.stopSettle();
+
+    const max = Math.max(0, el.scrollWidth - el.clientWidth);
+    const from = el.scrollLeft;
+
+    let to = Math.min(Math.max(from + velocity * Portfolio.GLIDE_MS, 0), max);
+    if (Portfolio.SNAP_TO_CARD) to = this.nearestSnap(el, to, max);
+
+    const dist = to - from;
+    if (Math.abs(dist) < 1) return;
+
+    const speed = Math.max(Math.abs(velocity), 0.5);
+    const duration = Math.min(Math.max((3 * Math.abs(dist)) / speed, 260), 1100);
+    const start = performance.now();
+
+    const step = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.scrollLeft = from + dist * eased;
+
+      if (t < 1) {
+        this.settleRaf = requestAnimationFrame(step);
+      } else {
+        el.scrollLeft = to;
+        this.settleRaf = null;
+      }
+    };
+
+    this.settleRaf = requestAnimationFrame(step);
+  }
+
+  /** Left edge of the card closest to `target` (used only when SNAP_TO_CARD is on). */
+  private nearestSnap(el: HTMLElement, target: number, max: number): number {
+    const viewLeft = el.getBoundingClientRect().left;
+    const cards = el.querySelectorAll<HTMLElement>('.car-card');
+    let best = target;
+    let bestDist = Infinity;
+
+    cards.forEach((card) => {
+      const left = card.getBoundingClientRect().left - viewLeft + el.scrollLeft;
+      const d = Math.abs(left - target);
+      if (d < bestDist) {
+        bestDist = d;
+        best = left;
+      }
+    });
+
+    return Math.min(Math.max(best, 0), max);
+  }
+
+  private stopSettle() {
+    if (this.settleRaf !== null) {
+      cancelAnimationFrame(this.settleRaf);
+      this.settleRaf = null;
     }
   }
 
-  private onResize = () => {
-    setTimeout(() => this.measureLoop(), 0);
-  };
+  /* ============================================================
+     BELT — arrows + intro drag hint.
+     • Left arrow hidden at the first car, right arrow hidden at
+       the last car (based on scroll position).
+     • Arrows glide to the previous / next card.
+     • When the belt first scrolls into view, it nudges sideways
+       and a "Drag" pill shows, then it returns to the start.
+       Any interaction cancels the hint.
+     ============================================================ */
+
+  private initBeltNav() {
+    const el = this.beltViewport?.nativeElement;
+    if (!el) return;
+
+    this.zone.runOutsideAngular(() => {
+      let scrollRaf: number | null = null;
+      const onScroll = () => {
+        if (scrollRaf !== null) return;
+        scrollRaf = requestAnimationFrame(() => {
+          scrollRaf = null;
+          this.updateArrows();
+        });
+      };
+
+      const onUserInteract = () => this.hideHint();
+
+      el.addEventListener('scroll', onScroll, { passive: true });
+      el.addEventListener('pointerdown', onUserInteract);
+      el.addEventListener('wheel', onUserInteract, { passive: true });
+      el.addEventListener('touchstart', onUserInteract, { passive: true });
+
+      // Cards render after the data arrives and on resize: keep arrows accurate.
+      const ro = new ResizeObserver(() => this.updateArrows());
+      ro.observe(el);
+      if (el.firstElementChild) ro.observe(el.firstElementChild);
+
+      // Play the intro hint once, when the belt is actually on screen.
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            this.beltInView = entry.isIntersecting;
+            if (entry.isIntersecting) this.tryPlayHint();
+          });
+        },
+        { threshold: 0.5 }
+      );
+      io.observe(el);
+
+      this.teardownFns.push(() => {
+        el.removeEventListener('scroll', onScroll);
+        el.removeEventListener('pointerdown', onUserInteract);
+        el.removeEventListener('wheel', onUserInteract);
+        el.removeEventListener('touchstart', onUserInteract);
+        if (scrollRaf !== null) cancelAnimationFrame(scrollRaf);
+        ro.disconnect();
+        io.disconnect();
+      });
+    });
+
+    this.updateArrows();
+  }
+
+  /** Show/hide the arrows depending on whether there is more belt on each side. */
+  private updateArrows() {
+    const el = this.beltViewport?.nativeElement;
+    if (!el) return;
+
+    const max = Math.max(0, el.scrollWidth - el.clientWidth);
+    const left = el.scrollLeft > 2;
+    const right = el.scrollLeft < max - 2;
+
+    if (left !== this.canScrollLeft || right !== this.canScrollRight) {
+      this.zone.run(() => {
+        this.canScrollLeft = left;
+        this.canScrollRight = right;
+        this.cdr.markForCheck();
+      });
+    }
+  }
+
+  /** Arrow click: glide to the previous (-1) or next (1) car. */
+  scrollBelt(dir: 1 | -1) {
+    const el = this.beltViewport?.nativeElement;
+    if (!el) return;
+
+    this.hideHint();
+
+    const max = Math.max(0, el.scrollWidth - el.clientWidth);
+    const viewLeft = el.getBoundingClientRect().left;
+    const cur = el.scrollLeft;
+    const lefts = Array.from(el.querySelectorAll<HTMLElement>('.car-card')).map(
+      (card) => card.getBoundingClientRect().left - viewLeft + cur
+    );
+
+    let target = cur;
+    if (dir > 0) {
+      const next = lefts.find((l) => l > cur + 2);
+      target = next ?? max;
+    } else {
+      const prev = [...lefts].reverse().find((l) => l < cur - 2);
+      target = prev ?? 0;
+    }
+    target = Math.min(Math.max(target, 0), max);
+
+    const duration = Math.min(Math.max(450 + Math.abs(target - cur) * 0.35, 450), 900);
+    this.zone.runOutsideAngular(() => this.animateScroll(el, target, duration));
+  }
+
+  /** Time-based ease-in-out scroll to `to`. Shares settleRaf so any interaction cancels it. */
+  private animateScroll(el: HTMLElement, to: number, duration: number, onDone?: () => void) {
+    this.stopSettle();
+
+    const from = el.scrollLeft;
+    const dist = to - from;
+    if (Math.abs(dist) < 1) {
+      onDone?.();
+      return;
+    }
+
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      el.scrollLeft = from + dist * eased;
+
+      if (t < 1) {
+        this.settleRaf = requestAnimationFrame(step);
+      } else {
+        el.scrollLeft = to;
+        this.settleRaf = null;
+        onDone?.();
+      }
+    };
+
+    this.settleRaf = requestAnimationFrame(step);
+  }
+
+  /** Plays the intro hint once, when the belt is in view and cars are rendered. */
+  private tryPlayHint() {
+    if (this.hintPlayed || !this.beltInView || this.recommendedCars.length === 0) return;
+    if (!this.beltViewport?.nativeElement) return;
+
+    this.hintPlayed = true;
+    setTimeout(() => this.playHint(), 500);
+  }
+
+  private playHint() {
+    const el = this.beltViewport?.nativeElement;
+    if (!el) return;
+
+    const max = Math.max(0, el.scrollWidth - el.clientWidth);
+    if (max < 40 || el.scrollLeft > 4) return; // nothing to drag, or user already moved it
+
+    this.zone.run(() => {
+      this.hintVisible = true;
+      this.cdr.markForCheck();
+    });
+    this.hintTimer = setTimeout(() => this.hideHint(), Portfolio.HINT_VISIBLE_MS);
+
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+
+    const nudge = Math.min(Portfolio.HINT_NUDGE_PX, max);
+    this.zone.runOutsideAngular(() => {
+      this.animateScroll(el, nudge, 750, () => this.animateScroll(el, 0, 750));
+    });
+  }
+
+  private hideHint() {
+    if (this.hintTimer) {
+      clearTimeout(this.hintTimer);
+      this.hintTimer = null;
+    }
+    if (!this.hintVisible) return;
+    this.zone.run(() => {
+      this.hintVisible = false;
+      this.cdr.markForCheck();
+    });
+  }
 
   /* ============================================================
      NAVIGATION
      ============================================================ */
 
-  openSpecs(car?: Car) {
-    this.openedSpecs = !this.openedSpecs;
-    this.router.navigate(['/specs'], car ? { queryParams: { id: car.id } } : {});
+  openSpecs(car: Car) {
+    if (this.suppressClick) return; // safety net: ignore click that ended a drag
+    if (!car?.id) {
+      console.warn('[openSpecs] missing car.id');
+      return;
+    }
+    this.router.navigate(['/specs'], { queryParams: { id: car.id } });
   }
 
   goToStore() {
@@ -401,136 +784,6 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
   private countShare(id: string) {
     this.sharedExtra.set(id, (this.sharedExtra.get(id) ?? 0) + 1);
-  }
-
-  /* ============================================================
-     BELT · loop logic
-     ============================================================ */
-
-  private setupBelt() {
-    const track = this.beltTrack?.nativeElement;
-    if (!track) return;
-
-    this.measureLoop();
-    this.currentOffset = 0;
-    this.beltTransform = 'translate3d(0px, 0, 0)';
-    this.applyTransform();
-    this.startBeltLoop();
-  }
-
-  /** Pads belt copies so it always overflows the viewport by ≥ one full copy. */
-  private measureLoop() {
-    const track = this.beltTrack?.nativeElement;
-    if (!track || this.beltBase.length === 0) return;
-
-    const baseLen = this.beltBase.length;
-    if (baseLen <= 0) return;
-
-    const total = this.displayCars.length;
-    const copies = Math.max(1, Math.round(total / baseLen));
-    const oneCopyWidth = track.scrollWidth / copies;
-    if (oneCopyWidth <= 0) return;
-
-    const viewportW = this.beltViewport?.nativeElement?.clientWidth || 0;
-
-    const neededCopies = Math.max(
-      2,
-      Math.min(6, Math.ceil((viewportW + oneCopyWidth) / oneCopyWidth))
-    );
-
-    if (neededCopies > copies || total % baseLen !== 0) {
-      const next: Car[] = [];
-      for (let i = 0; i < neededCopies; i++) next.push(...this.beltBase);
-      this.displayCars = next;
-      this.cdr.markForCheck();
-      setTimeout(() => this.measureLoop(), 0);
-      return;
-    }
-
-    this.loopWidth = oneCopyWidth;
-    this.filteredBaseLength = baseLen;
-    this.wrapOffset();
-  }
-
-  private startBeltLoop() {
-    if (this.reducedMotion) return;
-    this.stopBeltLoop();
-    this.zone.runOutsideAngular(() => {
-      const step = (t: number) => {
-        if (!this.lastFrameTime) this.lastFrameTime = t;
-        const dt = Math.min((t - this.lastFrameTime) / 1000, 0.05);
-        this.lastFrameTime = t;
-
-        if (!this.beltDragging) {
-          this.currentOffset -= this.autoSpeed * dt;
-        }
-        this.wrapOffset();
-        this.applyTransform();
-        this.rafId = requestAnimationFrame(step);
-      };
-      this.rafId = requestAnimationFrame(step);
-    });
-  }
-
-  private stopBeltLoop() {
-    if (this.rafId != null) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
-    this.lastFrameTime = 0;
-  }
-
-  private wrapOffset() {
-    if (this.loopWidth <= 0) return;
-    while (this.currentOffset <= -this.loopWidth) this.currentOffset += this.loopWidth;
-    while (this.currentOffset > 0) this.currentOffset -= this.loopWidth;
-  }
-
-  private applyTransform() {
-    const el = this.beltTrack?.nativeElement;
-    if (el) el.style.transform = `translate3d(${this.currentOffset}px, 0, 0)`;
-  }
-
-  onBeltPointerDown(event: PointerEvent) {
-    if (this.reducedMotion) return;
-    if (event.button !== undefined && event.button !== 0) return;
-
-    const track = this.beltTrack?.nativeElement;
-    if (!track) return;
-
-    event.preventDefault();
-    this.pointerId = event.pointerId;
-    this.beltDragging = true;
-    this.dragStartX = event.clientX;
-    this.dragStartOffset = this.currentOffset;
-
-    const vp = this.beltViewport?.nativeElement;
-    vp?.setPointerCapture?.(event.pointerId);
-    this.cdr.markForCheck();
-  }
-
-  onBeltPointerMove(event: PointerEvent) {
-    if (!this.beltDragging) return;
-    if (this.pointerId !== null && event.pointerId !== this.pointerId) return;
-
-    event.preventDefault();
-    const dx = event.clientX - this.dragStartX;
-    this.currentOffset = this.dragStartOffset + dx;
-    this.wrapOffset();
-    this.applyTransform();
-  }
-
-  onBeltPointerUp(event: PointerEvent) {
-    if (!this.beltDragging) return;
-    if (this.pointerId !== null && event.pointerId !== this.pointerId) return;
-
-    this.beltDragging = false;
-    this.pointerId = null;
-    this.lastFrameTime = 0;
-
-    const vp = this.beltViewport?.nativeElement;
-    vp?.releasePointerCapture?.(event.pointerId);
-    this.cdr.markForCheck();
   }
 
   /* ============================================================

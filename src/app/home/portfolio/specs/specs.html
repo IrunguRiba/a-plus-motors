@@ -139,7 +139,7 @@
     </div>
   </section>
 
-  <!-- ================= SIMILAR CARS (revealed on scroll) ================= -->
+  <!-- ================= SIMILAR CARS ================= -->
   <section class="similar-section">
     <header class="similar-head reveal">
       <div class="sim-criteria">
@@ -153,8 +153,8 @@
 
     <div class="similar-cards-row">
       <div class="card-slot reveal" *ngFor="let c of similarVehicles; let i = index" [style.--i]="i % 3">
-        <article class="car-card" (click)="goToSpecs()">
-          <!-- Lazy image: src is set by an IntersectionObserver (see observeCardImages) -->
+        <!-- ✅ Card links to /specs?id=<this car's _id> -->
+        <article class="car-card" (click)="openSimilar(c, $event)">
           <div class="car-image-wrapper">
             <img [attr.data-src]="c.image" [alt]="c.name" decoding="async"
                  (load)="onCardImgLoad($event)" (error)="onCardImgError($event)" />

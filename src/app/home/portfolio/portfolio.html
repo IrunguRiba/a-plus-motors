@@ -3,7 +3,8 @@
   <div class="recommended">
 
     <!-- ============================================================
-         RECOMMENDED BELT — flagged cars + newest-cheapest fillers
+         RECOMMENDED BELT — flagged + newest-cheapest fillers
+         Clicking a card → /specs?id=<car.id>
          ============================================================ -->
     <div class="recommended-heading">
       <h1>Recommended For You</h1>
@@ -13,70 +14,101 @@
       </h2>
     </div>
 
-    <div
-      class="belt-viewport"
-      #beltViewport
-      (pointerdown)="onBeltPointerDown($event)"
-      (pointermove)="onBeltPointerMove($event)"
-      (pointerup)="onBeltPointerUp($event)"
-      (pointercancel)="onBeltPointerUp($event)"
-      (pointerleave)="onBeltPointerUp($event)"
-    >
-      <div
-        class="belt-track"
-        #beltTrack
-        [class.is-dragging]="beltDragging"
-        [style.transform]="beltTransform"
+    <div class="belt-wrap">
+      <!-- Left arrow: hidden on the first car -->
+      <button
+        *ngIf="canScrollLeft"
+        class="belt-arrow belt-arrow-left"
+        type="button"
+        aria-label="Previous car"
+        (click)="scrollBelt(-1)"
       >
-        <ng-container *ngFor="let car of displayCars; trackBy: trackById">
-          <div
-            class="car-card"
-            role="group"
-            [attr.aria-label]="car.model"
-            [style.--car-bg]="'url(' + car.image + ')'"
-            [attr.draggable]="false"
-          >
-            <div class="car-image-container">
-              <img [src]="car.image" [alt]="car.model" draggable="false" />
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 4 7 12l8 8" />
+        </svg>
+      </button>
+
+      <div class="belt-viewport" #beltViewport>
+        <div class="belt-track" #beltTrack>
+          <ng-container *ngFor="let car of recommendedCars; let last = last; trackBy: trackById">
+            <!-- Whole card clickable → /specs?id=<car.id> -->
+            <div
+              class="car-card"
+              role="group"
+              [attr.aria-label]="car.model"
+              [attr.draggable]="false"
+              (click)="openSpecs(car)"
+            >
+              <div class="car-image-container">
+                <img [src]="car.image" [alt]="car.model" draggable="false" />
+              </div>
+
+              <div class="car-details">
+                <div class="car-meta-top">
+                  <span>{{ car.year }}</span>
+                  <span>{{ car.make }}</span>
+                  <span>Mileage: {{ car.mileage }}</span>
+                </div>
+
+                <h2 class="car-title">{{ car.model }}</h2>
+
+                <p class="car-description">{{ car.description }}</p>
+
+                <div class="car-specs">
+                  <span class="spec-chip">{{ car.engineCC }}</span>
+                  <span class="spec-chip">{{ car.fuelType }}</span>
+                  <span class="spec-chip">{{ car.transmission }}</span>
+                  <span class="spec-chip">{{ car.mileage }}</span>
+                </div>
+
+                <div class="car-pricing">
+                  <span class="starting-label">Starting From</span>
+                  <span class="car-price">{{ car.price }}</span>
+                  <span class="car-finance">
+                    {{ car.financing ? 'FINANCING AVAILABLE' : 'FINANCING ON REQUEST' }}
+                  </span>
+                </div>
+
+                <button
+                  class="inquire-btn"
+                  type="button"
+                  (click)="openSpecs(car); $event.stopPropagation()"
+                >
+                  INQUIRE
+                </button>
+              </div>
             </div>
 
-            <div class="car-details">
-              <div class="car-meta-top">
-                <span>{{ car.year }}</span>
-                <span>{{ car.make }}</span>
-                <span>Mileage: {{ car.mileage }}</span>
-              </div>
+            <!-- Bridge between cards only — omit after the last one -->
+            <div class="bridge-line" *ngIf="!last"></div>
+          </ng-container>
+        </div>
+      </div>
 
-              <h2 class="car-title">{{ car.model }}</h2>
+      <!-- Right arrow: hidden on the last car -->
+      <button
+        *ngIf="canScrollRight"
+        class="belt-arrow belt-arrow-right"
+        type="button"
+        aria-label="Next car"
+        (click)="scrollBelt(1)"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 4l8 8-8 8" />
+        </svg>
+      </button>
 
-              <p class="car-description">{{ car.description }}</p>
-
-              <div class="car-specs">
-                <span class="spec-chip">{{ car.engineCC }}</span>
-                <span class="spec-chip">{{ car.fuelType }}</span>
-                <span class="spec-chip">{{ car.transmission }}</span>
-                <span class="spec-chip">{{ car.mileage }}</span>
-              </div>
-
-              <div class="car-pricing">
-                <span class="starting-label">Starting From</span>
-                <span class="car-price">{{ car.price }}</span>
-                <span class="car-finance">
-                  {{ car.financing ? 'FINANCING AVAILABLE' : 'FINANCING ON REQUEST' }}
-                </span>
-              </div>
-
-              <button class="inquire-btn" type="button" (click)="openSpecs(car)">INQUIRE</button>
-            </div>
-          </div>
-          <div class="bridge-line"></div>
-        </ng-container>
+      <!-- Intro hint: shows the belt can be dragged -->
+      <div class="drag-hint" [class.show]="hintVisible" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" /></svg>
+        <span>Drag</span>
+        <svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" /></svg>
       </div>
     </div>
   </div>
 
   <!-- ============================================================
-       STORE — up to 21 cars (3 columns × 7 rows)
+       STORE — up to 21 cars (3 cols × 7 rows)
        ============================================================ -->
   <div class="cars-store">
     <div class="main-store">
@@ -192,5 +224,3 @@
     </div>
   </div>
 </div>
-
-<app-specs *ngIf="openedSpecs" (close)="openSpecs()"></app-specs>

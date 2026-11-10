@@ -713,6 +713,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.openModal({ name: `${car.brand} ${car.name}`, price: car.price });
   }
 
+  /** Navigate to this similar car's own specs page via ?id=<car.id>. */
   openSimilar(car: SimilarCar, e?: Event): void {
     e?.stopPropagation();
     this.router.navigate(['/specs'], { queryParams: { id: car.id } });

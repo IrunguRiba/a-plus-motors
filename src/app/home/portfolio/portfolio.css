@@ -1,803 +1,917 @@
-.recommended {
-  --ink: #0F1010;
-  --ink-soft: #3B3E3E;
-  --mid: #787C7C;
-  --light: #D8DADB;
-  --brown: #2E2910;
-  --brown-dark: #010736;
-  --surface: #E4E6E7;
-  --sunk: #CBCECF;
-  --hair: rgba(15, 16, 16, 0.22);
-
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  margin: 0 auto;
-  padding: 60px 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
-  font-kerning: normal;
-  color: var(--ink);
-}
-
-.recommended .recommended {
-  padding: 0;
-  margin-bottom: 48px;
-}
-
-/* ---------- SECTION HEADINGS ---------- */
-.recommended-heading,
-.main-store {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 14px 28px;
-  background: var(--surface);
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--hair);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.recommended-heading h1,
-.main-store h1 {
-  margin: 0;
-  font-size: 22px;
-  line-height: 28px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: #09251C;
-  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-  white-space: nowrap;
-}
-
-.recommended-heading h2,
-.main-store h2 {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  margin: 0;
-  font-size: 0;
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-}
-
-.recommended-heading h2 span,
-.main-store h2 span {
-  display: inline-block;
-  padding: 6px 12px;
-  border: 1px solid var(--hair);
-  background: transparent;
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 10.5px;
-  line-height: 14px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.recommended-heading h2 span:hover,
-.main-store h2 span:hover {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--light);
-}
-
-.recommended-heading h2 span:active,
-.main-store h2 span:active {
-  background: var(--brown);
-  border-color: var(--brown);
-  color: #F4F5F5;
-}
-
-/* ---------- BELT ---------- */
-.belt-viewport {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  margin-top: 24px;
-  touch-action: pan-y;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.belt-viewport:active {
-  cursor: grabbing;
-}
-
-.belt-track {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-  width: max-content;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.belt-track > .car-card,
-.belt-track > .bridge-line {
-  flex: 0 0 auto;
-}
-
-.belt-track.is-dragging {
-  cursor: grabbing;
-}
-
-.belt-track img {
-  -webkit-user-drag: none;
-  user-drag: none;
-  pointer-events: none;
-}
-
-.car-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: 880px;
-  min-width: 880px;
-  background: var(--surface);
-  border: 1px solid var(--ink);
-  border-radius: 0;
-  overflow: hidden;
-  box-sizing: border-box;
-  content-visibility: auto;
-  contain-intrinsic-size: 880px 340px;
-}
-
-.car-card::before,
-.car-card::after {
-  content: none;
-}
-
-.car-image-container {
-  position: relative;
-  min-height: 340px;
-  overflow: hidden;
-  background: var(--sunk);
-  border-right: 1px solid var(--ink);
-}
-
-.car-image-container img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
-  filter: none;
-}
-
-.car-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-  padding: 32px 36px;
-}
-
-.car-meta-top {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
-  margin-bottom: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 15px;
-  line-height: 20px;
-  font-weight: 500;
-  letter-spacing: -0.008em;
-  text-transform: none;
-  color: var(--ink-soft);
-}
-
-.car-meta-top span:first-child {
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.car-title {
-  margin: 0 0 12px;
-  font-size: 30px;
-  line-height: 36px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-}
-
-.car-description {
-  margin: 0 0 20px;
-  max-width: 44ch;
-  font-size: 15px;
-  line-height: 24px;
-  font-weight: 400;
-  color: var(--ink);
-}
-
-.car-specs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 22px;
-}
-
-.car-card .spec-chip {
-  padding: 5px 10px;
-  border-radius: 0;
-  font-size: 11px;
-  line-height: 14px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.car-pricing {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  margin-bottom: 22px;
-}
-
-.starting-label {
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 11px;
-  line-height: 14px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}
-
-.car-price {
-  font-size: 30px;
-  line-height: 36px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
-
-.car-finance {
-  flex-basis: auto;
-  margin-top: 4px;
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 11px;
-  line-height: 14px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}
-
-.car-details .inquire-btn {
-  width: 100%;
-  margin: 0;
-  padding: 13px 24px;
-  background: transparent;
-  border: 1px solid var(--ink);
-  border-radius: 0;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 1.5px;
-  color: var(--ink);
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.car-details .inquire-btn:hover {
-  background-color: var(--ink);
-  color: var(--light);
-}
-
-.car-details .inquire-btn:active {
-  background-color: var(--brown);
-  border-color: var(--brown);
-  color: #F4F5F5;
-}
-
-.bridge-line {
-  flex-shrink: 0;
-  align-self: center;
-  width: 40px;
-  height: 1px;
-  background: var(--ink);
-}
-
-.car-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  width: fit-content;
-  color: var(--ink);
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  border-bottom: 1px solid var(--ink);
-  padding-bottom: 4px;
-  cursor: pointer;
-  transition: gap 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-}
-
-.car-link:hover {
-  gap: 15px;
-  color: var(--brown);
-  border-bottom-color: var(--brown);
-}
-
-.car-link span {
-  font-size: 20px;
-}
-
-.cars-store {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  width: 100%;
-}
-
-.car-rows-container {
-  width: 100%;
-}
-
-.store-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  width: 100%;
-}
-
-.spec-chip {
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.3px;
-  color: var(--ink);
-  background: transparent;
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  padding: 3px 10px;
-  white-space: nowrap;
-}
-
-.store-car-card {
-  border: 1px solid var(--hair);
-  background: var(--surface);
-  padding: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.store-car-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--brown);
-  box-shadow: 0 0 0 1px var(--brown);
-}
-
-.store-image-container {
-  width: 100%;
-  aspect-ratio: 17.7 / 10;
-  overflow: hidden;
-  margin-bottom: 16px;
-  background: var(--sunk);
-}
-
-.store-image-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.store-car-details {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  font-family: inherit;
-}
-
-.store-car-header {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 16px;
-  color: var(--ink);
-}
-
-.store-car-year {
-  font-weight: 500;
-  color: var(--ink);
-}
-
-.store-car-model {
-  font-weight: 500;
-  color: var(--ink);
-}
-
-.store-car-specs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.store-car-pricing {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 2px;
-}
-
-.store-car-price {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
-}
-
-.store-car-finance {
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 10.5px;
-  line-height: 14px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}
-
-.store-car-details .inquire-btn {
-  margin-top: 8px;
-  width: 100%;
-  background: transparent;
-  border: 1px solid var(--ink);
-  padding: 10px 0;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 1.5px;
-  color: var(--ink);
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.store-car-details .inquire-btn:hover {
-  background-color: var(--ink);
-  color: var(--light);
-}
-
-.store-car-details .inquire-btn:active {
-  background-color: var(--brown);
-  border-color: var(--brown);
-  color: #F4F5F5;
-}
-
-.discover-section {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-  margin-bottom: 20px;
-}
-
-.discover-more-btn {
-  background: transparent;
-  border: 1px solid var(--ink);
-  padding: 14px 48px;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 1.5px;
-  color: var(--ink);
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.discover-more-btn:hover {
-  background-color: var(--ink);
-  color: var(--light);
-}
-
-.discover-more-btn:active {
-  background-color: var(--brown);
-  border-color: var(--brown);
-  color: #F4F5F5;
-}
-
-.brand-display {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-  padding: 28px;
-  border: 1px solid var(--ink);
-  box-sizing: border-box;
-  background: var(--surface);
-}
-
-.brand-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
-  width: 100%;
-}
-
-.brand-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 4 / 3;
-  padding: 16px;
-  box-sizing: border-box;
-  border: 1px solid var(--hair);
-  background: var(--surface);
-  cursor: pointer;
-  animation: brandFloat 7s ease-in-out infinite;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.brand-card:nth-child(2n) { animation-delay: -1.4s; }
-.brand-card:nth-child(3n) { animation-delay: -2.8s; }
-.brand-card:nth-child(5n) { animation-delay: -4.2s; }
-
-.brand-card::before,
-.brand-card::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  width: 0;
-  height: 0;
-  border: 0 solid var(--brown);
-  transition: width 0.35s ease, height 0.35s ease;
-  pointer-events: none;
-}
-
-.brand-card::before {
-  top: -1px;
-  left: -1px;
-  border-top-width: 1px;
-  border-left-width: 1px;
-}
-
-.brand-card::after {
-  right: -1px;
-  bottom: -1px;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-}
-
-.brand-card:hover,
-.brand-card:focus-visible {
-  border-color: var(--ink);
-  box-shadow: 0 0 0 1px var(--ink);
-  animation-play-state: paused;
-  outline: none;
-}
-
-.brand-card:hover::before,
-.brand-card:hover::after,
-.brand-card:focus-visible::before,
-.brand-card:focus-visible::after {
-  width: 22px;
-  height: 22px;
-}
-
-.brand-bg {
-  position: absolute;
-  inset: 0;
-  clip-path: inset(0);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  filter: blur(18px) saturate(1.1);
-  opacity: 0.28;
-  transform: scale(1.5);
-  transition: opacity 0.4s ease, transform 0.6s ease;
-  pointer-events: none;
-}
-
-.brand-card:hover .brand-bg,
-.brand-card:focus-visible .brand-bg {
-  opacity: 0.42;
-  transform: scale(1.65);
-}
-
-.brand-logo-container {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 60px;
-  margin-bottom: 10px;
-}
-
-.brand-logo-container img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  filter: grayscale(0.35);
-  transition: transform 0.4s ease, filter 0.4s ease;
-}
-
-.brand-card:hover .brand-logo-container img,
-.brand-card:focus-visible .brand-logo-container img {
-  transform: scale(1.07);
-  filter: grayscale(0);
-}
-
-.brand-name {
-  position: relative;
-  z-index: 1;
-  padding-bottom: 3px;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-align: center;
-  color: var(--ink);
-  background: linear-gradient(var(--brown), var(--brown)) left bottom / 100% 1px no-repeat;
-  transition: background-size 0.35s ease;
-}
-
-.brand-card:hover .brand-name,
-.brand-card:focus-visible .brand-name {
-  background-size: 0 1px;
-  background-position: right bottom;
-}
-
-@keyframes brandFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
-
-app-specs {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 99999;
-  background-color: #D8DADB;
-  box-sizing: border-box;
-}
-
-.card-actions {
-  position: relative;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  margin-right: -6px;
-}
-
-.card-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-width: 34px;
-  height: 34px;
-  padding: 0 6px;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.card-action svg {
-  display: block;
-  flex-shrink: 0;
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: butt;
-  stroke-linejoin: miter;
-  pointer-events: none;
-}
-
-.action-count {
-  font-size: 13px;
-  line-height: 16px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-  pointer-events: none;
-}
-
-.card-action:focus-visible {
-  outline: 1px dotted var(--ink);
-  outline-offset: 2px;
-}
-
-@media (hover: hover) {
-  .card-action:hover { background-color: rgba(15, 16, 16, 0.08); }
-  .card-action.like:hover { color: #4A943E; }
-  .card-action.bookmark:hover { color: #790D16; }
-}
-
-.card-action.like.active { color: #4A943E; }
-.card-action.bookmark.active { color: #790D16; }
-.card-action.active svg { fill: currentColor; }
-
-.store-finance-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 10px;
-}
-
-.store-finance-row .card-actions {
-  margin-left: auto;
-}
-
-.copied-note {
-  align-self: flex-end;
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 11px;
-  line-height: 14px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--ink);
-}
-
-@media (max-width: 1100px) {
-  .brand-row { grid-template-columns: repeat(3, 1fr); }
-}
-
-@media (max-width: 900px) {
+/* ==========================================================
+   PORTFOLIO — Recommended scroller + Store grid + Brands
+   No marquee. Drag/scroll belt. Card clicks navigate to /specs.
+   ========================================================== */
+
+   .recommended {
+    --ink: #0F1010;
+    --ink-soft: #3B3E3E;
+    --mid: #787C7C;
+    --light: #D8DADB;
+    --brown: #2E2910;
+    --brown-dark: #010736;
+    --surface: #E4E6E7;
+    --sunk: #CBCECF;
+    --hair: rgba(15, 16, 16, 0.22);
+  
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    margin: 0 auto;
+    padding: 60px 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+    font-kerning: normal;
+    color: var(--ink);
+  }
+  
+  .recommended .recommended {
+    padding: 0;
+    margin-bottom: 48px;
+  }
+  
+  /* ---------- SECTION HEADINGS (Recommended + Main Store) ---------- */
   .recommended-heading,
   .main-store {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 14px 28px;
+    background: var(--surface);
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--hair);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  
+  .recommended-heading h1,
+  .main-store h1 {
+    margin: 0;
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #09251C;
+    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+    white-space: nowrap;
+  }
+  
+  .recommended-heading h2,
+  .main-store h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 0;
+    font-size: 0;
+    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  
+  .recommended-heading h2 span,
+  .main-store h2 span {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1px solid var(--hair);
+    background: transparent;
+    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 10.5px;
+    line-height: 14px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .recommended-heading h2 span:hover,
+  .main-store h2 span:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--light);
+  }
+  
+  .recommended-heading h2 span:active,
+  .main-store h2 span:active {
+    background: var(--brown);
+    border-color: var(--brown);
+    color: #F4F5F5;
+  }
+  
+  /* ---------- BELT (draggable horizontal scroller) ---------- */
+  .belt-wrap {
+    position: relative;
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  .belt-viewport {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    scroll-behavior: auto;
+    touch-action: auto;
+    overscroll-behavior-x: contain;
+    will-change: scroll-position;
+  }
+  
+  .belt-viewport::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .belt-viewport.is-dragging {
+    cursor: grabbing;
+  }
+  
+  .belt-viewport.is-dragging .car-card {
+    pointer-events: none; /* no hover flicker or transitions mid-drag */
+    transition: none;
+  }
+  
+  .belt-track {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    width: max-content;
+    padding-bottom: 8px;
+  }
+  
+  .belt-track > .car-card,
+  .belt-track > .bridge-line {
+    flex: 0 0 auto;
+  }
+  
+  /* -webkit-user-drag: none prevents the ghost-image drag
+     without disabling clicks on the card image. */
+  .belt-track img {
+    -webkit-user-drag: none;
+    user-drag: none;
+  }
+
+  /* ---------- BELT ARROWS ---------- */
+  .belt-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    animation: arrowIn 0.25s ease both;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .belt-arrow-left { left: 16px; }
+  .belt-arrow-right { right: 16px; }
+
+  .belt-arrow svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  @media (hover: hover) {
+    .belt-arrow:hover {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--light);
+    }
+  }
+
+  .belt-arrow:active {
+    background: var(--brown);
+    border-color: var(--brown);
+    color: #F4F5F5;
+  }
+
+  .belt-arrow:focus-visible {
+    outline: 1px dotted var(--ink);
+    outline-offset: 3px;
+  }
+
+  @keyframes arrowIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* ---------- BELT DRAG HINT ---------- */
+  .drag-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    background: var(--ink);
+    color: var(--light);
+    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 10.5px;
+    line-height: 14px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .drag-hint.show {
+    opacity: 1;
+  }
+
+  .drag-hint svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .drag-hint.show svg:first-child { animation: hintNudgeLeft 1.1s ease-in-out infinite; }
+  .drag-hint.show svg:last-child { animation: hintNudgeRight 1.1s ease-in-out infinite; }
+
+  @keyframes hintNudgeLeft {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-4px); }
+  }
+
+  @keyframes hintNudgeRight {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(4px); }
+  }
+  
+  .car-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 880px;
+    min-width: 880px;
+    background: var(--surface);
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .car-card:hover {
+    border-color: var(--brown);
+    box-shadow: 0 0 0 1px var(--brown);
+  }
+  
+  .car-image-container {
+    position: relative;
+    min-height: 340px;
+    overflow: hidden;
+    background: var(--sunk);
+    border-right: 1px solid var(--ink);
+  }
+  
+  .car-image-container img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    filter: none;
+  }
+  
+  .car-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 32px 36px;
+  }
+  
+  .car-meta-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-bottom: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 500;
+    letter-spacing: -0.008em;
+    text-transform: none;
+    color: var(--ink-soft);
+  }
+  
+  .car-meta-top span:first-child {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  
+  .car-title {
+    margin: 0 0 12px;
+    font-size: 30px;
+    line-height: 36px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  
+  .car-description {
+    margin: 0 0 20px;
+    max-width: 44ch;
+    font-size: 15px;
+    line-height: 24px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+  
+  .car-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 22px;
+  }
+  
+  .car-card .spec-chip {
+    padding: 5px 10px;
+    border-radius: 0;
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  
+  .car-pricing {
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 14px 16px;
-    gap: 12px;
+    gap: 2px;
+    margin-bottom: 22px;
   }
-  .recommended-heading h2,
-  .main-store h2 { justify-content: flex-start; }
-}
-
-@media (max-width: 800px) {
-  .car-card {
-    grid-template-columns: 1fr;
-    width: 86vw;
-    min-width: 300px;
-    contain-intrinsic-size: 320px 480px;
+  
+  .starting-label {
+    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
   }
-  .car-image-container {
-    min-height: 220px;
-    border-right: none;
-    border-bottom: 1px solid var(--ink);
+  
+  .car-price {
+    font-size: 30px;
+    line-height: 36px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
   }
-  .car-details { padding: 24px 20px; }
-  .car-title { font-size: 26px; line-height: 32px; }
-  .car-price { font-size: 26px; line-height: 32px; }
-  .store-row { grid-template-columns: 1fr; }
-  .brand-display { padding: 16px; }
-  .brand-row { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .brand-card { animation: none; }
+  
+  .car-finance {
+    flex-basis: auto;
+    margin-top: 4px;
+    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  
+  .car-details .inquire-btn {
+    width: 100%;
+    margin: 0;
+    padding: 13px 24px;
+    background: transparent;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: var(--ink);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .car-details .inquire-btn:hover {
+    background-color: var(--ink);
+    color: var(--light);
+  }
+  
+  .car-details .inquire-btn:active {
+    background-color: var(--brown);
+    border-color: var(--brown);
+    color: #F4F5F5;
+  }
+  
+  .bridge-line {
+    flex-shrink: 0;
+    align-self: center;
+    width: 40px;
+    height: 1px;
+    background: var(--ink);
+  }
+  
+  /* ---------- STORE ---------- */
+  .cars-store {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+  }
+  
+  .car-rows-container {
+    width: 100%;
+  }
+  
+  .store-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    width: 100%;
+  }
+  
+  .spec-chip {
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    padding: 3px 10px;
+    white-space: nowrap;
+  }
+  
+  .store-car-card {
+    border: 1px solid var(--hair);
+    background: var(--surface);
+    padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .store-car-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--brown);
+    box-shadow: 0 0 0 1px var(--brown);
+  }
+  
+  .store-image-container {
+    width: 100%;
+    aspect-ratio: 17.7 / 10;
+    overflow: hidden;
+    margin-bottom: 16px;
+    background: var(--sunk);
+  }
+  
+  .store-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .store-car-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    font-family: inherit;
+  }
+  
+  .store-car-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 16px;
+    color: var(--ink);
+  }
+  
+  .store-car-year {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  
+  .store-car-model {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  
+  .store-car-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .store-car-pricing {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 2px;
+  }
+  
+  .store-car-price {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  
+  .store-car-finance {
+    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 10.5px;
+    line-height: 14px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  
+  .store-car-details .inquire-btn {
+    margin-top: 8px;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--ink);
+    padding: 10px 0;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .store-car-details .inquire-btn:hover {
+    background-color: var(--ink);
+    color: var(--light);
+  }
+  
+  .store-car-details .inquire-btn:active {
+    background-color: var(--brown);
+    border-color: var(--brown);
+    color: #F4F5F5;
+  }
+  
+  .discover-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .discover-more-btn {
+    background: transparent;
+    border: 1px solid var(--ink);
+    padding: 14px 48px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .discover-more-btn:hover {
+    background-color: var(--ink);
+    color: var(--light);
+  }
+  
+  .discover-more-btn:active {
+    background-color: var(--brown);
+    border-color: var(--brown);
+    color: #F4F5F5;
+  }
+  
+  /* ---------- BRANDS ---------- */
+  .brand-display {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    padding: 28px;
+    border: 1px solid var(--ink);
+    box-sizing: border-box;
+    background: var(--surface);
+  }
+  
+  .brand-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    width: 100%;
+  }
+  
+  .brand-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 3;
+    padding: 16px;
+    box-sizing: border-box;
+    border: 1px solid var(--hair);
+    background: var(--surface);
+    cursor: pointer;
+    animation: brandFloat 7s ease-in-out infinite;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .brand-card:nth-child(2n) { animation-delay: -1.4s; }
+  .brand-card:nth-child(3n) { animation-delay: -2.8s; }
+  .brand-card:nth-child(5n) { animation-delay: -4.2s; }
+  
   .brand-card::before,
-  .brand-card::after,
-  .brand-bg,
-  .brand-logo-container img,
-  .brand-name { transition: none; }
-}
+  .brand-card::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    width: 0;
+    height: 0;
+    border: 0 solid var(--brown);
+    transition: width 0.35s ease, height 0.35s ease;
+    pointer-events: none;
+  }
+  
+  .brand-card::before {
+    top: -1px;
+    left: -1px;
+    border-top-width: 1px;
+    border-left-width: 1px;
+  }
+  
+  .brand-card::after {
+    right: -1px;
+    bottom: -1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+  
+  .brand-card:hover,
+  .brand-card:focus-visible {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 1px var(--ink);
+    animation-play-state: paused;
+    outline: none;
+  }
+  
+  .brand-card:hover::before,
+  .brand-card:hover::after,
+  .brand-card:focus-visible::before,
+  .brand-card:focus-visible::after {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .brand-bg {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    filter: blur(18px) saturate(1.1);
+    opacity: 0.28;
+    transform: scale(1.5);
+    transition: opacity 0.4s ease, transform 0.6s ease;
+    pointer-events: none;
+  }
+  
+  .brand-card:hover .brand-bg,
+  .brand-card:focus-visible .brand-bg {
+    opacity: 0.42;
+    transform: scale(1.65);
+  }
+  
+  .brand-logo-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 60px;
+    margin-bottom: 10px;
+  }
+  
+  .brand-logo-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: grayscale(0.35);
+    transition: transform 0.4s ease, filter 0.4s ease;
+  }
+  
+  .brand-card:hover .brand-logo-container img,
+  .brand-card:focus-visible .brand-logo-container img {
+    transform: scale(1.07);
+    filter: grayscale(0);
+  }
+  
+  .brand-name {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 3px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--ink);
+    background: linear-gradient(var(--brown), var(--brown)) left bottom / 100% 1px no-repeat;
+    transition: background-size 0.35s ease;
+  }
+  
+  .brand-card:hover .brand-name,
+  .brand-card:focus-visible .brand-name {
+    background-size: 0 1px;
+    background-position: right bottom;
+  }
+  
+  @keyframes brandFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  
+  /* ---------- CARD ACTIONS (store cards) ---------- */
+  .card-actions {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: -6px;
+  }
+  
+  .card-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 6px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .card-action svg {
+    display: block;
+    flex-shrink: 0;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+    pointer-events: none;
+  }
+  
+  .action-count {
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    pointer-events: none;
+  }
+  
+  .card-action:focus-visible {
+    outline: 1px dotted var(--ink);
+    outline-offset: 2px;
+  }
+  
+  @media (hover: hover) {
+    .card-action:hover { background-color: rgba(15, 16, 16, 0.08); }
+    .card-action.like:hover { color: #4A943E; }
+    .card-action.bookmark:hover { color: #790D16; }
+  }
+  
+  .card-action.like.active { color: #4A943E; }
+  .card-action.bookmark.active { color: #790D16; }
+  .card-action.active svg { fill: currentColor; }
+  
+  .store-finance-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 10px;
+  }
+  
+  .store-finance-row .card-actions {
+    margin-left: auto;
+  }
+  
+  .copied-note {
+    align-self: flex-end;
+    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 11px;
+    line-height: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+  
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 1100px) {
+    .brand-row { grid-template-columns: repeat(3, 1fr); }
+  }
+  
+  @media (max-width: 900px) {
+    .recommended-heading,
+    .main-store {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 14px 16px;
+      gap: 12px;
+    }
+    .recommended-heading h2,
+    .main-store h2 { justify-content: flex-start; }
+  }
+  
+  @media (max-width: 800px) {
+    .car-card {
+      grid-template-columns: 1fr;
+      width: 86vw;
+      min-width: 300px;
+    }
+    .car-image-container {
+      min-height: 220px;
+      border-right: none;
+      border-bottom: 1px solid var(--ink);
+    }
+    .car-details { padding: 24px 20px; }
+    .car-title { font-size: 26px; line-height: 32px; }
+    .car-price { font-size: 26px; line-height: 32px; }
+    .store-row { grid-template-columns: 1fr; }
+    .brand-display { padding: 16px; }
+    .brand-row { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .belt-arrow { width: 40px; height: 40px; }
+    .belt-arrow-left { left: 8px; }
+    .belt-arrow-right { right: 8px; }
+    .belt-arrow svg { width: 20px; height: 20px; }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .brand-card { animation: none; }
+    .brand-card::before,
+    .brand-card::after,
+    .brand-bg,
+    .brand-logo-container img,
+    .brand-name { transition: none; }
+    .belt-arrow { animation: none; }
+    .drag-hint { transition: none; }
+    .drag-hint.show svg:first-child,
+    .drag-hint.show svg:last-child { animation: none; }
+  }
