@@ -62,7 +62,7 @@ a { color: inherit; text-decoration: none; }
 .fn-nav-top {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border-bottom: 1px solid #082032;
+  border-bottom: 1px solid #000;
 }
 
 .fn-nav-cell {
@@ -72,23 +72,37 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: 0.08em;
   text-align: center;
   text-transform: uppercase;
+  color: #000;
+  background: #fff;
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
-.fn-nav-cell + .fn-nav-cell { border-left: 1px solid #082032; }
+.fn-nav-cell + .fn-nav-cell { border-left: 1px solid #000; }
 
-.fn-nav-title { 
-  background: var(--slate); color: #fff; }
+.fn-nav-title {
+  background: #fff;
+  color: #000;
+}
 
 .fn-nav-link {
   cursor: pointer;
   outline: none;
 }
+.fn-nav-link:hover,
 .fn-nav-link:active,
-.fn-nav-link:focus-visible { box-shadow: inset 0 0 0 2px #082032; }
+.fn-nav-link:focus-visible {
+  border-color: #082032;
+  color: #082032;
+}
+.fn-nav-link:focus-visible {
+  outline: 2px dotted #082032;
+  outline-offset: -4px;
+}
 
 .fn-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1px solid #082032;
+  border-bottom: 1px solid #000;
 }
 
 .fn-tab {
@@ -101,20 +115,28 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: 0.06em;
   text-align: center;
   text-transform: uppercase;
+  color: #000;
+  background: #fff;
   border: 1px solid transparent;
   cursor: pointer;
   outline: none;
   -webkit-user-select: none;
   user-select: none;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
-.fn-tab:not(:last-child) { border-right: 1px solid #082032; }
-.fn-tab.active,
-.fn-tab:active {
+.fn-tab:not(:last-child) { border-right: 1px solid #000; }
+.fn-tab:hover,
+.fn-tab:active,
+.fn-tab:focus-visible {
+  border-color: #082032;
+  color: #082032;
+}
+.fn-tab.active {
   margin: -1px;
   z-index: 1;
   border: 1px solid #082032;
-  background: var(--slate);
-  color: #fff;
+  background: #fff;
+  color: #082032;
 }
 
 /* ---------- Body ---------- */
@@ -990,12 +1012,18 @@ a:focus-visible,
   .fn-tabs {
     grid-template-columns: 1fr 1fr;
     row-gap: 1px;
-    background: #082032;
+    background: #000;
   }
   .fn-tab { background: #fff; padding: 13px 8px; font-size: 11.5px; border: 0; }
   .fn-tab:not(:last-child) { border-right: 0; }
-  .fn-tab.active,
-  .fn-tab:active { margin: 0; border: 0; outline: 1px solid #082032; outline-offset: -5px; }
+  .fn-tab.active {
+    margin: 0;
+    border: 0;
+    outline: 1px solid #082032;
+    outline-offset: -5px;
+    color: #082032;
+    background: #fff;
+  }
   .fn-body { padding: 24px 16px 0; }
   .fn-title { font-size: 20px; }
   .fn-card { padding: 18px; }
