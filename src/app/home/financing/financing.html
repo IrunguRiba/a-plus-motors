@@ -80,6 +80,27 @@
                   </div>
                 </div>
 
+                <div class="fn-field">
+                  <label for="calcLink">Paste a car link (optional)</label>
+                  <input id="calcLink" type="text" [(ngModel)]="calcCarLink"
+                         (input)="onCalcCarLinkChange()" (paste)="onCalcCarLinkChange()"
+                         placeholder="Paste a car link from the store to auto-fill the price" />
+                  @if (calcCar; as car) {
+                    <div class="fn-linked">
+                      <img class="fn-linked-img" [src]="car.image" [alt]="car.make + ' ' + car.name" />
+                      <div class="fn-linked-info">
+                        <b>{{ car.year }} {{ car.make }} {{ car.name }}</b>
+                        <span>{{ car.price }}</span>
+                      </div>
+                      <button type="button" class="fn-linked-clear" (click)="clearCalcVehicle()" aria-label="Remove car link">
+                        <span class="material-symbols-outlined">close</span>
+                      </button>
+                    </div>
+                  } @else {
+                    <small class="fn-hint">We'll use the car's listed price as the vehicle price.</small>
+                  }
+                </div>
+
                 <div class="fn-row">
                   <div class="fn-field">
                     <label for="calcPrice">Vehicle price (Ksh)</label>

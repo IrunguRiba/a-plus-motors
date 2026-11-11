@@ -31,7 +31,11 @@ export class Financing implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.carsSub = this.api.getStoreCars().subscribe({
-      next: list => { this.allCars = list; },
+      next: list => {
+        this.allCars = list;
+        // If a car link was already entered before cars loaded, apply it now
+        if (this.calcCarLink) this.applyCalcLink();
+      },
       error: () => { }
     });
 
@@ -159,10 +163,13 @@ export class Financing implements OnInit, OnDestroy {
   // ---------- Car link in calculator ----------
   get calcLink(): CarLink | null { return this.parseCarLink(this.calcCarLink); }
 
-  applyCalcLink(): void {
+  get calcCar(): StoreCar | undefined {
     const link = this.calcLink;
-    if (!link) return;
-    const car = this.carFor(link);
+    return link ? this.carFor(link) : undefined;
+  }
+
+  onCalcCarLinkChange(): void {
+    const car = this.calcCar;
     if (!car) return;
     const numeric = this.parsePriceToNumber(car.price);
     if (numeric > 0) {
@@ -183,6 +190,17 @@ export class Financing implements OnInit, OnDestroy {
     const digits = String(price).replace(/[^\d.]/g, '');
     const n = parseFloat(digits);
     return isNaN(n) ? 0 : n;
+  }
+
+  // Called after cars load to apply a pending link
+  private applyCalcLink(): void {
+    const car = this.calcCar;
+    if (!car) return;
+    const numeric = this.parsePriceToNumber(car.price);
+    if (numeric > 0) {
+      this.calc.price = numeric;
+      this.cdr.detectChanges();
+    }
   }
 
   figures: {
