@@ -75,18 +75,26 @@
                 <div class="fn-field">
                   <label>Vehicle condition</label>
                   <div class="fn-seg">
-                    <button type="button" [class.active]="calc.type === 'new'" (click)="setCalcType('new')">Brand new</button>
-                    <button type="button" [class.active]="calc.type === 'used'" (click)="setCalcType('used')">Used</button>
+                    <button type="button"
+                            [class.active]="calc.type === 'new'"
+                            [disabled]="isCarLocked"
+                            (click)="setCalcType('new')">Brand new</button>
+                    <button type="button"
+                            [class.active]="calc.type === 'used'"
+                            [disabled]="isCarLocked"
+                            (click)="setCalcType('used')">Used</button>
                   </div>
                 </div>
 
                 <div class="fn-field">
                   <label for="calcLink">Paste a car link (optional)</label>
                   <input id="calcLink" type="text" [(ngModel)]="calcCarLink"
+                         [readonly]="!!calcCar"
                          (input)="onCalcCarLinkChange()" (paste)="onCalcCarLinkChange()"
                          placeholder="Paste a car link from the store to auto-fill the price" />
+
                   @if (calcCar; as car) {
-                    <div class="fn-linked">
+                    <div class="fn-linked fn-linked-bw">
                       <img class="fn-linked-img" [src]="car.image" [alt]="car.make + ' ' + car.name" />
                       <div class="fn-linked-info">
                         <b>{{ car.year }} {{ car.make }} {{ car.name }}</b>
@@ -96,34 +104,77 @@
                         <span class="material-symbols-outlined">close</span>
                       </button>
                     </div>
+
+                    @if (linkedFinance; as fin) {
+                      @if (fin.enabled) {
+                        <div class="fn-finance-box">
+                          <div class="fn-finance-head">
+                            @if (fin.bankLogo) {
+                              <span class="fn-finance-logo">
+                                <img [src]="fin.bankLogo" [alt]="fin.bank || 'Bank'" loading="lazy" />
+                              </span>
+                            }
+                            <div>
+                              <b>{{ fin.bankFullName || fin.bank }}</b>
+                              <span class="fn-finance-sub">Financing available</span>
+                            </div>
+                          </div>
+                          <ul class="fn-finance-rows">
+                            @if (fin.rate != null) { <li><span>Rate</span><b>{{ fin.rate }}% p.a.</b></li> }
+                            @if (fin.deposit != null) { <li><span>Deposit</span><b>{{ fin.deposit }}%</b></li> }
+                            @if (fin.term != null) { <li><span>Term</span><b>{{ fin.term }} months</b></li> }
+                            @if (fin.monthly != null) { <li><span>Est. monthly</span><b>{{ money(fin.monthly) }}</b></li> }
+                            @if (fin.maxAmount != null) { <li><span>Max financed</span><b>{{ money(fin.maxAmount) }}</b></li> }
+                          </ul>
+                        </div>
+                      } @else {
+                        <div class="fn-finance-blocked">
+                          <span class="material-symbols-outlined">block</span>
+                          This vehicle is not eligible for financing. You can still submit an application and our team will follow up.
+                        </div>
+                      }
+                    }
                   } @else {
-                    <small class="fn-hint">We'll use the car's listed price as the vehicle price.</small>
+                    <small class="fn-hint">We'll use the car's listed price and finance terms as the calculator inputs.</small>
                   }
                 </div>
 
                 <div class="fn-row">
                   <div class="fn-field">
                     <label for="calcPrice">Vehicle price (Ksh)</label>
-                    <input id="calcPrice" type="number" inputmode="numeric" min="0" step="50000" [(ngModel)]="calc.price" placeholder="3000000" />
+                    <input id="calcPrice" type="number" inputmode="numeric" min="0" step="50000"
+                           [readonly]="isCarLocked"
+                           [(ngModel)]="calc.price" placeholder="3000000" />
                   </div>
                   <div class="fn-field">
                     <label for="calcRate">Interest rate (% p.a.)</label>
-                    <input id="calcRate" type="number" inputmode="decimal" min="0" step="0.5" [(ngModel)]="calc.rate" />
+                    <input id="calcRate" type="number" inputmode="decimal" min="0" step="0.5"
+                           [readonly]="isCarLocked"
+                           [(ngModel)]="calc.rate" />
                   </div>
                 </div>
 
                 <div class="fn-field">
-                  <label for="calcDeposit">Deposit <b>{{ calc.depositPct }}% · {{ money(deposit) }}</b></label>
-                  <input id="calcDeposit" class="fn-range" type="range" min="20" max="70" step="1"
-                         [style.--fill]="depositFill + '%'" [(ngModel)]="calc.depositPct" />
-                  <small class="fn-hint">Financing covers up to 80%, so the minimum deposit is 20%.</small>
+                  <label for="calcDeposit">Deposit <b>{{ depositValue }}% · {{ money(deposit) }}</b></label>
+                  <input id="calcDeposit" class="fn-range" type="range"
+                         [min]="minDepositPct" max="70" step="1"
+                         [style.--fill]="depositFill + '%'"
+                         [ngModel]="depositValue"
+                         (ngModelChange)="onDepositChange($event)" />
+                  <small class="fn-hint">
+                    Minimum deposit is {{ minDepositPct }}%{{ isCarLocked ? ' (set by the bank)' : '' }}.
+                    Financing covers up to 80%.
+                  </small>
                 </div>
 
                 <div class="fn-field">
                   <label>Repayment period</label>
                   <div class="fn-chips">
                     @for (m of monthsOptions; track m) {
-                      <button type="button" [class.active]="calc.months === m" (click)="calc.months = m">{{ m }} months</button>
+                      <button type="button"
+                              [class.active]="calc.months === m"
+                              [disabled]="isCarLocked"
+                              (click)="calc.months = m">{{ m }} months</button>
                     }
                   </div>
                 </div>
@@ -150,7 +201,11 @@
                 <li><span>Total payable</span><b>{{ money(totalPayable) }}</b></li>
               </ul>
 
-              <button type="button" class="fn-btn fn-btn-light" [disabled]="loanAmount <= 0" (click)="applyWithFigures()">Apply with these figures</button>
+              <button type="button" class="fn-btn fn-btn-light"
+                      [disabled]="!canApply"
+                      (click)="applyWithFigures()">
+                {{ isCarNotEligible ? 'Apply (enquiry)' : 'Apply with these figures' }}
+              </button>
               <p class="fn-result-note">An estimate only. The final rate and terms are set by the partner bank after approval.</p>
             </aside>
           </div>
@@ -166,10 +221,12 @@
                 <div class="fn-figures">
                   <div class="fn-figures-head">
                     <span>Figures from the calculator</span>
-                    <div class="fn-figures-actions">
-                      <button type="button" (click)="setActiveTab('calculator')">Edit</button>
-                      <button type="button" (click)="clearFigures()">Clear</button>
-                    </div>
+                    @if (!figuresLocked) {
+                      <div class="fn-figures-actions">
+                        <button type="button" (click)="setActiveTab('calculator')">Edit</button>
+                        <button type="button" (click)="clearFigures()">Clear</button>
+                      </div>
+                    }
                   </div>
                   <ul class="fn-figures-grid">
                     <li><span>Vehicle price</span><b>{{ money(figures.price) }}</b></li>
@@ -209,45 +266,63 @@
                     </div>
                   </div>
 
-                  <div class="fn-row">
-                    <div class="fn-field">
-                      <label for="fnId">National ID (optional)</label>
-                      <input id="fnId" name="idNumber" type="text" inputmode="numeric" [(ngModel)]="indForm.idNumber" placeholder="ID number" />
+                  @if (!figuresLocked) {
+                    <div class="fn-row">
+                      <div class="fn-field">
+                        <label for="fnId">National ID (optional)</label>
+                        <input id="fnId" name="idNumber" type="text" inputmode="numeric" [(ngModel)]="indForm.idNumber" placeholder="ID number" />
+                      </div>
+                      <div class="fn-field">
+                        <label for="fnEmp">Employment</label>
+                        <select id="fnEmp" name="employment" [(ngModel)]="indForm.employment">
+                          <option value="">Select</option>
+                          <option *ngFor="let e of employmentTypes" [value]="e">{{ e }}</option>
+                        </select>
+                      </div>
                     </div>
-                    <div class="fn-field">
-                      <label for="fnEmp">Employment</label>
-                      <select id="fnEmp" name="employment" [(ngModel)]="indForm.employment">
-                        <option value="">Select</option>
-                        <option *ngFor="let e of employmentTypes" [value]="e">{{ e }}</option>
-                      </select>
-                    </div>
-                  </div>
+                  }
 
                   <div class="fn-field" [class.invalid]="attempted && !indVehicleOk">
                     <label for="fnVehicle">Vehicle of interest</label>
-                    <input id="fnVehicle" name="vehicle" type="text" [(ngModel)]="indForm.vehicle" placeholder="Car name, or paste a car link from the store" />
+                    <input id="fnVehicle" name="vehicle" type="text"
+                           [readonly]="vehicleLocked"
+                           [(ngModel)]="indForm.vehicle"
+                           (input)="onApplyVehicleChange('individual')"
+                           (paste)="onApplyVehicleChange('individual')"
+                           placeholder="Car name, or paste a car link from the store" />
                     @if (indLink; as link) {
-                      <ng-container *ngTemplateOutlet="linkedTpl; context: { link: link }"></ng-container>
+                      <ng-container *ngTemplateOutlet="linkedTpl; context: { link: link, locked: vehicleLocked }"></ng-container>
                     } @else if (!(attempted && !indVehicleOk)) {
                       <small class="fn-hint">Open a car in the store and paste its link here.</small>
                     }
                     <small *ngIf="attempted && !indVehicleOk">Tell us which vehicle.</small>
                   </div>
 
-                  <div class="fn-row">
-                    <div class="fn-field">
-                      <label for="fnAmount">Loan amount (Ksh, optional)</label>
-                      <input id="fnAmount" name="amount" type="text" inputmode="numeric" [(ngModel)]="indForm.amount" placeholder="2,500,000" />
+                  @if (!indHideNumbers) {
+                    <div class="fn-row">
+                      <div class="fn-field">
+                        <label for="fnAmount">Loan amount (Ksh, optional)</label>
+                        <input id="fnAmount" name="amount" type="text" inputmode="numeric"
+                               [readonly]="figuresLocked || !!indLink"
+                               [(ngModel)]="indForm.amount" placeholder="2,500,000" />
+                      </div>
+                      <div class="fn-field" [class.invalid]="attempted && !indPeriodOk">
+                        <label for="fnPeriod">Repayment period</label>
+                        <select id="fnPeriod" name="period"
+                                [disabled]="figuresLocked || !!indLink"
+                                [(ngModel)]="indForm.period">
+                          <option value="">Select</option>
+                          <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
+                        </select>
+                        <small *ngIf="attempted && !indPeriodOk">Choose a period.</small>
+                      </div>
                     </div>
-                    <div class="fn-field" [class.invalid]="attempted && !indPeriodOk">
-                      <label for="fnPeriod">Repayment period</label>
-                      <select id="fnPeriod" name="period" [(ngModel)]="indForm.period">
-                        <option value="">Select</option>
-                        <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
-                      </select>
-                      <small *ngIf="attempted && !indPeriodOk">Choose a period.</small>
+                  } @else {
+                    <div class="fn-finance-blocked">
+                      <span class="material-symbols-outlined">block</span>
+                      This vehicle has no financing listed. Submit your details and our team will reach out about a manual request.
                     </div>
-                  </div>
+                  }
 
                   <button type="submit" class="fn-btn fn-btn-solid fn-btn-full">Submit application</button>
                 </form>
@@ -281,33 +356,55 @@
 
                   <div class="fn-field" [class.invalid]="attempted && !bizVehicleOk">
                     <label for="fnBVehicle">Vehicle of interest</label>
-                    <input id="fnBVehicle" name="vehicle" type="text" [(ngModel)]="bizForm.vehicle" placeholder="Car name and units, or paste a car link from the store" />
+                    <input id="fnBVehicle" name="vehicle" type="text"
+                           [readonly]="vehicleLocked"
+                           [(ngModel)]="bizForm.vehicle"
+                           (input)="onApplyVehicleChange('company')"
+                           (paste)="onApplyVehicleChange('company')"
+                           placeholder="Car name and units, or paste a car link from the store" />
                     @if (bizLink; as link) {
-                      <ng-container *ngTemplateOutlet="linkedTpl; context: { link: link }"></ng-container>
+                      <ng-container *ngTemplateOutlet="linkedTpl; context: { link: link, locked: vehicleLocked }"></ng-container>
                     } @else if (!(attempted && !bizVehicleOk)) {
                       <small class="fn-hint">Open a car in the store and paste its link here.</small>
                     }
                     <small *ngIf="attempted && !bizVehicleOk">Tell us which vehicle.</small>
                   </div>
 
-                  <div class="fn-row fn-row-3">
-                    <div class="fn-field">
-                      <label for="fnPin">Company KRA PIN (optional)</label>
-                      <input id="fnPin" name="pin" type="text" [(ngModel)]="bizForm.pin" placeholder="P000000000X" />
+                  @if (!bizHideNumbers) {
+                    <div class="fn-row fn-row-3">
+                      <div class="fn-field">
+                        <label for="fnPin">Company KRA PIN (optional)</label>
+                        <input id="fnPin" name="pin" type="text" [(ngModel)]="bizForm.pin" placeholder="P000000000X" />
+                      </div>
+                      <div class="fn-field">
+                        <label for="fnBAmount">Loan amount (Ksh, optional)</label>
+                        <input id="fnBAmount" name="amount" type="text" inputmode="numeric"
+                               [readonly]="figuresLocked || !!bizLink"
+                               [(ngModel)]="bizForm.amount" placeholder="5,000,000" />
+                      </div>
+                      <div class="fn-field" [class.invalid]="attempted && !bizPeriodOk">
+                        <label for="fnBPeriod">Repayment period</label>
+                        <select id="fnBPeriod" name="period"
+                                [disabled]="figuresLocked || !!bizLink"
+                                [(ngModel)]="bizForm.period">
+                          <option value="">Select</option>
+                          <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
+                        </select>
+                        <small *ngIf="attempted && !bizPeriodOk">Choose a period.</small>
+                      </div>
                     </div>
-                    <div class="fn-field">
-                      <label for="fnBAmount">Loan amount (Ksh, optional)</label>
-                      <input id="fnBAmount" name="amount" type="text" inputmode="numeric" [(ngModel)]="bizForm.amount" placeholder="5,000,000" />
+                  } @else {
+                    <div class="fn-row">
+                      <div class="fn-field">
+                        <label for="fnPinB">Company KRA PIN (optional)</label>
+                        <input id="fnPinB" name="pin" type="text" [(ngModel)]="bizForm.pin" placeholder="P000000000X" />
+                      </div>
                     </div>
-                    <div class="fn-field" [class.invalid]="attempted && !bizPeriodOk">
-                      <label for="fnBPeriod">Repayment period</label>
-                      <select id="fnBPeriod" name="period" [(ngModel)]="bizForm.period">
-                        <option value="">Select</option>
-                        <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
-                      </select>
-                      <small *ngIf="attempted && !bizPeriodOk">Choose a period.</small>
+                    <div class="fn-finance-blocked">
+                      <span class="material-symbols-outlined">block</span>
+                      This vehicle has no financing listed. Submit your details and our team will reach out about a manual request.
                     </div>
-                  </div>
+                  }
 
                   <button type="submit" class="fn-btn fn-btn-solid fn-btn-full">Submit application</button>
                 </form>
@@ -346,8 +443,8 @@
             <span class="fn-eyebrow">Insurers we can connect you with</span>
             <div class="fn-insurer-grid">
               @for (i of insurers; track i.name) {
-                <div class="fn-insurer">
-                  <span class="fn-insurer-logo">
+                <div class="fn-insurer" [class.fn-insurer-wide]="i.wide">
+                  <span class="fn-insurer-logo" [class.fn-insurer-logo-wide]="i.wide">
                     <span class="fn-insurer-initials">{{ i.short }}</span>
                     <img [src]="logoFor(i.domain)" [alt]="i.name + ' logo'" loading="lazy" referrerpolicy="no-referrer" (error)="hideImg($event)" />
                   </span>
@@ -373,8 +470,8 @@
 
 </section>
 
-<ng-template #linkedTpl let-link="link">
-  <div class="fn-linked">
+<ng-template #linkedTpl let-link="link" let-locked="locked">
+  <div class="fn-linked fn-linked-bw">
     @if (carFor(link); as car) {
       <img class="fn-linked-img" [src]="car.image" [alt]="car.make + ' ' + car.name" />
       <div class="fn-linked-info">
@@ -388,9 +485,11 @@
         <span>ID {{ link.id }}</span>
       </div>
     }
-    <button type="button" class="fn-linked-clear" (click)="clearVehicle()" aria-label="Remove car link">
-      <span class="material-symbols-outlined">close</span>
-    </button>
+    @if (!locked) {
+      <button type="button" class="fn-linked-clear" (click)="clearVehicle()" aria-label="Remove car link">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    }
   </div>
 </ng-template>
 

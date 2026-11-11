@@ -10,6 +10,19 @@ type FinancingTab = 'options' | 'calculator' | 'apply' | 'insurance';
 type ApplyType = 'individual' | 'company';
 type CarLink = { id: string; url: string };
 
+type FinanceInfo = {
+  enabled: boolean;
+  bank?: string;
+  bankFullName?: string;
+  bankLogo?: string;
+  bankColor?: string;
+  rate?: number;
+  deposit?: number;
+  term?: number;
+  monthly?: number;
+  maxAmount?: number;
+};
+
 @Component({
   selector: 'app-financing',
   standalone: true,
@@ -33,8 +46,7 @@ export class Financing implements OnInit, OnDestroy {
     this.carsSub = this.api.getStoreCars().subscribe({
       next: list => {
         this.allCars = list;
-        // If a car link was already entered before cars loaded, apply it now
-        if (this.calcCarLink) this.applyCalcLink();
+        if (this.calcCarLink) this.onCalcCarLinkChange();
       },
       error: () => { }
     });
@@ -43,7 +55,10 @@ export class Financing implements OnInit, OnDestroy {
       const tab = params.get('tab') as FinancingTab | null;
       const valid: FinancingTab[] = ['options', 'calculator', 'apply', 'insurance'];
       if (tab && valid.includes(tab) && tab !== this.activeTab) {
-        if (this.submitted) this.resetForms();
+        if (this.submitted && this.activeTab === 'apply' && tab !== 'apply') {
+          this.resetForms();
+          this.resetCalculator();
+        }
         this.attempted = false;
         this.activeTab = tab;
         this.cdr.detectChanges();
@@ -69,7 +84,12 @@ export class Financing implements OnInit, OnDestroy {
 
   setActiveTab(tab: FinancingTab): void {
     if (tab === this.activeTab) return;
-    if (this.submitted) this.resetForms();
+
+    if (this.submitted && this.activeTab === 'apply' && tab !== 'apply') {
+      this.resetForms();
+      this.resetCalculator();
+    }
+
     this.attempted = false;
     this.activeTab = tab;
     this.router.navigate([], {
@@ -127,18 +147,42 @@ export class Financing implements OnInit, OnDestroy {
   calc = { type: 'new' as 'new' | 'used', price: 3000000, depositPct: 20, months: 48, rate: 13 };
   calcCarLink = '';
 
+  linkedFinance: FinanceInfo | null = null;
+
   get monthsOptions(): number[] {
     return this.calc.type === 'new' ? [12, 24, 36, 48, 60] : [12, 24, 36, 48];
   }
 
   setCalcType(type: 'new' | 'used'): void {
+    if (this.isCarLocked) return;
     this.calc.type = type;
     if (type === 'used' && this.calc.months > 48) this.calc.months = 48;
   }
 
+  get isCarLocked(): boolean {
+    return !!this.calcCar;
+  }
+
+  get isCarNotEligible(): boolean {
+    return !!(this.linkedFinance && !this.linkedFinance.enabled);
+  }
+
+  get minDepositPct(): number {
+    const finMin = this.linkedFinance?.deposit;
+    return typeof finMin === 'number' ? Math.max(20, finMin) : 20;
+  }
+
   get priceValue(): number { return Math.max(0, Number(this.calc.price) || 0); }
-  get depositValue(): number { return Math.min(Math.max(Number(this.calc.depositPct) || 20, 20), 100); }
-  get depositFill(): number { return Math.min(Math.max(((this.depositValue - 20) / 50) * 100, 0), 100); }
+  get depositValue(): number {
+    const min = this.minDepositPct;
+    return Math.min(Math.max(Number(this.calc.depositPct) || min, min), 100);
+  }
+  get depositFill(): number {
+    const min = this.minDepositPct;
+    const span = 100 - min;
+    const pct = span > 0 ? ((this.depositValue - min) / span) * 100 : 0;
+    return Math.min(Math.max(pct, 0), 100);
+  }
   get deposit(): number { return this.priceValue * (this.depositValue / 100); }
   get loanAmount(): number { return this.priceValue - this.deposit; }
 
@@ -160,6 +204,14 @@ export class Financing implements OnInit, OnDestroy {
     return 'Ksh ' + Math.round(n).toLocaleString('en-KE');
   }
 
+  onDepositChange(value: number): void {
+    const min = this.minDepositPct;
+    const clamped = Math.min(Math.max(Number(value) || min, min), 100);
+    if (clamped !== this.calc.depositPct) {
+      this.calc.depositPct = clamped;
+    }
+  }
+
   // ---------- Car link in calculator ----------
   get calcLink(): CarLink | null { return this.parseCarLink(this.calcCarLink); }
 
@@ -169,19 +221,72 @@ export class Financing implements OnInit, OnDestroy {
   }
 
   onCalcCarLinkChange(): void {
-    const car = this.calcCar;
-    if (!car) return;
-    const numeric = this.parsePriceToNumber(car.price);
-    if (numeric > 0) {
-      this.calc.price = numeric;
-      this.cdr.detectChanges();
+    const link = this.calcLink;
+    if (!link) {
+      this.linkedFinance = null;
+      return;
     }
+    this.api.getCarById(link.id).subscribe({
+      next: raw => {
+        if (!raw) {
+          this.linkedFinance = null;
+          return;
+        }
+        const price = this.parsePriceToNumber(raw.price);
+        if (price > 0) this.calc.price = price;
+
+        const f = raw.finance;
+        const bankDetail = f?.bankDetails?.[0];
+
+        this.linkedFinance = {
+          enabled: !!(f?.enabled && f?.active),
+          bank: bankDetail?.bank ?? f?.banks?.[0],
+          bankFullName: f?.bankFullName ?? bankDetail?.fullName,
+          bankLogo: f?.bankLogo ?? bankDetail?.logo,
+          bankColor: f?.bankColor ?? bankDetail?.color,
+          rate: f?.rate,
+          deposit: f?.deposit,
+          term: f?.term,
+          monthly: f?.monthly,
+          maxAmount: f?.maxAmount,
+        };
+
+        if (this.linkedFinance.enabled) {
+          if (typeof f?.rate === 'number') this.calc.rate = f.rate;
+          if (typeof f?.deposit === 'number') {
+            this.calc.depositPct = Math.max(20, f.deposit);
+          }
+          if (typeof f?.term === 'number') {
+            const opts = this.monthsOptions;
+            const chosen = opts.reduce(
+              (a, b) => Math.abs(b - f!.term!) < Math.abs(a - f!.term!) ? b : a,
+              opts[0]
+            );
+            this.calc.months = chosen;
+          }
+          const age = new Date().getFullYear() - Number(raw.year || 0);
+          this.calc.type = age <= 1 ? 'new' : 'used';
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => { this.linkedFinance = null; }
+    });
   }
 
   clearCalcVehicle(): void {
-    this.calcCarLink = '';
-    this.calc.price = 3000000;
+    this.resetCalculator();
     this.cdr.detectChanges();
+  }
+
+  private resetCalculator(): void {
+    this.calcCarLink = '';
+    this.linkedFinance = null;
+    this.calc.price = 3000000;
+    this.calc.depositPct = 20;
+    this.calc.rate = 13;
+    this.calc.months = 48;
+    this.calc.type = 'new';
   }
 
   private parsePriceToNumber(price: string | number | undefined | null): number {
@@ -192,24 +297,47 @@ export class Financing implements OnInit, OnDestroy {
     return isNaN(n) ? 0 : n;
   }
 
-  // Called after cars load to apply a pending link
-  private applyCalcLink(): void {
-    const car = this.calcCar;
-    if (!car) return;
-    const numeric = this.parsePriceToNumber(car.price);
-    if (numeric > 0) {
-      this.calc.price = numeric;
-      this.cdr.detectChanges();
-    }
-  }
-
   figures: {
     condition: string; price: number; depositPct: number; deposit: number;
     loan: number; months: number; rate: number; monthly: number;
+    notEligible?: boolean;
   } | null = null;
 
+  get figuresLocked(): boolean {
+    return !!(this.figures && this.figures.notEligible);
+  }
+
+  get vehicleLocked(): boolean {
+    return !!this.figures;
+  }
+
+  get canApply(): boolean {
+    if (this.loanAmount <= 0) return false;
+    return true;
+  }
+
   applyWithFigures(): void {
-    if (this.loanAmount <= 0) return;
+    if (!this.canApply) return;
+
+    if (this.isCarNotEligible) {
+      const link = this.calcLink;
+      if (link) {
+        this.indForm.vehicle = link.url;
+        this.bizForm.vehicle = link.url;
+        this.applyFinanceCache.set(link.id, false);
+      }
+
+      this.figures = null;
+      this.indForm.amount = '';
+      this.bizForm.amount = '';
+      this.indForm.period = '';
+      this.bizForm.period = '';
+
+      if (this.activeTab !== 'apply') this.setActiveTab('apply');
+      this.cdr.detectChanges();
+      return;
+    }
+
     const period = this.calc.months === 60 ? '60 months (new vehicles)' : `${this.calc.months} months`;
     const amount = Math.round(this.loanAmount).toLocaleString('en-KE');
 
@@ -221,7 +349,7 @@ export class Financing implements OnInit, OnDestroy {
       loan: this.loanAmount,
       months: this.calc.months,
       rate: Math.max(0, Number(this.calc.rate) || 0),
-      monthly: this.monthly
+      monthly: this.monthly,
     };
 
     if (this.activeTab !== 'apply') this.setActiveTab('apply');
@@ -231,7 +359,6 @@ export class Financing implements OnInit, OnDestroy {
     this.indForm.period = period;
     this.bizForm.period = period;
 
-    // Carry the calculator car link into the application form if present
     const link = this.calcLink;
     if (link) {
       this.indForm.vehicle = link.url;
@@ -241,7 +368,21 @@ export class Financing implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  clearFigures(): void { this.figures = null; }
+  /**
+   * User pressed Clear on the figures panel → drop the transferred figures,
+   * clear the vehicle link the figures were tied to, and reset the calculator.
+   */
+  clearFigures(): void {
+    this.figures = null;
+    this.indForm.vehicle = '';
+    this.bizForm.vehicle = '';
+    this.indForm.amount = '';
+    this.bizForm.amount = '';
+    this.indForm.period = '';
+    this.bizForm.period = '';
+    this.resetCalculator();
+    this.cdr.detectChanges();
+  }
 
   private figuresLines(): string[] {
     const f = this.figures;
@@ -278,10 +419,36 @@ export class Financing implements OnInit, OnDestroy {
   get bizVehicleOk(): boolean { return this.bizForm.vehicle.trim().length >= 2; }
   get bizPeriodOk(): boolean { return !!this.bizForm.period; }
 
+  get indCarNotFinanced(): boolean {
+    const link = this.indLink;
+    if (!link) return false;
+    if (this.figures) return false;
+    const status = this.applyFinanceCache.get(link.id);
+    return status === false;
+  }
+
+  get bizCarNotFinanced(): boolean {
+    const link = this.bizLink;
+    if (!link) return false;
+    if (this.figures) return false;
+    const status = this.applyFinanceCache.get(link.id);
+    return status === false;
+  }
+
+  get indHideNumbers(): boolean { return this.indCarNotFinanced; }
+  get bizHideNumbers(): boolean { return this.bizCarNotFinanced; }
+
+  get indPeriodRequired(): boolean { return !this.indHideNumbers; }
+  get bizPeriodRequired(): boolean { return !this.bizHideNumbers; }
+
+  private applyFinanceCache = new Map<string, boolean>();
+
   get formValid(): boolean {
     return this.applyType === 'company'
-      ? this.bizCompanyOk && this.bizContactOk && this.bizPhoneOk && this.bizEmailOk && this.bizVehicleOk && this.bizPeriodOk
-      : this.indNameOk && this.indPhoneOk && this.indEmailOk && this.indVehicleOk && this.indPeriodOk;
+      ? this.bizCompanyOk && this.bizContactOk && this.bizPhoneOk && this.bizEmailOk &&
+        this.bizVehicleOk && (!this.bizPeriodRequired || this.bizPeriodOk)
+      : this.indNameOk && this.indPhoneOk && this.indEmailOk &&
+        this.indVehicleOk && (!this.indPeriodRequired || this.indPeriodOk);
   }
 
   get currentRequirements(): string[] {
@@ -319,6 +486,74 @@ export class Financing implements OnInit, OnDestroy {
     else this.indForm.vehicle = '';
   }
 
+  onApplyVehicleChange(form: 'individual' | 'company'): void {
+    if (this.figures) return;
+    const f = form === 'company' ? this.bizForm : this.indForm;
+    const link = this.parseCarLink(f.vehicle);
+
+    if (!link) {
+      if (form === 'company') {
+        this.bizForm.amount = '';
+        this.bizForm.period = '';
+      } else {
+        this.indForm.amount = '';
+        this.indForm.period = '';
+      }
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.api.getCarById(link.id).subscribe({
+      next: raw => {
+        if (!raw) return;
+
+        const price = this.parsePriceToNumber(raw.price);
+        const fin = raw.finance;
+        const eligible = !!(fin?.enabled && fin?.active);
+
+        this.applyFinanceCache.set(link.id, eligible);
+
+        if (!eligible || price <= 0) {
+          if (form === 'company') {
+            this.bizForm.amount = '';
+            this.bizForm.period = '';
+          } else {
+            this.indForm.amount = '';
+            this.indForm.period = '';
+          }
+          this.cdr.detectChanges();
+          return;
+        }
+
+        const depositPct = Math.max(20, fin?.deposit ?? 20);
+        const rate = Math.max(0, fin?.rate ?? 0);
+        const carTerm = fin?.term ?? 48;
+
+        const opts = [12, 24, 36, 48, 60];
+        const months = opts.reduce(
+          (a, b) => Math.abs(b - carTerm) < Math.abs(a - carTerm) ? b : a,
+          opts[0]
+        );
+
+        const deposit = price * (depositPct / 100);
+        const loan = price - deposit;
+        const amount = Math.max(0, Math.round(loan)).toLocaleString('en-KE');
+        const period = months === 60 ? '60 months (new vehicles)' : `${months} months`;
+
+        if (form === 'company') {
+          this.bizForm.amount = amount;
+          this.bizForm.period = period;
+        } else {
+          this.indForm.amount = amount;
+          this.indForm.period = period;
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => { }
+    });
+  }
+
   private vehicleLines(text: string): string[] {
     const link = this.parseCarLink(text);
     if (!link) return [`Vehicle: ${text.trim()}`];
@@ -330,33 +565,35 @@ export class Financing implements OnInit, OnDestroy {
   }
 
   get waLink(): string {
+    const hideNumbers = this.applyType === 'company' ? this.bizHideNumbers : this.indHideNumbers;
+
     let lines: string[];
     if (this.applyType === 'company') {
       const f = this.bizForm;
       lines = [
-        `Hello A Plus Motors, I'd like to apply for business vehicle financing.`,
+        `Hello A Plus Motors, I'd like to ${hideNumbers ? 'enquire about financing for' : 'apply for business vehicle financing on'} this car.`,
         `Company: ${f.company.trim()}`,
         `Contact: ${f.contact.trim()}`,
         `Phone: ${f.phone.trim()}`,
         `Email: ${f.email.trim()}`,
         f.pin.trim() ? `KRA PIN: ${f.pin.trim()}` : '',
         ...this.vehicleLines(f.vehicle),
-        f.amount.trim() ? `Loan amount: Ksh ${f.amount.trim()}` : '',
-        `Repayment period: ${f.period}`,
+        !hideNumbers && f.amount.trim() ? `Loan amount: Ksh ${f.amount.trim()}` : '',
+        !hideNumbers && f.period ? `Repayment period: ${f.period}` : '',
         ...this.figuresLines()
       ];
     } else {
       const f = this.indForm;
       lines = [
-        `Hello A Plus Motors, I'd like to apply for vehicle financing.`,
+        `Hello A Plus Motors, I'd like to ${hideNumbers ? 'enquire about financing for' : 'apply for vehicle financing on'} this car.`,
         `Name: ${f.name.trim()}`,
         `Phone: ${f.phone.trim()}`,
         `Email: ${f.email.trim()}`,
         f.idNumber.trim() ? `National ID: ${f.idNumber.trim()}` : '',
         f.employment ? `Employment: ${f.employment}` : '',
         ...this.vehicleLines(f.vehicle),
-        f.amount.trim() ? `Loan amount: Ksh ${f.amount.trim()}` : '',
-        `Repayment period: ${f.period}`,
+        !hideNumbers && f.amount.trim() ? `Loan amount: Ksh ${f.amount.trim()}` : '',
+        !hideNumbers && f.period ? `Repayment period: ${f.period}` : '',
         ...this.figuresLines()
       ];
     }
@@ -374,6 +611,11 @@ export class Financing implements OnInit, OnDestroy {
     this.attempted = true;
     if (!this.formValid) return;
     this.submitted = true;
+
+    // Now that the application is locked in, clear the calculator so returning
+    // to it shows fresh defaults.
+    this.resetCalculator();
+
     this.cdr.detectChanges();
     document.querySelector('.fn-done')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
@@ -381,6 +623,7 @@ export class Financing implements OnInit, OnDestroy {
   private resetForms(): void {
     this.indForm = { name: '', phone: '', email: '', idNumber: '', employment: '', vehicle: '', amount: '', period: '' };
     this.bizForm = { company: '', contact: '', phone: '', email: '', pin: '', vehicle: '', amount: '', period: '' };
+    this.figures = null;
     this.attempted = false;
     this.submitted = false;
   }
@@ -393,12 +636,12 @@ export class Financing implements OnInit, OnDestroy {
   ];
 
   insurers = [
-    { name: 'Jubilee Insurance', short: 'JI', domain: 'jubileeinsurance.com' },
-    { name: 'CIC Insurance', short: 'CIC', domain: 'cic.co.ke' },
-    { name: 'Britam', short: 'BR', domain: 'britam.com' },
-    { name: 'APA Insurance', short: 'APA', domain: 'apainsurance.org' },
-    { name: 'Madison Insurance', short: 'MI', domain: 'madison.co.ke' },
-    { name: 'UAP Old Mutual', short: 'UOM', domain: 'oldmutual.com' }
+    { name: 'Jubilee Insurance', short: 'JI', domain: 'jubileeinsurance.com', wide: false },
+    { name: 'CIC Insurance', short: 'CIC', domain: 'cic.co.ke', wide: false },
+    { name: 'Britam', short: 'BR', domain: 'britam.com', wide: false },
+    { name: 'APA Insurance', short: 'APA', domain: 'apainsurance.org', wide: true },
+    { name: 'Madison Insurance', short: 'MI', domain: 'madison.co.ke', wide: false },
+    { name: 'UAP Old Mutual', short: 'UOM', domain: 'oldmutual.com', wide: false }
   ];
 
   logoFor(domain: string): string {
@@ -415,14 +658,35 @@ export class Financing implements OnInit, OnDestroy {
   }
 
   // ---------- Navigation ----------
-  goHome(): void { this.router.navigate(['']); }
-  goToStore(): void { this.router.navigate(['/store']); }
+  goHome(): void {
+    if (this.submitted) {
+      this.resetForms();
+      this.resetCalculator();
+    }
+    this.router.navigate(['']);
+  }
+
+  goToStore(): void {
+    if (this.submitted) {
+      this.resetForms();
+      this.resetCalculator();
+    }
+    this.router.navigate(['/store']);
+  }
 
   goToImport(): void {
+    if (this.submitted) {
+      this.resetForms();
+      this.resetCalculator();
+    }
     this.router.navigate(['/imported-trade-in'], { queryParams: { tab: 'import' } });
   }
 
   goToTradeIn(): void {
+    if (this.submitted) {
+      this.resetForms();
+      this.resetCalculator();
+    }
     this.router.navigate(['/imported-trade-in'], { queryParams: { tab: 'trade-in' } });
   }
 }
