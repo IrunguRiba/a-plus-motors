@@ -121,6 +121,7 @@ export class Financing implements OnInit, OnDestroy {
 
   // ---------- Calculator ----------
   calc = { type: 'new' as 'new' | 'used', price: 3000000, depositPct: 20, months: 48, rate: 13 };
+  calcCarLink = '';
 
   get monthsOptions(): number[] {
     return this.calc.type === 'new' ? [12, 24, 36, 48, 60] : [12, 24, 36, 48];
@@ -155,6 +156,35 @@ export class Financing implements OnInit, OnDestroy {
     return 'Ksh ' + Math.round(n).toLocaleString('en-KE');
   }
 
+  // ---------- Car link in calculator ----------
+  get calcLink(): CarLink | null { return this.parseCarLink(this.calcCarLink); }
+
+  applyCalcLink(): void {
+    const link = this.calcLink;
+    if (!link) return;
+    const car = this.carFor(link);
+    if (!car) return;
+    const numeric = this.parsePriceToNumber(car.price);
+    if (numeric > 0) {
+      this.calc.price = numeric;
+      this.cdr.detectChanges();
+    }
+  }
+
+  clearCalcVehicle(): void {
+    this.calcCarLink = '';
+    this.calc.price = 3000000;
+    this.cdr.detectChanges();
+  }
+
+  private parsePriceToNumber(price: string | number | undefined | null): number {
+    if (price == null) return 0;
+    if (typeof price === 'number') return price;
+    const digits = String(price).replace(/[^\d.]/g, '');
+    const n = parseFloat(digits);
+    return isNaN(n) ? 0 : n;
+  }
+
   figures: {
     condition: string; price: number; depositPct: number; deposit: number;
     loan: number; months: number; rate: number; monthly: number;
@@ -182,6 +212,14 @@ export class Financing implements OnInit, OnDestroy {
     this.bizForm.amount = amount;
     this.indForm.period = period;
     this.bizForm.period = period;
+
+    // Carry the calculator car link into the application form if present
+    const link = this.calcLink;
+    if (link) {
+      this.indForm.vehicle = link.url;
+      this.bizForm.vehicle = link.url;
+    }
+
     this.cdr.detectChanges();
   }
 
@@ -236,7 +274,7 @@ export class Financing implements OnInit, OnDestroy {
     return this.applyType === 'company' ? this.bizForm.contact.trim() : this.indForm.name.trim();
   }
 
-  // ---------- Car link in "Vehicle of interest" ----------
+  // ---------- Car link parsing (shared) ----------
   private parseCarLink(value: string): CarLink | null {
     const text = value.trim();
     let candidate = '';
