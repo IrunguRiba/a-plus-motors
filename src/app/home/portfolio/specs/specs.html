@@ -5,8 +5,7 @@
   <!-- ================= HERO ================= -->
   <section class="hero-page">
     <nav class="top-nav">
-      <button class="nav-cell back-cell" (click)="goBack()"><span class="back-arrow">←</span>Back to store</button>
-      <button class="nav-cell" (click)="goToMainStore()">Main store</button>
+      <button class="nav-cell" (click)="goToMainStore()">STORE</button>
       <button class="nav-cell" (click)="goToContact()">Contact us</button>
     </nav>
 
@@ -141,7 +140,7 @@
 
   <!-- ================= SIMILAR CARS ================= -->
   <section class="similar-section">
-    <header class="similar-head reveal">
+    <header class="similar-head">
       <div class="sim-criteria">
         <span class="sim-label">More Similar vehicles based on</span>
         <ul>
@@ -152,8 +151,8 @@
     </header>
 
     <div class="similar-cards-row">
-      <div class="card-slot reveal" *ngFor="let c of similarVehicles; let i = index" [style.--i]="i % 3">
-        <!-- ✅ Card links to /specs?id=<this car's _id> -->
+      <div class="card-slot" *ngFor="let c of similarVehicles">
+        <!-- Card links to /specs?id=<this car's _id> -->
         <article class="car-card" (click)="openSimilar(c, $event)">
           <div class="car-image-wrapper">
             <img [attr.data-src]="c.image" [alt]="c.name" decoding="async"
@@ -191,7 +190,7 @@
       </div>
     </div>
 
-    <div class="discover-more-wrapper reveal">
+    <div class="discover-more-wrapper">
       <button class="inquire-box-btn discover-more-btn" type="button" (click)="goToMainStore()">Discover More</button>
     </div>
 

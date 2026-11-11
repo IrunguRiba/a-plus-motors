@@ -6,7 +6,7 @@
    .interest-modal {
      --font-main:
        'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-     
+   
      --ink: #0F1010;
      --muted: #787C7C;
      --light: #D8DADB;
@@ -16,8 +16,8 @@
      --accent: var(--brown);
      --ease: cubic-bezier(0.32, 0.72, 0, 1);
      --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
-     
-     --border-thin: 1px solid var(--ink); 
+   
+     --border-thin: 1px solid var(--ink);
      --border-nav: 1px solid var(--ink);
    
      --car-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0.5 1.5 27 10' fill='none' stroke='black' stroke-width='0.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8.6H1.5V7.2Q1.5 6.3 2.5 6.1L6.6 5.4L9 2.7Q9.4 2.2 10 2.2H16.3Q17.1 2.2 17.7 2.8L20.3 5.2L24.4 5.9Q26.5 6.2 26.5 7.4V8.6H23M9 8.6H19M10.2 5.3L11.3 3.1H16L18.9 5.3Z M13.7 3.1V5.3'/%3E%3Ccircle cx='7' cy='8.6' r='2'/%3E%3Ccircle cx='21' cy='8.6' r='2'/%3E%3C/svg%3E");
@@ -731,20 +731,21 @@
      font-weight: 500;
      color: var(--muted);
    }
+   
    /* "Financing on request" reads slightly quieter than "Financing available" */
-.meta-item--soft {
-  color: var(--muted);
-}
-.meta-item--soft i {
-  background: var(--muted);
-}
-
-.im-badge--soft {
-  color: var(--muted);
-}
-.im-badge--soft i {
-  background: var(--muted);
-}
+   .meta-item--soft {
+     color: var(--muted);
+   }
+   .meta-item--soft i {
+     background: var(--muted);
+   }
+   
+   .im-badge--soft {
+     color: var(--muted);
+   }
+   .im-badge--soft i {
+     background: var(--muted);
+   }
    
    /* ---------- RIGHT: gallery ---------- */
    .gallery-col {
@@ -830,24 +831,11 @@
    }
    
    /* ==========================================================
-      Similar section — colors changed to black
+      Similar section
       ========================================================== */
    .similar-section {
      padding: clamp(24px, 4vw, 48px) clamp(10px, 2vw, 30px) 0;
      border-top: var(--border-thin);
-   }
-   
-   .reveal {
-     opacity: 0;
-     transform: translateY(36px);
-     transition:
-       opacity 0.9s var(--ease),
-       transform 1s var(--ease);
-     transition-delay: calc(var(--i, 0) * 120ms);
-   }
-   .reveal.in {
-     opacity: 1;
-     transform: none;
    }
    
    .similar-head {
@@ -1882,9 +1870,6 @@
    
      .similar-cards-row {
        grid-template-columns: repeat(2, 1fr);
-     }
-     .card-slot {
-       --i: 0;
      }
    }
    

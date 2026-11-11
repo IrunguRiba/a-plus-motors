@@ -1,265 +1,384 @@
-<div class="financing-page" (click)="close()">
-    <div class="financing-card" #contentArea role="dialog" aria-modal="true" aria-label="Financing" (click)="$event.stopPropagation()">
-  
-      <!-- Close stays fixed -->
-      <button class="fn-close" type="button" (click)="close()" aria-label="Close">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-  
-      <!-- ============ PINNED HEADER: logo + tabs ============ -->
-      <div class="fn-head">
-        <div class="fn-brand">
-          <img [src]="logoImg" alt="A PLUS LTD" class="fn-logo" />
-          <span class="logo-tagline">Driving that suits you</span>
-        </div>
-  
-        <div class="fn-tabs" role="tablist" aria-label="Financing view">
-          @for (t of tabs; track t.id) {
-            <button class="fn-tab" role="tab" type="button"
-                    [class.active]="activeTab === t.id" [attr.aria-selected]="activeTab === t.id"
-                    (click)="setActiveTab(t.id)">{{ t.label }}</button>
-          }
-        </div>
-      </div>
-  
-      <!-- ============ SCROLLING DETAILS ONLY ============ -->
-      <div class="fn-scroll" #scroller>
-  
-        <div class="fn-pane" [attr.data-tab]="activeTab">
-          @switch (activeTab) {
-  
-            @case ('general') {
-              <section class="fn-body">
-                <span class="fn-eyebrow">Financing</span>
-                <h1 class="fn-title">How we finance your dream</h1>
-                <p class="fn-summary">We arrange financing with reputable banks and financial institutions, with competitive rates and flexible monthly installments.</p>
-  
-                <ul class="fn-terms">
-                  @for (t of terms; track t.label) {
-                    <li class="fn-term">
-                      <span class="fn-term-label">{{ t.label }}</span>
-                      <span class="fn-term-value">{{ t.value }}</span>
-                    </li>
-                  }
-                </ul>
-  
-                <div class="fn-note">
-                  <b>Requirements to qualify</b>
-                  Pick Individual or Business above, or see both below.
+<section class="fn-container">
+
+  <div class="fn-nav-wrapper">
+    <div class="fn-nav-top">
+      <div class="fn-nav-cell fn-nav-title">FINANCING</div>
+      <div class="fn-nav-cell fn-nav-link" tabindex="0" (click)="goToStore()" (keydown.enter)="goToStore()">STORE</div>
+      <div class="fn-nav-cell fn-nav-link" tabindex="0" (click)="goHome()" (keydown.enter)="goHome()">HOME</div>
+    </div>
+
+    <div class="fn-tabs" role="tablist" aria-label="Financing view">
+      @for (t of tabs; track t.id) {
+        <div class="fn-tab" role="tab" tabindex="0"
+             [class.active]="activeTab === t.id" [attr.aria-selected]="activeTab === t.id"
+             (click)="setActiveTab(t.id)" (keydown.enter)="setActiveTab(t.id)">{{ t.label }}</div>
+      }
+    </div>
+  </div>
+
+  <div class="fn-body">
+    <div class="fn-pane" [attr.data-tab]="activeTab">
+      @switch (activeTab) {
+
+        @case ('options') {
+          <div class="fn-intro">
+            <span class="fn-eyebrow">Financing</span>
+            <h1 class="fn-title">How we finance your dream</h1>
+            <p class="fn-summary">We arrange financing with reputable banks and financial institutions, with competitive rates and flexible monthly installments.</p>
+            <div class="fn-actions">
+              <button type="button" class="fn-btn fn-btn-solid" (click)="setActiveTab('calculator')">Calculate payments</button>
+              <button type="button" class="fn-btn" (click)="setActiveTab('apply')">Apply now</button>
+            </div>
+          </div>
+
+          <ul class="fn-terms">
+            @for (t of terms; track t.label) {
+              <li><span>{{ t.label }}</span><b>{{ t.value }}</b></li>
+            }
+          </ul>
+
+          <div class="fn-two">
+            <article class="fn-card">
+              <span class="fn-eyebrow">Requirements</span>
+              <h2 class="fn-sub-title">For an individual</h2>
+              <ul class="fn-points">
+                @for (req of individualRequirements; track req) { <li>{{ req }}</li> }
+              </ul>
+            </article>
+
+            <article class="fn-card">
+              <span class="fn-eyebrow">Requirements</span>
+              <h2 class="fn-sub-title">For a business / company</h2>
+              <ul class="fn-points">
+                @for (req of companyRequirements; track req) { <li>{{ req }}</li> }
+              </ul>
+            </article>
+          </div>
+
+          <article class="fn-card">
+            <span class="fn-eyebrow">Our banking partners</span>
+            <div class="fn-bank-grid">
+              @for (bank of allBanks; track bank.name) {
+                <div class="fn-bank"><img [src]="bank.logo" [alt]="bank.name" loading="lazy" /></div>
+              }
+            </div>
+          </article>
+        }
+
+        @case ('calculator') {
+          <div class="fn-split-layout fn-calc">
+            <article class="fn-card">
+              <span class="fn-eyebrow">Calculate payments</span>
+              <h1 class="fn-title">Estimate your installment</h1>
+
+              <div class="fn-form">
+                <div class="fn-field">
+                  <label>Vehicle condition</label>
+                  <div class="fn-seg">
+                    <button type="button" [class.active]="calc.type === 'new'" (click)="setCalcType('new')">Brand new</button>
+                    <button type="button" [class.active]="calc.type === 'used'" (click)="setCalcType('used')">Used</button>
+                  </div>
                 </div>
-              </section>
-  
-              <section class="fn-body fn-body-sub">
-                <h2 class="fn-sub-title">For an individual</h2>
-                <ul class="fn-points">
-                  @for (req of individualRequirements; track req) { <li>{{ req }}</li> }
-                </ul>
-              </section>
-  
-              <section class="fn-body fn-body-sub">
-                <h2 class="fn-sub-title">For a business / company</h2>
-                <ul class="fn-points">
-                  @for (req of companyRequirements; track req) { <li>{{ req }}</li> }
-                </ul>
-              </section>
-            }
-  
-            @case ('individual') {
-              <section class="fn-body">
-                <span class="fn-eyebrow">Requirements</span>
-                <h1 class="fn-title">For an individual</h1>
-                <ul class="fn-points">
-                  @for (req of individualRequirements; track req) { <li>{{ req }}</li> }
-                </ul>
-              </section>
-  
-              <section class="fn-body fn-body-sub">
-                <span class="fn-eyebrow">Application</span>
-                <h2 class="fn-sub-title">Apply as an individual</h2>
-  
-                @if (submitted) {
-                  <ng-container *ngTemplateOutlet="doneTpl"></ng-container>
-                } @else {
-                  <form class="fn-form" (ngSubmit)="submitApplication()" novalidate>
-                    <div class="fn-field" [class.invalid]="attempted && !indNameOk">
-                      <label for="fnName">Full name</label>
-                      <input id="fnName" name="name" type="text" autocomplete="name" [(ngModel)]="indForm.name" placeholder="As per national ID" />
-                      <small *ngIf="attempted && !indNameOk">Please enter your name.</small>
+
+                <div class="fn-row">
+                  <div class="fn-field">
+                    <label for="calcPrice">Vehicle price (Ksh)</label>
+                    <input id="calcPrice" type="number" inputmode="numeric" min="0" step="50000" [(ngModel)]="calc.price" placeholder="3000000" />
+                  </div>
+                  <div class="fn-field">
+                    <label for="calcRate">Interest rate (% p.a.)</label>
+                    <input id="calcRate" type="number" inputmode="decimal" min="0" step="0.5" [(ngModel)]="calc.rate" />
+                  </div>
+                </div>
+
+                <div class="fn-field">
+                  <label for="calcDeposit">Deposit <b>{{ calc.depositPct }}% · {{ money(deposit) }}</b></label>
+                  <input id="calcDeposit" class="fn-range" type="range" min="20" max="70" step="1"
+                         [style.--fill]="depositFill + '%'" [(ngModel)]="calc.depositPct" />
+                  <small class="fn-hint">Financing covers up to 80%, so the minimum deposit is 20%.</small>
+                </div>
+
+                <div class="fn-field">
+                  <label>Repayment period</label>
+                  <div class="fn-chips">
+                    @for (m of monthsOptions; track m) {
+                      <button type="button" [class.active]="calc.months === m" (click)="calc.months = m">{{ m }} months</button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <aside class="fn-result">
+              <span class="fn-result-label">Estimated monthly installment</span>
+              <p class="fn-result-amount">{{ money(monthly) }}</p>
+
+              <div class="fn-bar" aria-hidden="true">
+                <span [style.width.%]="principalShare"></span>
+              </div>
+              <div class="fn-bar-key">
+                <span><i class="dot dot-a"></i>Loan</span>
+                <span><i class="dot dot-b"></i>Interest</span>
+              </div>
+
+              <ul class="fn-result-rows">
+                <li><span>Vehicle price</span><b>{{ money(priceValue) }}</b></li>
+                <li><span>Deposit</span><b>{{ money(deposit) }}</b></li>
+                <li><span>Loan amount</span><b>{{ money(loanAmount) }}</b></li>
+                <li><span>Total interest</span><b>{{ money(totalInterest) }}</b></li>
+                <li><span>Total payable</span><b>{{ money(totalPayable) }}</b></li>
+              </ul>
+
+              <button type="button" class="fn-btn fn-btn-light" [disabled]="loanAmount <= 0" (click)="applyWithFigures()">Apply with these figures</button>
+              <p class="fn-result-note">An estimate only. The final rate and terms are set by the partner bank after approval.</p>
+            </aside>
+          </div>
+        }
+
+        @case ('apply') {
+          <div class="fn-split-layout fn-apply">
+            <article class="fn-card">
+              <span class="fn-eyebrow">Apply now</span>
+              <h1 class="fn-title">Start your application</h1>
+
+              @if (figures && !submitted) {
+                <div class="fn-figures">
+                  <div class="fn-figures-head">
+                    <span>Figures from the calculator</span>
+                    <div class="fn-figures-actions">
+                      <button type="button" (click)="setActiveTab('calculator')">Edit</button>
+                      <button type="button" (click)="clearFigures()">Clear</button>
                     </div>
-  
-                    <div class="fn-row">
-                      <div class="fn-field" [class.invalid]="attempted && !indPhoneOk">
-                        <label for="fnPhone">Phone number</label>
-                        <input id="fnPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" [(ngModel)]="indForm.phone" placeholder="+254 7XX XXX XXX" />
-                        <small *ngIf="attempted && !indPhoneOk">Enter a valid phone number.</small>
-                      </div>
-                      <div class="fn-field" [class.invalid]="attempted && !indEmailOk">
-                        <label for="fnEmail">Email</label>
-                        <input id="fnEmail" name="email" type="email" autocomplete="email" [(ngModel)]="indForm.email" placeholder="you@example.com" />
-                        <small *ngIf="attempted && !indEmailOk">Enter a valid email.</small>
-                      </div>
+                  </div>
+                  <ul class="fn-figures-grid">
+                    <li><span>Vehicle price</span><b>{{ money(figures.price) }}</b></li>
+                    <li><span>Deposit</span><b>{{ figures.depositPct }}% · {{ money(figures.deposit) }}</b></li>
+                    <li><span>Loan amount</span><b>{{ money(figures.loan) }}</b></li>
+                    <li><span>Period</span><b>{{ figures.months }} months</b></li>
+                    <li><span>Est. monthly</span><b>{{ money(figures.monthly) }}</b></li>
+                  </ul>
+                </div>
+              }
+
+              <div class="fn-seg fn-seg-gap">
+                <button type="button" [class.active]="applyType === 'individual'" (click)="setApplyType('individual')">Individual</button>
+                <button type="button" [class.active]="applyType === 'company'" (click)="setApplyType('company')">Business</button>
+              </div>
+
+              @if (submitted) {
+                <ng-container *ngTemplateOutlet="doneTpl"></ng-container>
+              } @else if (applyType === 'individual') {
+                <form class="fn-form" (ngSubmit)="submitApplication()" novalidate>
+                  <div class="fn-field" [class.invalid]="attempted && !indNameOk">
+                    <label for="fnName">Full name</label>
+                    <input id="fnName" name="name" type="text" autocomplete="name" [(ngModel)]="indForm.name" placeholder="As per national ID" />
+                    <small *ngIf="attempted && !indNameOk">Please enter your name.</small>
+                  </div>
+
+                  <div class="fn-row">
+                    <div class="fn-field" [class.invalid]="attempted && !indPhoneOk">
+                      <label for="fnPhone">Phone number</label>
+                      <input id="fnPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" [(ngModel)]="indForm.phone" placeholder="+254 7XX XXX XXX" />
+                      <small *ngIf="attempted && !indPhoneOk">Enter a valid phone number.</small>
                     </div>
-  
-                    <div class="fn-row">
-                      <div class="fn-field">
-                        <label for="fnId">National ID (optional)</label>
-                        <input id="fnId" name="idNumber" type="text" inputmode="numeric" [(ngModel)]="indForm.idNumber" placeholder="ID number" />
-                      </div>
-                      <div class="fn-field">
-                        <label for="fnEmp">Employment</label>
-                        <select id="fnEmp" name="employment" [(ngModel)]="indForm.employment">
-                          <option value="">Select</option>
-                          <option *ngFor="let e of employmentTypes" [value]="e">{{ e }}</option>
-                        </select>
-                      </div>
+                    <div class="fn-field" [class.invalid]="attempted && !indEmailOk">
+                      <label for="fnEmail">Email</label>
+                      <input id="fnEmail" name="email" type="email" autocomplete="email" [(ngModel)]="indForm.email" placeholder="you&#64;example.com" />
+                      <small *ngIf="attempted && !indEmailOk">Enter a valid email.</small>
                     </div>
-  
-                    <div class="fn-field" [class.invalid]="attempted && !indVehicleOk">
-                      <label for="fnVehicle">Vehicle of interest</label>
-                      <input id="fnVehicle" name="vehicle" type="text" [(ngModel)]="indForm.vehicle" placeholder="e.g. BMW i4 eDrive40" />
-                      <small *ngIf="attempted && !indVehicleOk">Tell us which vehicle.</small>
+                  </div>
+
+                  <div class="fn-row">
+                    <div class="fn-field">
+                      <label for="fnId">National ID (optional)</label>
+                      <input id="fnId" name="idNumber" type="text" inputmode="numeric" [(ngModel)]="indForm.idNumber" placeholder="ID number" />
                     </div>
-  
-                    <div class="fn-row">
-                      <div class="fn-field">
-                        <label for="fnAmount">Loan amount (Ksh, optional)</label>
-                        <input id="fnAmount" name="amount" type="text" inputmode="numeric" [(ngModel)]="indForm.amount" placeholder="2,500,000" />
-                      </div>
-                      <div class="fn-field" [class.invalid]="attempted && !indPeriodOk">
-                        <label for="fnPeriod">Repayment period</label>
-                        <select id="fnPeriod" name="period" [(ngModel)]="indForm.period">
-                          <option value="">Select</option>
-                          <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
-                        </select>
-                        <small *ngIf="attempted && !indPeriodOk">Choose a period.</small>
-                      </div>
+                    <div class="fn-field">
+                      <label for="fnEmp">Employment</label>
+                      <select id="fnEmp" name="employment" [(ngModel)]="indForm.employment">
+                        <option value="">Select</option>
+                        <option *ngFor="let e of employmentTypes" [value]="e">{{ e }}</option>
+                      </select>
                     </div>
-  
-                    <button type="submit" class="fn-submit">Submit application</button>
-                  </form>
-                }
-              </section>
-            }
-  
-            @case ('company') {
-              <section class="fn-body">
-                <span class="fn-eyebrow">Requirements</span>
-                <h1 class="fn-title">For a business / company</h1>
-                <ul class="fn-points">
-                  @for (req of companyRequirements; track req) { <li>{{ req }}</li> }
-                </ul>
-              </section>
-  
-              <section class="fn-body fn-body-sub">
-                <span class="fn-eyebrow">Application</span>
-                <h2 class="fn-sub-title">Apply as a business</h2>
-  
-                @if (submitted) {
-                  <ng-container *ngTemplateOutlet="doneTpl"></ng-container>
-                } @else {
-                  <form class="fn-form" (ngSubmit)="submitApplication()" novalidate>
+                  </div>
+
+                  <div class="fn-field" [class.invalid]="attempted && !indVehicleOk">
+                    <label for="fnVehicle">Vehicle of interest</label>
+                    <input id="fnVehicle" name="vehicle" type="text" [(ngModel)]="indForm.vehicle" placeholder="Car name, or paste a car link from the store" />
+                    @if (indLink; as link) {
+                      <ng-container *ngTemplateOutlet="linkedTpl; context: { link: link }"></ng-container>
+                    } @else if (!(attempted && !indVehicleOk)) {
+                      <small class="fn-hint">Open a car in the store and paste its link here.</small>
+                    }
+                    <small *ngIf="attempted && !indVehicleOk">Tell us which vehicle.</small>
+                  </div>
+
+                  <div class="fn-row">
+                    <div class="fn-field">
+                      <label for="fnAmount">Loan amount (Ksh, optional)</label>
+                      <input id="fnAmount" name="amount" type="text" inputmode="numeric" [(ngModel)]="indForm.amount" placeholder="2,500,000" />
+                    </div>
+                    <div class="fn-field" [class.invalid]="attempted && !indPeriodOk">
+                      <label for="fnPeriod">Repayment period</label>
+                      <select id="fnPeriod" name="period" [(ngModel)]="indForm.period">
+                        <option value="">Select</option>
+                        <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
+                      </select>
+                      <small *ngIf="attempted && !indPeriodOk">Choose a period.</small>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="fn-btn fn-btn-solid fn-btn-full">Submit application</button>
+                </form>
+              } @else {
+                <form class="fn-form" (ngSubmit)="submitApplication()" novalidate>
+                  <div class="fn-row">
                     <div class="fn-field" [class.invalid]="attempted && !bizCompanyOk">
                       <label for="fnCompany">Company name</label>
                       <input id="fnCompany" name="company" type="text" autocomplete="organization" [(ngModel)]="bizForm.company" placeholder="Registered business name" />
                       <small *ngIf="attempted && !bizCompanyOk">Please enter the company name.</small>
                     </div>
-  
                     <div class="fn-field" [class.invalid]="attempted && !bizContactOk">
                       <label for="fnContact">Contact person</label>
                       <input id="fnContact" name="contact" type="text" autocomplete="name" [(ngModel)]="bizForm.contact" placeholder="Full name" />
                       <small *ngIf="attempted && !bizContactOk">Please enter a contact name.</small>
                     </div>
-  
-                    <div class="fn-row">
-                      <div class="fn-field" [class.invalid]="attempted && !bizPhoneOk">
-                        <label for="fnBPhone">Phone number</label>
-                        <input id="fnBPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" [(ngModel)]="bizForm.phone" placeholder="+254 7XX XXX XXX" />
-                        <small *ngIf="attempted && !bizPhoneOk">Enter a valid phone number.</small>
-                      </div>
-                      <div class="fn-field" [class.invalid]="attempted && !bizEmailOk">
-                        <label for="fnBEmail">Email</label>
-                        <input id="fnBEmail" name="email" type="email" autocomplete="email" [(ngModel)]="bizForm.email" placeholder="finance@company.com" />
-                        <small *ngIf="attempted && !bizEmailOk">Enter a valid email.</small>
-                      </div>
+                  </div>
+
+                  <div class="fn-row">
+                    <div class="fn-field" [class.invalid]="attempted && !bizPhoneOk">
+                      <label for="fnBPhone">Phone number</label>
+                      <input id="fnBPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" [(ngModel)]="bizForm.phone" placeholder="+254 7XX XXX XXX" />
+                      <small *ngIf="attempted && !bizPhoneOk">Enter a valid phone number.</small>
                     </div>
-  
+                    <div class="fn-field" [class.invalid]="attempted && !bizEmailOk">
+                      <label for="fnBEmail">Email</label>
+                      <input id="fnBEmail" name="email" type="email" autocomplete="email" [(ngModel)]="bizForm.email" placeholder="finance&#64;company.com" />
+                      <small *ngIf="attempted && !bizEmailOk">Enter a valid email.</small>
+                    </div>
+                  </div>
+
+                  <div class="fn-field" [class.invalid]="attempted && !bizVehicleOk">
+                    <label for="fnBVehicle">Vehicle of interest</label>
+                    <input id="fnBVehicle" name="vehicle" type="text" [(ngModel)]="bizForm.vehicle" placeholder="Car name and units, or paste a car link from the store" />
+                    @if (bizLink; as link) {
+                      <ng-container *ngTemplateOutlet="linkedTpl; context: { link: link }"></ng-container>
+                    } @else if (!(attempted && !bizVehicleOk)) {
+                      <small class="fn-hint">Open a car in the store and paste its link here.</small>
+                    }
+                    <small *ngIf="attempted && !bizVehicleOk">Tell us which vehicle.</small>
+                  </div>
+
+                  <div class="fn-row fn-row-3">
                     <div class="fn-field">
                       <label for="fnPin">Company KRA PIN (optional)</label>
                       <input id="fnPin" name="pin" type="text" [(ngModel)]="bizForm.pin" placeholder="P000000000X" />
                     </div>
-  
-                    <div class="fn-field" [class.invalid]="attempted && !bizVehicleOk">
-                      <label for="fnBVehicle">Vehicle of interest</label>
-                      <input id="fnBVehicle" name="vehicle" type="text" [(ngModel)]="bizForm.vehicle" placeholder="e.g. Toyota Hilux, 2 units" />
-                      <small *ngIf="attempted && !bizVehicleOk">Tell us which vehicle.</small>
+                    <div class="fn-field">
+                      <label for="fnBAmount">Loan amount (Ksh, optional)</label>
+                      <input id="fnBAmount" name="amount" type="text" inputmode="numeric" [(ngModel)]="bizForm.amount" placeholder="5,000,000" />
                     </div>
-  
-                    <div class="fn-row">
-                      <div class="fn-field">
-                        <label for="fnBAmount">Loan amount (Ksh, optional)</label>
-                        <input id="fnBAmount" name="amount" type="text" inputmode="numeric" [(ngModel)]="bizForm.amount" placeholder="5,000,000" />
-                      </div>
-                      <div class="fn-field" [class.invalid]="attempted && !bizPeriodOk">
-                        <label for="fnBPeriod">Repayment period</label>
-                        <select id="fnBPeriod" name="period" [(ngModel)]="bizForm.period">
-                          <option value="">Select</option>
-                          <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
-                        </select>
-                        <small *ngIf="attempted && !bizPeriodOk">Choose a period.</small>
-                      </div>
+                    <div class="fn-field" [class.invalid]="attempted && !bizPeriodOk">
+                      <label for="fnBPeriod">Repayment period</label>
+                      <select id="fnBPeriod" name="period" [(ngModel)]="bizForm.period">
+                        <option value="">Select</option>
+                        <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
+                      </select>
+                      <small *ngIf="attempted && !bizPeriodOk">Choose a period.</small>
                     </div>
-  
-                    <button type="submit" class="fn-submit">Submit application</button>
-                  </form>
-                }
-              </section>
+                  </div>
+
+                  <button type="submit" class="fn-btn fn-btn-solid fn-btn-full">Submit application</button>
+                </form>
+              }
+            </article>
+
+            <aside class="fn-card fn-aside">
+              <span class="fn-eyebrow">What you'll need</span>
+              <h2 class="fn-sub-title">{{ applyType === 'company' ? 'For a business / company' : 'For an individual' }}</h2>
+              <ul class="fn-points">
+                @for (req of currentRequirements; track req) { <li>{{ req }}</li> }
+              </ul>
+              <p class="fn-note">Final approval and rates are set by the partner bank.</p>
+            </aside>
+          </div>
+        }
+
+        @case ('insurance') {
+          <div class="fn-intro">
+            <span class="fn-eyebrow">Insurance partners</span>
+            <h1 class="fn-title">Cover that goes with your loan</h1>
+            <p class="fn-summary">Financed vehicles are usually required to carry comprehensive cover. We can connect you with insurers so your policy is ready by the time you collect your car.</p>
+          </div>
+
+          <div class="fn-three">
+            @for (c of coverTypes; track c.title) {
+              <article class="fn-card">
+                <span class="material-symbols-outlined fn-cover-icon">{{ c.icon }}</span>
+                <h2 class="fn-sub-title">{{ c.title }}</h2>
+                <p class="fn-cover-text">{{ c.text }}</p>
+              </article>
             }
-          }
-        </div>
-  
-        <!-- BANK PARTNERS -->
-        <div class="fn-banks">
-          <span class="fn-eyebrow">Our banking partners</span>
-          <div class="fn-bank-grid">
-            @for (bank of allBanks; track bank.name) {
-              <div class="fn-bank">
-                <img [src]="bank.logo" [alt]="bank.name" loading="lazy" />
-              </div>
-            }
           </div>
-        </div>
-  
-        <!-- CONTACTS (same block as the interest modal) -->
-        <div class="fn-contact">
-          <div class="fn-socials">
-            <a [href]="'tel:' + phoneTel" class="fn-social" aria-label="Phone"><img [src]="phoneImg" alt="Call" class="fn-social-img" /></a>
-            <a [href]="'https://wa.me/' + whatsappNumber" target="_blank" rel="noopener" class="fn-social" aria-label="WhatsApp"><img [src]="whatsappImg" alt="WhatsApp" class="fn-social-img" /></a>
-            <a href="https://youtube.com" target="_blank" rel="noopener" class="fn-social" aria-label="YouTube"><img [src]="youtubeImg" alt="YouTube" class="fn-social-img" /></a>
-          </div>
-          <div class="fn-details">
-            <a [href]="'tel:' + phoneTel">+254 707 555 666</a>
-            <a href="mailto:info@aplusmotors.biz">info@aplusmotors.biz</a>
-            <span>Thika Road, near Safari Park Hotel</span>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Success state (shared by both application forms) -->
-      <ng-template #doneTpl>
-        <div class="fn-done">
-          <span class="material-symbols-outlined fn-done-icon">check</span>
-          <h3>Thank you, {{ applicantName }}</h3>
-          <p>Your application has been noted. Send it to our team on WhatsApp so we can reach you faster.</p>
-          <a class="fn-submit" [href]="waLink" target="_blank" rel="noopener">Send via WhatsApp</a>
-          <button type="button" class="fn-ghost" (click)="close()">Close</button>
-        </div>
-      </ng-template>
-  
-      <!-- Pinned tagline -->
-      <footer class="fn-tagline">
-        <span class="tagline-rule"></span>
-        <p class="tagline-text">A Plus Motors Ltd</p>
-        <span class="tagline-rule"></span>
-      </footer>
+
+          <article class="fn-card">
+            <span class="fn-eyebrow">Insurers we can connect you with</span>
+            <div class="fn-insurer-grid">
+              @for (i of insurers; track i.name) {
+                <div class="fn-insurer">
+                  <span class="fn-insurer-logo">
+                    <span class="fn-insurer-initials">{{ i.short }}</span>
+                    <img [src]="logoFor(i.domain)" [alt]="i.name + ' logo'" loading="lazy" referrerpolicy="no-referrer" (error)="hideImg($event)" />
+                  </span>
+                  <span class="fn-insurer-name">{{ i.name }}</span>
+                </div>
+              }
+            </div>
+            <p class="fn-logo-credit">Logos belong to their respective owners.</p>
+            <div class="fn-actions fn-actions-top">
+              <a class="fn-btn fn-btn-solid" [href]="insuranceLink" target="_blank" rel="noopener">Request an insurance quote</a>
+            </div>
+          </article>
+        }
+      }
     </div>
   </div>
+
+  <div class="fn-footer">
+    <a class="fn-footer-link" tabindex="0" (click)="goToImport()" (keydown.enter)="goToImport()">Import</a>
+    <a class="fn-footer-link" tabindex="0" (click)="goToTradeIn()" (keydown.enter)="goToTradeIn()">Trade In</a>
+    <a class="fn-footer-link" tabindex="0" (click)="goToStore()" (keydown.enter)="goToStore()">Store</a>
+  </div>
+
+</section>
+
+<ng-template #linkedTpl let-link="link">
+  <div class="fn-linked">
+    @if (carFor(link); as car) {
+      <img class="fn-linked-img" [src]="car.image" [alt]="car.make + ' ' + car.name" />
+      <div class="fn-linked-info">
+        <b>{{ car.year }} {{ car.make }} {{ car.name }}</b>
+        <span>{{ car.price }}</span>
+      </div>
+    } @else {
+      <span class="material-symbols-outlined fn-linked-icon">directions_car</span>
+      <div class="fn-linked-info">
+        <b>Car link added</b>
+        <span>ID {{ link.id }}</span>
+      </div>
+    }
+    <button type="button" class="fn-linked-clear" (click)="clearVehicle()" aria-label="Remove car link">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #doneTpl>
+  <div class="fn-done">
+    <span class="material-symbols-outlined fn-done-icon">check</span>
+    <h3>Thank you, {{ applicantName }}</h3>
+    <p>Your application has been noted. Send it to our team on WhatsApp so we can reach you faster.</p>
+    <a class="fn-btn fn-btn-solid fn-btn-full" [href]="waLink" target="_blank" rel="noopener">Send via WhatsApp</a>
+    <button type="button" class="fn-btn fn-btn-full" (click)="goToStore()">Browse the store</button>
+  </div>
+</ng-template>

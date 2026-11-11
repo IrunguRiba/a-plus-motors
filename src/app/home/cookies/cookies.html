@@ -1,4 +1,5 @@
-<div class="cookies-container" role="region" aria-label="Cookie consent">
+@if (visible) {
+  <div class="cookies-container" role="region" aria-label="Cookie consent">
     <div class="cookies-wrapper">
       <p>
         <span>A-plus motors Limited</span> prioritizes client experience and is determined to continuously
@@ -17,7 +18,7 @@
         <strong>Your privacy matters to you, and that matters to us.</strong>
       </p>
     </div>
-  
+
     <button
       type="button"
       class="reject-btn"
@@ -26,7 +27,7 @@
     >
       <span>Reject</span>
     </button>
-  
+
     <button
       type="button"
       class="accept-btn"
@@ -36,3 +37,4 @@
       <span>Accept</span>
     </button>
   </div>
+}

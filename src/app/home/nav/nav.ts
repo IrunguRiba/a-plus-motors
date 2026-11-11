@@ -134,10 +134,10 @@ export class Nav implements AfterViewInit, OnDestroy {
       label: 'Financing',
       title: 'Financing',
       links: [
-        { label: 'Loan Options', path: '/financing' },
-        { label: 'Calculate Payments', path: '/financing' },
-        { label: 'Apply Now', path: '/financing' },
-        { label: 'Insurance Partners', path: '/financing' },
+        { label: 'Loan Options', path: '/financing', query: { tab: 'options' } },
+        { label: 'Calculate Payments', path: '/financing', query: { tab: 'calculator' } },
+        { label: 'Apply Now', path: '/financing', query: { tab: 'apply' } },
+        { label: 'Insurance Partners', path: '/financing', query: { tab: 'insurance' } },
       ],
       feature: this.feature('Flexible Financing', 'Drive your dream with ease. Compare loan options, estimate your monthly payments and find a plan that fits your budget before you commit.'),
     },
@@ -242,7 +242,6 @@ export class Nav implements AfterViewInit, OnDestroy {
   goToImport()   { this.go({ path: '/imported-trade-in', query: { tab: 'import' } }); }
   goToTradeIn()  { this.go({ path: '/imported-trade-in', query: { tab: 'trade-in' } }); }
   goToStore()    { this.go({ path: '/store' }); }
-  goToFinance()  { this.go({ path: '/financing' }); }
   goToBlogs()    { this.go({ path: '/blogs' }); }
   goToAbout()    { this.go({ path: '/about-us' }); }
   gototContacts(){ this.go({ path: '/contact' }); }

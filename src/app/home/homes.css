@@ -13,24 +13,17 @@
     pointer-events: auto;
   }
   
-  #smooth-wrapper {
+  /* Plain wrapper: normal browser scrolling. */
+  #home-content {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
     width: 100%;
-    height: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     background: #E4E6E7;
   }
   
-  #smooth-content {
-    width: 100%;
-  }
-  
-  #smooth-content,
+  #home-content,
   .hero-container {
     overflow: visible !important;
   }
@@ -80,23 +73,14 @@
     color: var(--ink);
     position: relative;
     z-index: 1; /* sits below .cover-layer (z-index: 3) */
-
-    /* ── PIN STABILITY ────────────────────────────────────────
-       Promote to its own compositor layer and isolate layout so
-       ScrollTrigger's measurement stays identical across passes. */
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    contain: layout paint;
+  
+    /* Cheap stacking context only. */
     isolation: isolate;
-    will-change: transform;
   }
-
-  /* Inner hero content is animated on scroll (scrubbed) – keep it on its own
-     GPU layer so it never repaints or jitters while the pin engages. */
+  
+  /* Inner hero content is scrubbed by ScrollTrigger – keep its own layer. */
   .hero-container > .item-2 {
     will-change: transform, opacity;
-    backface-visibility: hidden;
-    transform: translateZ(0);
   }
   
   .hero-container::after {
@@ -125,23 +109,15 @@
     z-index: 2;
   }
   
-  /* Keep will-change on while pinned so the layer is never re-promoted
-     mid-scroll (that re-promotion is what shows up as a shake). */
-  .hero-container.is-pinned {
-    will-change: transform;
-  }
-
   /* ScrollTrigger's pin-spacer must not inherit hero margins. */
   .pin-spacer > .hero-container {
     margin: 0 !important;
   }
-
+  
   /* ============================================================
      COVER LAYER – scrolls up over the pinned hero
      ============================================================ */
   .cover-layer {
-    will-change: transform;
-    backface-visibility: hidden;
     position: relative;
     z-index: 3;
     width: 100%;
@@ -210,7 +186,7 @@
     grid-row: 1;
     pointer-events: none;
   }
-
+  
   .into-txt {
     width: 100%;
     max-width: 980px;
@@ -221,7 +197,6 @@
     z-index: 2;
     box-sizing: border-box;
     text-align: center;
-    transform: translate3d(0, 0, 0);
   }
   
   .into-title {
@@ -576,6 +551,7 @@
   .dropdown-list {
     max-height: 280px;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 0.5em;
     scrollbar-width: thin;
     scrollbar-color: var(--gold) transparent;

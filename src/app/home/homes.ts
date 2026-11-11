@@ -1,4 +1,4 @@
-import { Component, inject, AfterViewInit, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, AfterViewInit, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { Portfolio } from './portfolio/portfolio';
@@ -8,9 +8,8 @@ import { Cookies } from './cookies/cookies';
 import { ChatBox } from './chat-box/chat-box';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ScrollSmoother } from 'gsap/ScrollSmoother';
 
-gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+gsap.registerPlugin(ScrollTrigger);
 
 @Component({
   selector: 'app-homes',
@@ -25,9 +24,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   isMenuOpen = false;
   logoImg = 'fav3.png';
 
-  private smoother?: ScrollSmoother;
   private gsapCtx?: gsap.Context;
   private router = inject(Router);
+  private zone = inject(NgZone);
   private docClickHandler = () => this.closeDropdown();
 
   brands: string[] = [
@@ -52,48 +51,45 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   activeDropdown: 'brand' | 'model' | 'year' | null = null;
 
   ngOnInit(): void {
-    // Opacity only: ScrollSmoother owns the transform on #smooth-content,
-    // so tweening y/scale here would fight it and break the pin.
-    gsap.from('#smooth-content', {
-      opacity: 0, duration: 1.2, ease: 'power3.out', delay: 0.1, clearProps: 'opacity'
+    // Stop the browser from restoring scroll on back/forward
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    this.zone.runOutsideAngular(() => {
+      gsap.from('#home-content', {
+        opacity: 0, duration: 1.2, ease: 'power3.out', delay: 0.1, clearProps: 'opacity'
+      });
     });
   }
 
   ngAfterViewInit(): void {
-    this.smoother = ScrollSmoother.create({
-      wrapper: '#smooth-wrapper',
-      content: '#smooth-content',
-      smooth: 1.6,
-      effects: true
+    // Always start at the top
+    window.scrollTo(0, 0);
+
+    this.zone.runOutsideAngular(() => {
+      this.gsapCtx = gsap.context(() => {
+        this.setupHeroPin();
+        this.setupNavBlend();
+        this.setupReveals();
+      });
+
+      if ((document as any).fonts?.ready) {
+        (document as any).fonts.ready.then(() => ScrollTrigger.refresh());
+      }
+      window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
     });
 
-    this.gsapCtx = gsap.context(() => {
-      this.setupHeroPin();
-      this.setupNavBlend();
-      this.setupReveals();
-    });
-
-    // Re-measure once fonts/images have settled so the pin end point is exact.
-    if ((document as any).fonts?.ready) {
-      (document as any).fonts.ready.then(() => ScrollTrigger.refresh());
-    }
-    window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
-
+    // Stays inside the zone so closing a dropdown still updates the view
     document.addEventListener('click', this.docClickHandler);
   }
 
   ngOnDestroy(): void {
     document.removeEventListener('click', this.docClickHandler);
     this.gsapCtx?.revert();
-    this.smoother?.kill();
   }
 
-  /**
-   * Hero stays pinned at the top of the viewport while .cover-layer
-   * (pride text, portfolio, footer) scrolls up over it.
-   * pinSpacing:false => no extra blank scroll space; the cover layer
-   * simply slides on top of the pinned hero.
-   */
+  // ============== GSAP setups ==============
   private setupHeroPin(): void {
     ScrollTrigger.create({
       trigger: '#hero',
@@ -103,12 +99,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       pin: true,
       pinSpacing: false,
       anticipatePin: 1,
-      invalidateOnRefresh: true
+      invalidateOnRefresh: true,
     });
 
-    // Subtle depth: hero recedes slightly as it gets covered.
-    // No scale here: scaling a pinned layer re-rasterises text each frame
-    // and causes sub-pixel shimmer. Opacity + y stay on the GPU.
     gsap.to('#hero .item-2', {
       opacity: 0.55,
       y: -30,
@@ -119,22 +112,17 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         trigger: '.cover-layer',
         start: 'top bottom',
         end: 'top top',
-        scrub: true
-      }
+        scrub: true,
+      },
     });
   }
 
-  /**
-   * Header colour follows the scroll: it starts transparent (so it is exactly
-   * the hero colour) and blends to the solid body colour by the time the body
-   * (.cover-layer) reaches the bottom edge of the header. Scrubbed, so it moves
-   * at the same pace as the content sliding up.
-   */
   private setupNavBlend(): void {
     const nav = document.querySelector('.nav-container') as HTMLElement | null;
     if (!nav) return;
 
-    gsap.fromTo(nav,
+    gsap.fromTo(
+      nav,
       { '--nav-mix': 0 },
       {
         '--nav-mix': 1,
@@ -145,21 +133,21 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
           start: 'top bottom',
           end: () => `top ${nav.offsetHeight}px`,
           scrub: true,
-          invalidateOnRefresh: true
-        }
+          invalidateOnRefresh: true,
+        },
       }
     );
   }
 
-  /** Adds .is-visible to .reveal elements as they scroll into view. */
   private setupReveals(): void {
     ScrollTrigger.batch('.reveal', {
       start: 'top 88%',
       once: true,
-      onEnter: (els) => els.forEach(el => el.classList.add('is-visible'))
+      onEnter: (els) => els.forEach((el) => el.classList.add('is-visible')),
     });
   }
 
+  // ============== UI helpers ==============
   hideCookies(): void { this.cookiesClicked = true; }
   openSearch(): void { this.searchWindowOpened = true; }
   closeSearch(event: Event): void { event.stopPropagation(); this.searchWindowOpened = false; }
@@ -167,11 +155,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   toggleChat(): void { this.isChatOpen = !this.isChatOpen; }
 
   goHome(): void {
-    if (this.smoother) {
-      this.smoother.scrollTo(0, true);
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   toggleDropdown(type: 'brand' | 'model' | 'year', event: Event): void {
@@ -215,21 +199,17 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.activeDropdown = null;
   }
 
-  // ==========================================
-  // UPDATED NAVIGATION TO MATCH ROUTING
-  // ==========================================
-
   goToImport(event?: Event): void {
     event?.stopPropagation();
     this.router.navigate(['/imported-trade-in'], {
-      queryParams: { tab: 'import' }
+      queryParams: { tab: 'import' },
     });
   }
 
   goToTradeIn(event?: Event): void {
     event?.stopPropagation();
     this.router.navigate(['/imported-trade-in'], {
-      queryParams: { tab: 'trade-in' }
+      queryParams: { tab: 'trade-in' },
     });
   }
 }

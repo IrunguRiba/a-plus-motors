@@ -96,7 +96,7 @@ export class Footer {
 
   goToPrivacy(event?: Event): void {
     event?.preventDefault();
-    this.router.navigate(['privacy-policy']);
+    this.router.navigate([{ outlets: { privacy: ['privacy'] } }]);
   }
 
   goToFinancing(event?: Event): void {

@@ -23,7 +23,11 @@ export const routes: Routes = [
   { path: 'store', component: Store },
   { path: 'financing', component: Financing },
 { path: 'specs', component: Specs },
-  { path: 'privacy-policy', component: PrivacyPolicy },
+{
+  path: 'privacy',
+  component: PrivacyPolicy,
+  outlet: 'privacy',  
+},
   { path: 'floating-nav', component: Nav2 },
   {
     path: 'imported-trade-in',
