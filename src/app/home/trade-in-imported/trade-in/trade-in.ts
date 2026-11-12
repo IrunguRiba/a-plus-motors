@@ -2,13 +2,23 @@ import { Component, HostListener, OnDestroy } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Nav2 } from '../../nav-2/nav-2';
+import {
+  ConditionOption,
+  UpgradeVehicle,
+  BookingDay,
+  TradeInStep,
+  Benefit,
+  TradeInSpec,
+  FaqItem,
+  TradeInPayload,
+  TradeInCatalogue,
+  ConditionAdjustments,
+  TRADE_IN_CONSTANTS,
+} from '../../../interfaces/car-interface';
 
-const REFERENCE_YEAR = 2021;
-const ANNUAL_DEPRECIATION = 0.08;
-const KM_PER_YEAR = 15000;
-const RANGE_SPREAD = 0.0616;
+const { REFERENCE_YEAR, ANNUAL_DEPRECIATION, KM_PER_YEAR, RANGE_SPREAD } = TRADE_IN_CONSTANTS;
 
-const CATALOGUE: Record<string, Record<string, number>> = {
+const CATALOGUE: TradeInCatalogue = {
   Toyota: { Harrier: 2590000, Prado: 5200000, Fielder: 1150000 },
   Nissan: { 'X-Trail': 2100000, Note: 900000 },
   Mazda: { 'CX-5': 2800000, Demio: 850000 },
@@ -16,7 +26,12 @@ const CATALOGUE: Record<string, Record<string, number>> = {
   Subaru: { Forester: 2400000, Impreza: 1300000 },
 };
 
-const CONDITION_ADJUSTMENT: Record<string, number> = { Excellent: 4, Good: 0, Fair: -6, 'Needs work': -15 };
+const CONDITION_ADJUSTMENT: ConditionAdjustments = {
+  Excellent: 4,
+  Good: 0,
+  Fair: -6,
+  'Needs work': -15,
+};
 
 const round10k = (n: number): number => Math.round(n / 10000) * 10000;
 
@@ -31,19 +46,19 @@ export class TradeIn implements OnDestroy {
   years = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i);
   transmissions = ['Automatic', 'Manual', 'CVT'];
   fuels = ['Petrol', 'Diesel', 'Hybrid', 'EV'];
-  conditions = [
+  conditions: ConditionOption[] = [
     { name: 'Excellent', hint: 'Like new' },
     { name: 'Good', hint: 'Normal wear' },
     { name: 'Fair', hint: 'Visible wear' },
     { name: 'Needs work', hint: 'Repairs due' },
   ];
-  upgrades = [
+  upgrades: UpgradeVehicle[] = [
     { name: 'Mazda CX-5 2020', price: 3650000 },
     { name: 'Toyota Harrier 2022', price: 4150000 },
     { name: 'Subaru Forester 2021', price: 3200000 },
   ];
   times = ['09:00', '11:00', '14:00', '16:00'];
-  days = Array.from({ length: 7 }, (_, i) => {
+  days: BookingDay[] = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i + 1);
     return {
@@ -52,7 +67,7 @@ export class TradeIn implements OnDestroy {
     };
   });
 
-  specs = [
+  specs: TradeInSpec[] = [
     { k: 'Offer basis', v: 'Year, mileage, condition and market demand', tag: '' },
     { k: 'Inspection', v: 'A short in-person check at our yard', tag: 'Free inspection.' },
     { k: 'Paperwork', v: 'Logbook transfer handled by us', tag: '' },
@@ -73,7 +88,7 @@ export class TradeIn implements OnDestroy {
   vCur = '0:00';
   vDur = '0:00';
 
-  steps = [
+  steps: TradeInStep[] = [
     {
       n: '01',
       t: 'Describe',
@@ -112,13 +127,13 @@ export class TradeIn implements OnDestroy {
     },
   ];
 
-  benefits = [
+  benefits: Benefit[] = [
     { n: '01', t: 'A number you can plan around', d: 'See a realistic range before you leave your sofa.' },
     { n: '02', t: 'One handover, not five trips', d: 'Valuation, paperwork and your next car in one visit.' },
     { n: '03', t: 'Loans are not a blocker', d: 'We can clear what you still owe on the car you are trading.' },
   ];
 
-  faqs = [
+  faqs: FaqItem[] = [
     { q: 'How is my offer calculated?', a: 'We start from the market value for your model and year, then adjust for mileage and condition. The range you see is indicative; the final offer is confirmed after inspection.' },
     { q: 'Can I trade in a car that is still on finance?', a: 'Yes. We can clear what you still owe on the car you are trading.' },
     { q: 'What should I bring to the inspection?', a: 'Bring your logbook, your ID and the car keys.' },
@@ -163,7 +178,7 @@ export class TradeIn implements OnDestroy {
   get low(): number { return round10k(this.offer * (1 - RANGE_SPREAD)); }
   get high(): number { return round10k(this.offer * (1 + RANGE_SPREAD)); }
 
-  get selectedUpgrade(): { name: string; price: number } | undefined {
+  get selectedUpgrade(): UpgradeVehicle | undefined {
     return this.upgrades.find((u) => u.name === this.upgrade);
   }
 
@@ -308,6 +323,23 @@ export class TradeIn implements OnDestroy {
   }
 
   submit(): void {
+    // Typed payload ready for backend wiring:
+    const payload: TradeInPayload = {
+      make: this.make,
+      model: this.model,
+      year: this.year,
+      mileage: this.mileage,
+      transmission: this.transmission,
+      fuel: this.fuel,
+      condition: this.condition,
+      photos: this.photos.filter((p): p is string => !!p),
+      upgrade: this.upgrade,
+      dayIndex: this.dayIndex,
+      time: this.time,
+      name: this.name,
+      phone: this.phone,
+    };
+    // this.api.submitTradeIn(payload).subscribe(...)
     this.submitted = true;
   }
 }

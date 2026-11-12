@@ -1,67 +1,20 @@
-import { Component, AfterViewInit, ElementRef, ViewChildren, QueryList, ChangeDetectorRef, HostListener, OnDestroy } from '@angular/core';
+import {
+  Component, AfterViewInit, ElementRef, ViewChildren, QueryList,
+  ChangeDetectorRef, HostListener, OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { gsap } from 'gsap';
 import { Nav2 } from '../nav-2/nav-2';
-
-interface Comment {
-  id: number;
-  author: string;
-  time: string;
-  text: string;
-  verified: boolean;
-}
-
-/** One piece of a story: a paragraph, a pull quote, or a photo with caption + credit. */
-interface Block {
-  type: 'p' | 'quote' | 'img';
-  text?: string;
-  url?: string;
-  caption?: string;
-  credit?: string;
-  wide?: boolean;
-}
-
-interface BlogPost {
-  id: number;
-  kind: 'blog' | 'fact';
-  title: string;
-  author: string;
-  handle: string;
-  category: string;
-  date: string;
-  readTime: string;
-  tags: string[];
-  excerpt: string;
-  imageUrl: string;
-  imageCaption: string;
-  imageCredit: string;
-  body: Block[];
-  likes: number;
-  liked: boolean;
-  bookmarked: boolean;
-  comments: Comment[];
-}
-
-/** A piece of side information shown in the side rails of the story modal. */
-interface SideInformation {
-  id: string;
-  type: 'car' | 'video' | 'finance' | 'service';
-  tag: string;
-  kicker: string;
-  title: string;
-  text: string;
-  ticker: string;
-  cta: string;
-  imageUrl: string;
-  videoUrl?: string;
-  specs?: string[];
-  price?: string;
-  priceLabel?: string;
-  carPrice?: number;
-  rate?: number;
-  months?: number;
-}
+import {
+  BlogComment,
+  BlogBlock,
+  BlogPost,
+  SideInformation,
+  BlogMainTab,
+  BlogFilter,
+  NewCommentPayload,
+} from '../../interfaces/car-interface';
 
 const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=80`;
 
@@ -92,8 +45,8 @@ const WIDE_SCREEN_MIN = 1240;
   styleUrl: './blogs.css',
 })
 export class Blog implements AfterViewInit, OnDestroy {
-  currentMainTab: 'blogs' | 'store' | 'home' = 'blogs';
-  currentFilter: 'latest' | 'popular' | 'bookmarked' | 'all' = 'latest';
+  currentMainTab: BlogMainTab = 'blogs';
+  currentFilter: BlogFilter = 'latest';
   isVerifiedCustomer = false;
   toastMessage: string | null = null;
   private toastTimeout: any;
@@ -551,11 +504,11 @@ export class Blog implements AfterViewInit, OnDestroy {
     return this.applyFilter(this.facts);
   }
 
-  setMainTab(tab: 'blogs' | 'store' | 'home'): void {
+  setMainTab(tab: BlogMainTab): void {
     this.currentMainTab = tab;
   }
 
-  setFilter(filter: 'latest' | 'popular' | 'bookmarked' | 'all'): void {
+  setFilter(filter: BlogFilter): void {
     if (this.currentFilter === filter) return;
 
     this.currentFilter = filter;
@@ -666,15 +619,20 @@ export class Blog implements AfterViewInit, OnDestroy {
     const text = input.value.trim();
     if (!text) return;
 
+    // Typed payload ready to send to a backend endpoint later:
+    const payload: NewCommentPayload = { postId, text };
+    // this.api.postComment(payload).subscribe(...)
+
     const post = this.findPost(postId);
     if (post) {
-      post.comments.unshift({
+      const newComment: BlogComment = {
         id: Date.now(),
         author: 'You',
         time: 'Just now',
-        text: text,
-        verified: true
-      });
+        text,
+        verified: true,
+      };
+      post.comments.unshift(newComment);
       input.value = '';
       this.showToast('Comment posted!');
     }

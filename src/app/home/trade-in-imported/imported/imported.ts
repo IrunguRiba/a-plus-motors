@@ -2,18 +2,17 @@ import { Component, HostListener, OnDestroy } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Nav2 } from '../../nav-2/nav-2';
-interface Row {
-  label: string;
-  value: number;
-  strong?: boolean;
-}
+import {
+  ImportCostRow,
+  ImportStep,
+  ImportSpec,
+  FaqItem,
+  VideoPlaylistItem,
+  ImportRequestPayload,
+  IMPORT_RATES,
+} from '../../../interfaces/car-interface';
 
-const SHIPPING_RATE = 0.075;
-const IMPORT_DUTY = 0.25;
-const EXCISE_DUTY = 0.2;
-const VAT = 0.16;
-const IDF = 0.025;
-const RDL = 0.02;
+const { SHIPPING_RATE, IMPORT_DUTY, EXCISE_DUTY, VAT, IDF, RDL } = IMPORT_RATES;
 
 @Component({
   selector: 'app-imported',
@@ -28,14 +27,14 @@ export class Imported implements OnDestroy {
   makes = ['Toyota', 'Nissan', 'Honda', 'Mazda', 'Subaru', 'Mitsubishi', 'Suzuki', 'Isuzu', 'Volkswagen', 'Mercedes-Benz', 'BMW', 'Land Rover', 'Audi', 'Ford'];
   years = Array.from({ length: 9 }, (_, i) => new Date().getFullYear() - i);
 
-  specs = [
+  specs: ImportSpec[] = [
     { k: 'Sourcing', v: 'Japan · UK · UAE · South Africa', tag: 'Transportation supported' },
     { k: 'Vehicle age', v: 'Up to 8 years from manufacture', tag: '' },
     { k: 'We handle', v: 'Shipping, KRA duty, KEBS, registration', tag: 'Timely delivery.' },
     { k: 'You get', v: 'An inspection report before you commit', tag: 'Free inspection.' },
   ];
 
-  steps = [
+  steps: ImportStep[] = [
     {
       n: '01',
       t: 'Brief',
@@ -89,7 +88,7 @@ export class Imported implements OnDestroy {
   vCur = '0:00';
   vDur = '0:00';
 
-  faqs = [
+  faqs: FaqItem[] = [
     { q: 'How old can an imported car be?', a: 'Kenya generally allows used vehicles up to 8 years from the year of manufacture. We confirm eligibility for the exact car before you commit to anything.' },
     { q: 'How long does it take?', a: 'About eight weeks from brief to delivery: sourcing and inspection in week 1, shipping in weeks 2–6, clearing in week 7 and delivery in week 8.' },
     { q: 'How accurate is the cost estimate?', a: 'It is indicative only. Final duty is based on the KRA valuation and the rates in force when the car is entered, so your formal quote may differ.' },
@@ -121,7 +120,7 @@ export class Imported implements OnDestroy {
   get rdl(): number { return Math.round(this.cif * RDL); }
   get total(): number { return this.cif + this.importDuty + this.excise + this.vat + this.idf + this.rdl; }
 
-  get rows(): Row[] {
+  get rows(): ImportCostRow[] {
     return [
       { label: 'Vehicle price (FOB)', value: this.price },
       { label: 'Shipping & insurance', value: this.shipping },
@@ -208,7 +207,7 @@ export class Imported implements OnDestroy {
   }
 
   /** Playlist order: hero video, then steps 01 to 04. */
-  private get playlist(): { video: string; thumb: string }[] {
+  private get playlist(): VideoPlaylistItem[] {
     return [
       { video: this.videoSrc, thumb: this.videoThumb },
       ...this.steps.map(s => ({ video: s.video, thumb: s.thumb })),
@@ -259,6 +258,21 @@ export class Imported implements OnDestroy {
   }
 
   submit(): void {
+    // Typed payload ready for backend wiring:
+    const payload: ImportRequestPayload = {
+      origin: this.origin,
+      make: this.make,
+      model: this.model,
+      year: this.year,
+      fuel: this.fuel,
+      engine: this.engine,
+      price: this.price,
+      name: this.name,
+      phone: this.phone,
+      email: this.email,
+      notes: this.notes,
+    };
+    // this.api.submitImportRequest(payload).subscribe(...)
     this.submitted = true;
   }
 }

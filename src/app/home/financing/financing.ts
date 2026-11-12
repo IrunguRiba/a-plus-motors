@@ -4,24 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ApiServices } from '../../services/api-services';
-import { StoreCar } from '../../interfaces/car-interface';
-
-type FinancingTab = 'options' | 'calculator' | 'apply' | 'insurance';
-type ApplyType = 'individual' | 'company';
-type CarLink = { id: string; url: string };
-
-type FinanceInfo = {
-  enabled: boolean;
-  bank?: string;
-  bankFullName?: string;
-  bankLogo?: string;
-  bankColor?: string;
-  rate?: number;
-  deposit?: number;
-  term?: number;
-  monthly?: number;
-  maxAmount?: number;
-};
+import {
+  StoreCar,
+  FinancingTab,
+  ApplyType,
+  CarLink,
+  FinancingInfo,
+  LoanTerm,
+  Bank,
+  CalculatorState,
+  CalculationFigures,
+  IndividualApplication,
+  CompanyApplication,
+  CoverType,
+  Insurer,
+} from '../../interfaces/car-interface';
 
 @Component({
   selector: 'app-financing',
@@ -102,21 +99,21 @@ export class Financing implements OnInit, OnDestroy {
   }
 
   // ---------- Loan options ----------
-  terms = [
+  terms: LoanTerm[] = [
     { label: 'Interest rate', value: 'From 13% p.a. (reducing balance)' },
     { label: 'Installments', value: 'Flexible monthly, up to 48 months' },
     { label: 'Used saloon / pick-up / cargo', value: 'Up to 80% · max 48 months' },
     { label: 'Brand new', value: 'Up to 80% · max 5 years' }
   ];
 
-  banks1 = [
+  banks1: Bank[] = [
     { name: 'Equity', logo: 'equity.png' },
     { name: 'KCB', logo: 'kcb.png' },
     { name: 'Stanbic', logo: 'stanbic.png' },
     { name: 'NIC', logo: 'nic.png' },
   ];
 
-  banks2 = [
+  banks2: Bank[] = [
     { name: 'Co-op', logo: 'coop.png' },
     { name: 'KWFT', logo: 'kwft.png' },
     { name: 'Family', logo: 'family.png' },
@@ -124,7 +121,7 @@ export class Financing implements OnInit, OnDestroy {
     { name: 'Spire', logo: 'spire.png' },
   ];
 
-  get allBanks() { return [...this.banks1, ...this.banks2]; }
+  get allBanks(): Bank[] { return [...this.banks1, ...this.banks2]; }
 
   individualRequirements: string[] = [
     'Complete the loan application form',
@@ -144,10 +141,16 @@ export class Financing implements OnInit, OnDestroy {
   ];
 
   // ---------- Calculator ----------
-  calc = { type: 'new' as 'new' | 'used', price: 3000000, depositPct: 20, months: 48, rate: 13 };
+  calc: CalculatorState = {
+    type: 'new',
+    price: 3000000,
+    depositPct: 20,
+    months: 48,
+    rate: 13,
+  };
   calcCarLink = '';
 
-  linkedFinance: FinanceInfo | null = null;
+  linkedFinance: FinancingInfo | null = null;
 
   get monthsOptions(): number[] {
     return this.calc.type === 'new' ? [12, 24, 36, 48, 60] : [12, 24, 36, 48];
@@ -297,11 +300,7 @@ export class Financing implements OnInit, OnDestroy {
     return isNaN(n) ? 0 : n;
   }
 
-  figures: {
-    condition: string; price: number; depositPct: number; deposit: number;
-    loan: number; months: number; rate: number; monthly: number;
-    notEligible?: boolean;
-  } | null = null;
+  figures: CalculationFigures | null = null;
 
   get figuresLocked(): boolean {
     return !!(this.figures && this.figures.notEligible);
@@ -400,8 +399,14 @@ export class Financing implements OnInit, OnDestroy {
   employmentTypes = ['Employed', 'Self-employed', 'Other'];
   periods = ['12 months', '24 months', '36 months', '48 months', '60 months (new vehicles)'];
 
-  indForm = { name: '', phone: '', email: '', idNumber: '', employment: '', vehicle: '', amount: '', period: '' };
-  bizForm = { company: '', contact: '', phone: '', email: '', pin: '', vehicle: '', amount: '', period: '' };
+  indForm: IndividualApplication = {
+    name: '', phone: '', email: '', idNumber: '',
+    employment: '', vehicle: '', amount: '', period: '',
+  };
+  bizForm: CompanyApplication = {
+    company: '', contact: '', phone: '', email: '',
+    pin: '', vehicle: '', amount: '', period: '',
+  };
 
   private phoneOk(v: string): boolean { return /^\+?[\d\s-]{9,16}$/.test(v.trim()); }
   private emailOk(v: string): boolean { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
@@ -621,21 +626,27 @@ export class Financing implements OnInit, OnDestroy {
   }
 
   private resetForms(): void {
-    this.indForm = { name: '', phone: '', email: '', idNumber: '', employment: '', vehicle: '', amount: '', period: '' };
-    this.bizForm = { company: '', contact: '', phone: '', email: '', pin: '', vehicle: '', amount: '', period: '' };
+    this.indForm = {
+      name: '', phone: '', email: '', idNumber: '',
+      employment: '', vehicle: '', amount: '', period: '',
+    };
+    this.bizForm = {
+      company: '', contact: '', phone: '', email: '',
+      pin: '', vehicle: '', amount: '', period: '',
+    };
     this.figures = null;
     this.attempted = false;
     this.submitted = false;
   }
 
   // ---------- Insurance ----------
-  coverTypes = [
+  coverTypes: CoverType[] = [
     { icon: 'verified_user', title: 'Comprehensive', text: 'Covers your vehicle against accident damage, theft and fire, plus liability to others. The usual choice for a financed car.' },
     { icon: 'groups', title: 'Third party only', text: 'The minimum legal cover. Pays for injury or damage you cause to other people and their property.' },
     { icon: 'local_fire_department', title: 'Third party, fire & theft', text: 'Third-party cover with added protection if your vehicle is stolen or damaged by fire.' }
   ];
 
-  insurers = [
+  insurers: Insurer[] = [
     { name: 'Jubilee Insurance', short: 'JI', domain: 'jubileeinsurance.com', wide: false },
     { name: 'CIC Insurance', short: 'CIC', domain: 'cic.co.ke', wide: false },
     { name: 'Britam', short: 'BR', domain: 'britam.com', wide: false },
