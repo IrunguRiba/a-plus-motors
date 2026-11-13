@@ -41,6 +41,19 @@ interface SimilarCar {
 /** Normalise body strings from the API ("SUV", "Pickup", "Hatchback", …) into buckets. */
 type BodyBucket = 'suv' | 'truck' | 'van' | 'coupe' | 'hatchback' | 'sedan' | 'other';
 
+/** Shared motion tokens: one place to tune the feel of the page. */
+const MOTION = {
+  // Same reveal as the store page: slide in from the left, slight scale, quick stagger.
+  enterDuration: 0.35,
+  enterX: -60,
+  enterScale: 0.85,
+  enterStagger: 0.04,
+  enterEase: 'power2.out',
+  leaveDuration: 0.28,
+  leaveOffset: -6, // px drift on exit
+  leaveEase: 'power1.inOut',
+};
+
 @Component({
   selector: 'app-specs',
   templateUrl: './specs.html',
@@ -71,6 +84,10 @@ export class Specs implements AfterViewInit, OnDestroy {
   private jumpToTop(): void {
     ScrollSmoother.get()?.scrollTo(0, false);
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }
+
+  private get reducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   /* ============================================================
@@ -174,7 +191,10 @@ export class Specs implements AfterViewInit, OnDestroy {
 
     if (this.viewReady) {
       this.jumpToTop();
-      setTimeout(() => this.observeCardImages(), 0);
+      setTimeout(() => {
+        this.observeCardImages();
+        this.playEnter();
+      }, 0);
     }
   }
 
@@ -920,7 +940,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     const items = Array.from(root.querySelectorAll<HTMLElement>('.sim-label, .sim-criteria li'));
     const lightAll = () => items.forEach((el) => el.classList.add('lit'));
 
-    if (!road || !car || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (!road || !car || this.reducedMotion) {
       lightAll();
       return;
     }
@@ -963,28 +983,52 @@ export class Specs implements AfterViewInit, OnDestroy {
     document.body.appendChild(this.modalRoot.nativeElement);
     this.observeCardImages();
     this.startRoad();
-    gsap.fromTo(
-      this.panels,
-      { scale: 1.15, transformOrigin: 'center center' },
-      { scale: 1, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
-    );
+    this.playEnter();
   }
 
   private get panels(): Element[] {
     return Array.from(this.host.nativeElement.querySelectorAll('.hero-page, .similar-section'));
   }
 
+  private ctx?: gsap.Context;
+
+  /**
+   * Reveal, matching the store page: each block slides in from the left with a
+   * slight scale-up, staggered quickly. Order: nav → specs → viewer → gallery,
+   * then the similar-car cards.
+   */
+  private playEnter(): void {
+    if (this.reducedMotion) return;
+    const root = this.host.nativeElement;
+    this.ctx ??= gsap.context(() => {}, root);
+    this.ctx.add(() => {
+      gsap.fromTo(
+        '.top-nav, .specs-box, .car-section, .gallery-col, .similar-section .car-card',
+        { opacity: 0, x: MOTION.enterX, scale: MOTION.enterScale },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: MOTION.enterDuration,
+          ease: MOTION.enterEase,
+          stagger: MOTION.enterStagger,
+          clearProps: 'opacity,transform',
+        },
+      );
+    });
+  }
+
   private leavePromise?: Promise<void>;
 
   playLeave(): Promise<void> {
+    if (this.reducedMotion) return Promise.resolve();
     if (!this.leavePromise) {
       this.leavePromise = new Promise((resolve) => {
         gsap.to(this.panels, {
           opacity: 0,
-          scale: 0.96,
-          transformOrigin: 'center center',
-          duration: 0.35,
-          ease: 'power2.inOut',
+          y: MOTION.leaveOffset,
+          duration: MOTION.leaveDuration,
+          ease: MOTION.leaveEase,
           onComplete: () => resolve(),
         });
       });
@@ -999,9 +1043,9 @@ export class Specs implements AfterViewInit, OnDestroy {
       this.leavePromise = undefined;
       gsap.to(this.panels, {
         opacity: 1,
-        scale: 1,
-        duration: 0.65,
-        ease: 'power2.inOut',
+        y: 0,
+        duration: 0.5,
+        ease: 'power2.out',
         clearProps: 'opacity,transform',
       });
     }
@@ -1013,6 +1057,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     if (this.imgSafetyTimer) clearTimeout(this.imgSafetyTimer);
     this.roadTween?.kill();
     gsap.killTweensOf(this.panels);
+    this.ctx?.revert();
     this.modalRoot?.nativeElement.remove();
     this.lockScroll(false);
   }

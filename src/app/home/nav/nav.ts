@@ -106,18 +106,6 @@ export class Nav implements AfterViewInit, OnDestroy {
       feature: this.feature('Find Your Perfect Ride', 'Explore our wide range of vehicles, from fresh arrivals to carefully inspected pre-owned cars, all in one place.Explore our wide range of vehicles, from fresh arrivals to carefully inspected pre-owned cars, all in one place.'),
     },
     {
-      key: 'buycar',
-      label: 'Buy Car',
-      title: 'Buy Car',
-      links: [
-        { label: 'All Cars', path: '/store' },
-        { label: 'New Cars', path: '/store' },
-        { label: 'Import', path: '/imported-trade-in', query: { tab: 'import' } },
-        { label: 'Trade-in', path: '/imported-trade-in', query: { tab: 'trade-in' } },
-      ],
-      feature: this.feature('Import or Trade In With Ease', 'Bring in your dream car from abroad or trade in your current one for a fair valuation, with every step handled for you.'),
-    },
-    {
       key: 'about',
       label: 'About Us',
       title: 'About Us',
@@ -129,6 +117,8 @@ export class Nav implements AfterViewInit, OnDestroy {
       ],
       feature: this.feature('Our Values', 'Quality, trust and performance guide everything we do, from the cars we select to the way we look after every customer long after the sale.'),
     },
+  
+ 
     {
       key: 'financing',
       label: 'Financing',
@@ -142,16 +132,16 @@ export class Nav implements AfterViewInit, OnDestroy {
       feature: this.feature('Flexible Financing', 'Drive your dream with ease. Compare loan options, estimate your monthly payments and find a plan that fits your budget before you commit.'),
     },
     {
-      key: 'contact',
-      label: 'Contact Us',
-      title: 'Contact Us',
+      key: 'buycar',
+      label: 'Showroom',
+      title: 'Buy Car',
       links: [
-        { label: 'Our Location', path: '/contact' },
-        { label: 'Get in Touch', path: '/contact' },
-        { label: 'FAQs', path: '/contact' },
-        { label: 'Service Support', path: '/contact' },
+        { label: 'All Cars', path: '/store' },
+        { label: 'New Cars', path: '/store' },
+        { label: 'Import', path: '/imported-trade-in', query: { tab: 'import' } },
+        { label: 'Trade-in', path: '/imported-trade-in', query: { tab: 'trade-in' } },
       ],
-      feature: this.feature('Visit Our Showroom', 'Find us in Nairobi and experience the best. Meet the team, see the cars in person and take your time deciding what suits you.'),
+      feature: this.feature('Import or Trade In With Ease', 'Bring in your dream car from abroad or trade in your current one for a fair valuation, with every step handled for you.'),
     },
     {
       key: 'subsidiaries',
