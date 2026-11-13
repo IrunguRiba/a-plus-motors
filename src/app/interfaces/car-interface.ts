@@ -1,9 +1,3 @@
-// src/app/interfaces/car-interface.ts
-
-/* ============================================================
-   EXISTING INTERFACES (unchanged)
-   ============================================================ */
-
    export interface BankDetail {
     bank: string;
     fullName: string;
