@@ -54,61 +54,90 @@
       <div class="car-section">
         <div class="car-stage">
 
-          <div class="image-wrapper" [class.zoomed]="zoom > 100" [class.dragging]="dragging"
-               (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
-               (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
-               (dblclick)="toggleZoom()" (wheel)="onStageWheel($event)">
-            <div class="zoom-layer" [style.transform]="zoomTransform">
-              <img *ngFor="let src of [displayImage]" [src]="src" crossorigin="anonymous" (load)="trimImage($event)"
-                   [alt]="carName + ' ' + view" class="car-img" draggable="false" />
-            </div>
-          </div>
-
-          <!-- Photo mode: zoom levels (left) + video entry (right) -->
+          <!-- IMAGE MODE -->
           <ng-container *ngIf="!videoPlaying">
+            <div class="image-wrapper" [class.zoomed]="zoom > 100" [class.dragging]="dragging"
+                 (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
+                 (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
+                 (dblclick)="toggleZoom()" (wheel)="onStageWheel($event)">
+              <div class="zoom-layer" [style.transform]="zoomTransform">
+                <img *ngFor="let src of [displayImage]" [src]="src" crossorigin="anonymous" (load)="trimImage($event)"
+                     [alt]="carName + ' ' + view" class="car-img" draggable="false" />
+              </div>
+            </div>
+
             <div class="zoom-bar" role="group" aria-label="Zoom level">
               <button class="zoom-btn" type="button" *ngFor="let z of zoomLevels"
                       [class.active]="zoom === z" [attr.aria-pressed]="zoom === z" (click)="setZoom(z)">{{ z }}%</button>
             </div>
-            <button class="stage-btn watch-btn" type="button" *ngIf="reviewVid" (click)="openVideo($event)">▶ Review video</button>
+            <button class="stage-btn watch-btn" type="button" *ngIf="hasReview" (click)="openVideo($event)">▶ Review video</button>
           </ng-container>
 
-          <!-- Video mode: loader while buffering, custom controls at the bottom -->
+          <!-- VIDEO MODE -->
           <ng-container *ngIf="videoPlaying">
-            <video #stageVideo class="car-video" [src]="reviewVid" autoplay playsinline preload="auto"
-                   (click)="toggleVideo(stageVideo)"
-                   (loadeddata)="onVideoReady(stageVideo)" (canplay)="onVideoReady(stageVideo)" (playing)="onVideoReady(stageVideo)"
-                   (waiting)="vLoading = true" (error)="onVideoError()"
-                   (timeupdate)="onVideoTime(stageVideo)" (loadedmetadata)="onVideoTime(stageVideo)"
-                   (play)="vPaused = false" (pause)="vPaused = true" (ended)="vPaused = true"></video>
 
-            <div class="video-loader" *ngIf="vLoading && !vError" role="status" aria-live="polite">
-              <span class="loader-ring"></span>
-              <span class="loader-text">Loading video</span>
-            </div>
+            <!-- (a) Direct file: <video> with custom controls -->
+            <ng-container *ngIf="isFileVideo">
+              <video #stageVideo class="car-video" [src]="videoSource" autoplay playsinline preload="auto"
+                     (click)="toggleVideo(stageVideo)"
+                     (loadeddata)="onVideoReady(stageVideo)" (canplay)="onVideoReady(stageVideo)" (playing)="onVideoReady(stageVideo)"
+                     (waiting)="vLoading = true" (error)="onVideoError()"
+                     (timeupdate)="onVideoTime(stageVideo)" (loadedmetadata)="onVideoTime(stageVideo)"
+                     (play)="vPaused = false" (pause)="vPaused = true" (ended)="vPaused = true"></video>
 
-            <div class="video-loader video-error" *ngIf="vError" role="alert">
-              <span class="loader-text">Video unavailable</span>
-              <button class="v-retry" type="button" (click)="retryVideo(stageVideo)">Retry</button>
-            </div>
+              <div class="video-loader" *ngIf="vLoading && !vError" role="status" aria-live="polite">
+                <span class="loader-ring"></span>
+                <span class="loader-text">Loading video</span>
+              </div>
 
-            <div class="video-controls">
-              <button class="v-btn" type="button" (click)="toggleVideo(stageVideo)" [attr.aria-label]="vPaused ? 'Play' : 'Pause'">
-                <svg *ngIf="vPaused" class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-                <svg *ngIf="!vPaused" class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
-              </button>
-              <span class="v-time">{{ vCur }}</span>
-              <input class="v-seek" type="range" min="0" max="1000" [value]="vProgress" (input)="seekVideo(stageVideo, $event)" aria-label="Seek" />
-              <span class="v-time">{{ vDur }}</span>
-              <button class="v-btn" type="button" (click)="toggleMute(stageVideo)">{{ vMuted ? 'Muted' : 'Sound' }}</button>
-              <button class="v-btn" type="button" (click)="fullscreenVideo(stageVideo)" aria-label="Fullscreen">
-                <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
-              </button>
-              <a class="v-btn" [href]="'https://www.youtube.com/results?search_query=' + carName + '+review'" target="_blank" rel="noopener">YouTube</a>
-              <button class="v-btn" type="button" (click)="closeVideo()" aria-label="Close video">
-                <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-                <span>Close</span>
-              </button>
+              <div class="video-loader video-error" *ngIf="vError" role="alert">
+                <span class="loader-text">Video unavailable</span>
+                <button class="v-retry" type="button" (click)="retryVideo(stageVideo)">Retry</button>
+              </div>
+
+              <div class="video-controls">
+                <button class="v-btn" type="button" (click)="toggleVideo(stageVideo)" [attr.aria-label]="vPaused ? 'Play' : 'Pause'">
+                  <svg *ngIf="vPaused" class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                  <svg *ngIf="!vPaused" class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+                </button>
+                <span class="v-time">{{ vCur }}</span>
+                <input class="v-seek" type="range" min="0" max="1000" [value]="vProgress" (input)="seekVideo(stageVideo, $event)" aria-label="Seek" />
+                <span class="v-time">{{ vDur }}</span>
+                <button class="v-btn" type="button" (click)="toggleMute(stageVideo)">{{ vMuted ? 'Muted' : 'Sound' }}</button>
+                <button class="v-btn" type="button" (click)="fullscreenVideo(stageVideo)" aria-label="Fullscreen">
+                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                </button>
+                <a class="v-btn" [href]="'https://www.youtube.com/results?search_query=' + carName + '+review'" target="_blank" rel="noopener">YouTube</a>
+                <button class="v-btn" type="button" (click)="closeVideo()" aria-label="Close video">
+                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                  <span>Close</span>
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- (b) YouTube / Vimeo: <iframe> with its own controls -->
+            <ng-container *ngIf="isIframeVideo">
+              <div class="iframe-wrap">
+                <iframe class="car-video" [src]="embedUrl | safeVideoUrl" title="Review video" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+              </div>
+
+              <div class="video-controls video-controls--iframe">
+                <button class="v-btn" type="button" (click)="fullscreenIframe()" aria-label="Fullscreen">
+                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                </button>
+                <button class="v-btn" type="button" (click)="closeVideo()" aria-label="Close video">
+                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                  <span>Close</span>
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- (c) Unknown / malformed URL -->
+            <div class="video-loader video-error" *ngIf="!isFileVideo && !isIframeVideo" role="alert">
+              <span class="loader-text">Video link is not supported</span>
+              <button class="v-retry" type="button" (click)="closeVideo()">Back to photos</button>
             </div>
           </ng-container>
         </div>
@@ -152,7 +181,6 @@
 
     <div class="similar-cards-row">
       <div class="card-slot" *ngFor="let c of similarVehicles">
-        <!-- Card links to /specs?id=<this car's _id> -->
         <article class="car-card" (click)="openSimilar(c, $event)">
           <div class="car-image-wrapper">
             <img [attr.data-src]="c.image" [alt]="c.name" decoding="async"

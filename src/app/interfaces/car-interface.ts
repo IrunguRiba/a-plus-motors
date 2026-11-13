@@ -98,6 +98,7 @@
     engine: string;
     isNew: boolean;
     deal: boolean;
+    reviewVideoUrl?: string; 
   }
   
   /* ============================================================

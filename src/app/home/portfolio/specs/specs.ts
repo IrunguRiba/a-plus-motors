@@ -17,6 +17,7 @@ import { gsap } from 'gsap';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { ApiServices, ksh } from '../../../services/api-services';
 import { ApiCar } from '../../../interfaces/car-interface';
+import { SafeVideoUrlPipe } from './safe-url.pipe';
 
 type CarView = 'exterior' | 'interior';
 interface SpecRow {
@@ -38,26 +39,23 @@ interface SimilarCar {
   image: string;
 }
 
-/** Normalise body strings from the API ("SUV", "Pickup", "Hatchback", …) into buckets. */
 type BodyBucket = 'suv' | 'truck' | 'van' | 'coupe' | 'hatchback' | 'sedan' | 'other';
 
-/** Shared motion tokens: one place to tune the feel of the page. */
 const MOTION = {
-  // Same reveal as the store page: slide in from the left, slight scale, quick stagger.
   enterDuration: 0.35,
   enterX: -60,
   enterScale: 0.85,
   enterStagger: 0.04,
   enterEase: 'power2.out',
   leaveDuration: 0.28,
-  leaveOffset: -6, // px drift on exit
+  leaveOffset: -6,
   leaveEase: 'power1.inOut',
 };
 
 @Component({
   selector: 'app-specs',
   templateUrl: './specs.html',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SafeVideoUrlPipe],
   styleUrls: ['./specs.css'],
   host: { style: 'overflow: clip' },
 })
@@ -103,12 +101,10 @@ export class Specs implements AfterViewInit, OnDestroy {
   carName = '';
   carPrice = '';
 
-  /** True when the API says financing is actually enabled for this car. */
   get financingEnabled(): boolean {
     return !!(this.car?.financing && this.car?.finance?.enabled);
   }
 
-  /** Text shown in finance chips (left panel + interest modal). */
   get financingLabel(): string {
     return this.financingEnabled ? 'Financing available' : 'Financing on request';
   }
@@ -383,7 +379,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     return this.images[this.activeIndex] ?? '';
   }
 
-  /* ---- Image trim ---- */
   private trimmed = new Map<string, string>();
   private tried = new Set<string>();
 
@@ -605,20 +600,66 @@ export class Specs implements AfterViewInit, OnDestroy {
   vCur = '0:00';
   vDur = '0:00';
 
-  get hasReview(): boolean {
-    return !!this.reviewVid;
+  /* --- URL helpers ------------------------------------------------- */
+
+  private static readonly FILE_RE = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
+
+  /** Returns a direct-file URL (for <video>) or null. */
+  private get fileUrl(): string | null {
+    return this.reviewVid && Specs.FILE_RE.test(this.reviewVid) ? this.reviewVid : null;
   }
+
+  /**
+   * Returns an embed URL for <iframe> (YouTube / Vimeo / Streamable) or null.
+   */
+  get embedUrl(): string | null {
+    const u = this.reviewVid;
+    if (!u || this.fileUrl) return null;
+
+    // YouTube: watch, short, or already-embed
+    const yt = u.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube-nocookie\.com\/embed\/)([\w-]{11})/,
+    );
+    if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0`;
+
+    // Vimeo
+    const vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+
+    // Streamable — accepts /e/xyz, /xyz, and full page URLs
+    const sm = u.match(/streamable\.com\/(?:e\/)?([a-z0-9]+)/i);
+    if (sm) return `https://streamable.com/e/${sm[1]}`;
+
+    return null;
+  }
+
+  get isIframeVideo(): boolean {
+    return this.embedUrl !== null;
+  }
+  get isFileVideo(): boolean {
+    return this.fileUrl !== null;
+  }
+  get videoSource(): string {
+    return this.fileUrl ?? '';
+  }
+
+  get hasReview(): boolean {
+    return this.isFileVideo || this.isIframeVideo;
+  }
+
+  /* --- Playback control ------------------------------------------- */
 
   openVideo(event: Event): void {
     event.stopPropagation();
-    if (!this.reviewVid) return;
+    if (!this.hasReview) return;
     this.vPaused = false;
     this.vMuted = false;
     this.vProgress = 0;
     this.vCur = '0:00';
     this.vDur = '0:00';
-    this.vLoading = true;
     this.vError = false;
+    // Only the native <video> needs a loader; the iframe shows its own.
+    this.vLoading = this.isFileVideo;
     this.videoPlaying = true;
   }
 
@@ -626,19 +667,30 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.videoPlaying = false;
     this.vLoading = false;
     this.vError = false;
+    this.vPaused = false;
+    this.vMuted = false;
+    this.vProgress = 0;
+    this.vCur = '0:00';
+    this.vDur = '0:00';
   }
 
   onVideoReady(v: HTMLVideoElement): void {
+    // Ignore if we flipped to iframe mode mid-session
+    if (!this.isFileVideo) return;
     this.vLoading = false;
     this.vError = false;
     this.vPaused = v.paused;
     this.onVideoTime(v);
   }
+
   onVideoError(): void {
+    if (!this.isFileVideo) return;
     this.vLoading = false;
     this.vError = true;
   }
+
   retryVideo(v: HTMLVideoElement): void {
+    if (!this.isFileVideo) return;
     this.vError = false;
     this.vLoading = true;
     v.load();
@@ -651,11 +703,14 @@ export class Specs implements AfterViewInit, OnDestroy {
     if (!isFinite(s) || s < 0) return '0:00';
     return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   }
+
   onVideoTime(v: HTMLVideoElement): void {
+    if (!this.isFileVideo) return;
     this.vCur = this.fmt(v.currentTime);
     this.vDur = this.fmt(v.duration);
     this.vProgress = v.duration ? Math.round((v.currentTime / v.duration) * 1000) : 0;
   }
+
   toggleVideo(v: HTMLVideoElement): void {
     v.paused ? v.play() : v.pause();
   }
@@ -669,6 +724,12 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
   fullscreenVideo(v: HTMLVideoElement): void {
     v.requestFullscreen?.().catch(() => {});
+  }
+
+  /** Fullscreen for iframe path — try the wrapping element. */
+  fullscreenIframe(): void {
+    const wrap = this.host.nativeElement.querySelector<HTMLElement>('.iframe-wrap');
+    wrap?.requestFullscreen?.().catch(() => {});
   }
 
   /* ============================================================
@@ -847,7 +908,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.openModal({ name: `${car.brand} ${car.name}`, price: car.price });
   }
 
-  /** Navigate to this similar car's own specs page via ?id=<car.id>. */
   openSimilar(car: SimilarCar, e?: Event): void {
     e?.stopPropagation();
     this.router.navigate(['/specs'], { queryParams: { id: car.id } });
@@ -927,7 +987,7 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
 
   /* ============================================================
-     ROAD ANIMATION (lights up the "similar based on" chips)
+     ROAD ANIMATION
      ============================================================ */
 
   private roadTween?: gsap.core.Tween;
@@ -992,11 +1052,6 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   private ctx?: gsap.Context;
 
-  /**
-   * Reveal, matching the store page: each block slides in from the left with a
-   * slight scale-up, staggered quickly. Order: nav → specs → viewer → gallery,
-   * then the similar-car cards.
-   */
   private playEnter(): void {
     if (this.reducedMotion) return;
     const root = this.host.nativeElement;
@@ -1061,7 +1116,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.modalRoot?.nativeElement.remove();
     this.lockScroll(false);
   }
-
 
   goTo(route: string): void {
     this.leaveAndGo([route]);

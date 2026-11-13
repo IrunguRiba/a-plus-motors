@@ -15,6 +15,15 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ApiServices } from '../../services/api-services';
 import { ApiCar } from '../../interfaces/car-interface';
+import { SafeVideoUrlPipe } from './specs/safe-url.pipe';
+import {
+  ReviewVideo,
+  resolveReviewVideo,
+  primeMutedVideo,
+  markReady,
+  canHover,
+  prefersReducedMotion,
+} from '../portfolio/specs/review-video';
 
 type CarBody = 'sedan' | 'suv' | 'truck' | 'van' | 'coupe' | 'hatchback';
 type CarFilter = 'all' | CarBody;
@@ -36,6 +45,8 @@ interface Car {
   body?: CarBody;
   recommended: boolean;
   stockNo: string;
+  /** Review video played on hover (null when the car has none). */
+  preview: ReviewVideo | null;
 }
 
 interface Brand {
@@ -57,7 +68,7 @@ interface SavedState {
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SafeVideoUrlPipe],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.css',
 })
@@ -119,6 +130,14 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
   displayBrands: Brand[] = [];
   activeFilter: CarFilter = 'all';
+
+  /* ---------- hover video preview ---------- */
+  /** Id of the card currently showing its review video. */
+  hoveredId: string | null = null;
+  /** Only mouse-like devices preview on hover (touch has no hover). */
+  private supportsHover = true;
+  /** Cars whose review video failed to load fall back to the image only. */
+  private previewFailed = new Set<string>();
 
   /* ---------- belt arrows + hint state ---------- */
   canScrollLeft = false;
@@ -323,6 +342,7 @@ export class Portfolio implements AfterViewInit, OnDestroy {
       body: this.toBody(c.body),
       recommended: !!c.recommended,
       stockNo: c.stockNo,
+      preview: resolveReviewVideo(c.reviewVideoUrl),
     };
   }
 
@@ -354,10 +374,46 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   trackByRow = (_: number, row: Car[]) => row.map((c) => c.id).join('|');
 
   /* ============================================================
+     HOVER VIDEO PREVIEW (belt cards + store cards)
+     Normally the card shows its image. On hover the car's review
+     video plays over the image; on leave the image is back.
+     ============================================================ */
+
+  hasPreview(car: Car): boolean {
+    return !!car.preview && !this.previewFailed.has(car.id);
+  }
+
+  onCardEnter(car: Car): void {
+    if (!this.supportsHover || this.dragActive) return;
+    if (!this.hasPreview(car)) return;
+    this.hoveredId = car.id;
+  }
+
+  onCardLeave(car: Car): void {
+    if (this.hoveredId === car.id) this.hoveredId = null;
+  }
+
+  onPreviewCanPlay(el: HTMLVideoElement): void {
+    primeMutedVideo(el);
+  }
+
+  onPreviewReady(el: HTMLElement): void {
+    markReady(el);
+  }
+
+  /** A video that can't be played puts that card back to image-only. */
+  onPreviewError(car: Car): void {
+    this.previewFailed.add(car.id);
+    if (this.hoveredId === car.id) this.hoveredId = null;
+  }
+
+  /* ============================================================
      LIFECYCLE
      ============================================================ */
 
   ngAfterViewInit() {
+    this.supportsHover = canHover() && !prefersReducedMotion();
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -435,6 +491,13 @@ export class Portfolio implements AfterViewInit, OnDestroy {
           this.dragStartX = e.clientX;
           this.dragStartScroll = el.scrollLeft;
           el.classList.add('is-dragging');
+
+          // A drag is not a hover: stop any preview that was playing.
+          if (this.hoveredId !== null) {
+            this.zone.run(() => {
+              this.hoveredId = null;
+            });
+          }
         }
 
         e.preventDefault();

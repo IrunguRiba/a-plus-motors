@@ -6,6 +6,7 @@
          RECOMMENDED BELT — flagged + newest-cheapest fillers
          Bookmarked / clicked cars are moved to the front.
          Clicking a card → /specs?id=<car.id>
+         Hovering a card plays its review video over the image.
          ============================================================ -->
     <div class="recommended-heading">
       <h1>Recommended For You</h1>
@@ -39,9 +40,47 @@
               [attr.aria-label]="car.model"
               [attr.draggable]="false"
               (click)="openSpecs(car)"
+              (mouseenter)="onCardEnter(car)"
+              (mouseleave)="onCardLeave(car)"
             >
-              <div class="car-image-container">
+              <div class="car-image-container" [class.has-video]="hasPreview(car)">
                 <img [src]="car.image" [alt]="car.model" draggable="false" />
+
+                <!-- ▶ hint badge: this car has a review video (hidden while it plays) -->
+                <span
+                  class="video-hint"
+                  *ngIf="hasPreview(car) && hoveredId !== car.id"
+                  aria-hidden="true"
+                  >▶</span
+                >
+
+                <!-- Hover preview: review video over the image -->
+                <ng-container *ngIf="hoveredId === car.id && car.preview as pv">
+                  <video
+                    *ngIf="pv.kind === 'file'"
+                    class="hover-preview"
+                    [src]="pv.src"
+                    [muted]="true"
+                    autoplay loop playsinline
+                    preload="auto"
+                    disablepictureinpicture
+                    (loadeddata)="onPreviewCanPlay($any($event.target))"
+                    (playing)="onPreviewReady($any($event.target))"
+                    (error)="onPreviewError(car)"
+                  ></video>
+
+                  <iframe
+                    *ngIf="pv.kind === 'embed'"
+                    class="hover-preview"
+                    [src]="pv.src | safeVideoUrl"
+                    title=""
+                    tabindex="-1"
+                    frameborder="0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    (load)="onPreviewReady($any($event.target))"
+                  ></iframe>
+                </ng-container>
               </div>
 
               <div class="car-details">
@@ -143,6 +182,7 @@
 
   <!-- ============================================================
        STORE — up to 21 cars (3 cols × 7 rows)
+       Hovering a card plays its review video over the image.
        ============================================================ -->
   <div class="cars-store">
     <div class="main-store">
@@ -156,9 +196,55 @@
     <div class="car-rows-container">
       <div class="store-row" *ngFor="let row of storeRows; trackBy: trackByRow">
         <ng-container *ngFor="let car of row; trackBy: trackById">
-          <div class="store-car-card" role="group" [attr.aria-label]="car.model">
-            <div class="store-image-container" (click)="openSpecs(car)">
+          <div
+            class="store-car-card"
+            role="group"
+            [attr.aria-label]="car.model"
+            (mouseenter)="onCardEnter(car)"
+            (mouseleave)="onCardLeave(car)"
+          >
+            <div
+              class="store-image-container"
+              [class.has-video]="hasPreview(car)"
+              (click)="openSpecs(car)"
+            >
               <img [src]="car.image" [alt]="car.model" />
+
+              <!-- ▶ hint badge: this car has a review video (hidden while it plays) -->
+              <span
+                class="video-hint"
+                *ngIf="hasPreview(car) && hoveredId !== car.id"
+                aria-hidden="true"
+                >▶</span
+              >
+
+              <!-- Hover preview: review video over the image -->
+              <ng-container *ngIf="hoveredId === car.id && car.preview as pv">
+                <video
+                  *ngIf="pv.kind === 'file'"
+                  class="hover-preview"
+                  [src]="pv.src"
+                  [muted]="true"
+                  autoplay loop playsinline
+                  preload="auto"
+                  disablepictureinpicture
+                  (loadeddata)="onPreviewCanPlay($any($event.target))"
+                  (playing)="onPreviewReady($any($event.target))"
+                  (error)="onPreviewError(car)"
+                ></video>
+
+                <iframe
+                  *ngIf="pv.kind === 'embed'"
+                  class="hover-preview"
+                  [src]="pv.src | safeVideoUrl"
+                  title=""
+                  tabindex="-1"
+                  frameborder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  (load)="onPreviewReady($any($event.target))"
+                ></iframe>
+              </ng-container>
             </div>
 
             <div class="store-car-details">

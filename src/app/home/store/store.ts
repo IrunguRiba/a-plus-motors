@@ -6,11 +6,12 @@ import gsap from 'gsap';
 import { Nav2 } from '../nav-2/nav-2';
 import { ApiServices } from '../../services/api-services';
 import { StoreCar } from '../../interfaces/car-interface';
+import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
 
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, Nav2],
+  imports: [CommonModule, Nav2, SafeVideoUrlPipe],
   templateUrl: './store.html',
   styleUrl: './store.css'
 })
@@ -25,6 +26,13 @@ export class Store implements AfterViewInit, OnDestroy {
 
   private readonly LIKED_KEY = 'aplus.store.liked';
   private readonly SAVED_KEY = 'aplus.store.saved';
+
+  /**
+   * Base URL of the API/media server. Used when the API returns a relative
+   * review-video path such as "/uploads/review.mp4". Change to your real host
+   * (or read it from environment.ts).
+   */
+  private static readonly MEDIA_BASE = 'http://localhost:4000';
 
   constructor(
     private router: Router,
@@ -59,6 +67,12 @@ export class Store implements AfterViewInit, OnDestroy {
   years: string[] = [];
 
   activeView: 'all' | 'favorites' = 'all';
+
+  hoveredCarId: string | null = null;
+  supportsHover = true;
+
+  /** Cars whose review video failed to load: they fall back to image only. */
+  private previewFailed = new Set<string>();
 
   trackById(_: number, car: StoreCar): string {
     return car.id;
@@ -108,6 +122,7 @@ export class Store implements AfterViewInit, OnDestroy {
     this.page = Math.min(Math.max(1, this.page), this.totalPages);
     const start = (this.page - 1) * this.pageSize;
     this.cars = list.slice(start, start + this.pageSize);
+    this.hoveredCarId = null;
     if (animate) this.animateCards();
   }
 
@@ -206,7 +221,103 @@ export class Store implements AfterViewInit, OnDestroy {
     } catch { }
   }
 
+  /* ============================================================
+     FULL-IMAGE HOVER PREVIEW (video / iframe)
+     ============================================================ */
+
+  /** Clean up whatever the API returns (spaces, //host, relative paths). */
+  private normalize(raw?: string | null): string | null {
+    let u = (raw ?? '').toString().trim();
+    if (!u) return null;
+    if (u.startsWith('//')) return 'https:' + u;
+    if (/^https?:\/\//i.test(u)) return u;
+    // relative path from the API -> serve it from the media server
+    return Store.MEDIA_BASE.replace(/\/+$/, '') + '/' + u.replace(/^\/+/, '');
+  }
+
+  /** Embed URL for known video hosts, otherwise null. */
+  private embedFor(u: string): string | null {
+    const yt = u.match(
+      /(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([\w-]{11})/i,
+    );
+    if (yt) {
+      return (
+        `https://www.youtube-nocookie.com/embed/${yt[1]}` +
+        `?rel=0&autoplay=1&mute=1&loop=1&playlist=${yt[1]}&playsinline=1&controls=0&modestbranding=1`
+      );
+    }
+
+    const vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+    if (vm) return `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=1&loop=1&background=1`;
+
+    const sm = u.match(/streamable\.com\/(?:e\/)?([a-z0-9]+)/i);
+    if (sm) return `https://streamable.com/e/${sm[1]}?autoplay=1&muted=1&loop=1`;
+
+    return null;
+  }
+
+  /**
+   * Anything that is not a known embed host is played with a <video> tag,
+   * even when the URL has no extension (Cloudinary, S3, GridFS, /api/video/:id ...).
+   * If the browser can't play it, (error) puts the card back to image-only.
+   */
+  private fileUrl(car: StoreCar): string | null {
+    const u = this.normalize(car.reviewVideoUrl);
+    if (!u || this.embedFor(u)) return null;
+    return u;
+  }
+
+  private embedUrl(car: StoreCar): string | null {
+    const u = this.normalize(car.reviewVideoUrl);
+    return u ? this.embedFor(u) : null;
+  }
+
+  previewFileUrl(car: StoreCar): string | null {
+    return this.fileUrl(car);
+  }
+
+  previewEmbedUrl(car: StoreCar): string | null {
+    return this.embedUrl(car);
+  }
+
+  hasPreview(car: StoreCar): boolean {
+    if (this.previewFailed.has(car.id)) return false;
+    return !!this.fileUrl(car) || !!this.embedUrl(car);
+  }
+
+  onCardEnter(car: StoreCar): void {
+    if (!this.supportsHover) return;
+    if (!this.hasPreview(car)) return;
+    this.hoveredCarId = car.id;
+  }
+
+  onCardLeave(car: StoreCar): void {
+    if (this.hoveredCarId === car.id) this.hoveredCarId = null;
+  }
+
+  onPreviewError(car: StoreCar): void {
+    this.previewFailed.add(car.id);
+    if (this.hoveredCarId === car.id) this.hoveredCarId = null;
+  }
+
+  onPreviewCanPlay(el: HTMLVideoElement): void {
+    // Angular doesn't reflect the `muted` attribute onto dynamically created
+    // <video> elements, and browsers block autoplay unless the property is set.
+    el.muted = true;
+    el.defaultMuted = true;
+    if (el.paused) {
+      el.play().catch(() => { /* autoplay suppressed — image stays visible */ });
+    }
+  }
+
+  onPreviewReady(el: HTMLElement): void {
+    // Reveal the preview only once it is actually playing / loaded
+    el.classList.add('ready');
+  }
+
   ngAfterViewInit(): void {
+    this.supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     this.ctx = gsap.context(() => {
       if (!this.smoothContent.nativeElement.querySelector('.car-card')) return;
       gsap.from('.car-card', {

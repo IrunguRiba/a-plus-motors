@@ -18,6 +18,39 @@
 <div id="home-content">
 
   <section class="hero-container" id="hero">
+    <div class="hero-media" aria-hidden="true">
+      @if (heroActive) {
+        @for (slide of heroSlides; track slide.id) {
+          @if (slide.video.kind === 'file') {
+            <video
+              class="hero-video"
+              [src]="slide.video.src"
+              [muted]="true"
+              [loop]="heroPool.length === 1"
+              autoplay playsinline
+              preload="auto"
+              disablepictureinpicture
+              (loadeddata)="onHeroLoaded($any($event.target))"
+              (playing)="onHeroPlaying($any($event.target))"
+              (ended)="onHeroEnded()"
+              (error)="onHeroError(slide)"></video>
+          } @else {
+            <iframe
+              class="hero-video hero-embed"
+              [src]="slide.video.src | safeVideoUrl"
+              title=""
+              tabindex="-1"
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              referrerpolicy="strict-origin-when-cross-origin"
+              (load)="onHeroPlaying($any($event.target))"></iframe>
+          }
+        }
+      }
+      <div class="hero-shade"></div>
+      <div class="hero-paper"></div>
+    </div>
+
     <div class="logo item item-2">
       <div class="logo-wrapper-spacer"></div>
 

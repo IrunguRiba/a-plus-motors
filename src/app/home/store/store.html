@@ -80,13 +80,48 @@
 
       <div class="store">
         <div class="cars">
-          <div class="car-card" *ngFor="let car of cars; trackBy: trackById" (click)="goToSpecs(car)">
-            <div class="car-image-wrapper">
+          <div class="car-card"
+               *ngFor="let car of cars; trackBy: trackById"
+               (click)="goToSpecs(car)"
+               (mouseenter)="onCardEnter(car)"
+               (mouseleave)="onCardLeave(car)">
+            <div class="car-image-wrapper"
+                 [class.has-video]="hasPreview(car)">
+
               <div class="car-flags" *ngIf="car.isNew || car.deal">
                 <span class="car-flag flag-new" *ngIf="car.isNew">New arrival</span>
                 <span class="car-flag flag-deal" *ngIf="car.deal">Deal</span>
               </div>
+
               <img [src]="car.image" [alt]="car.make + ' ' + car.name" decoding="async">
+
+              <!-- ▶ hint badge — shown when card has a video and is NOT hovered -->
+              <span class="video-hint" *ngIf="hasPreview(car) && hoveredCarId !== car.id" aria-hidden="true">▶</span>
+
+              <!-- Full-image hover preview (hidden until actually playing / loaded) -->
+              <ng-container *ngIf="hoveredCarId === car.id">
+                <video
+                  *ngIf="previewFileUrl(car) as fileSrc"
+                  class="hover-preview"
+                  [src]="fileSrc"
+                  [muted]="true"
+                  autoplay loop playsinline
+                  preload="auto"
+                  disablepictureinpicture
+                  (loadeddata)="onPreviewCanPlay($any($event.target))"
+                  (playing)="onPreviewReady($any($event.target))"
+                  (error)="onPreviewError(car)"></video>
+
+                <iframe
+                  *ngIf="!previewFileUrl(car) && previewEmbedUrl(car) as iframeSrc"
+                  class="hover-preview"
+                  [src]="iframeSrc | safeVideoUrl"
+                  title=""
+                  frameborder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  (load)="onPreviewReady($any($event.target))"></iframe>
+              </ng-container>
             </div>
 
             <div class="car-details">

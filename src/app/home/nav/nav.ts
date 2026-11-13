@@ -49,7 +49,6 @@ export class Nav implements AfterViewInit, OnDestroy {
     this.scrolled = window.scrollY > 20;
   }
   scrolled = false;
-  
 
   @Input() cookiesClicked = false;
   @Input() searchWindowOpened = false;
@@ -66,10 +65,9 @@ export class Nav implements AfterViewInit, OnDestroy {
   private router = inject(Router);
   private zone = inject(NgZone);
 
-  /** Closed-state search box: types example searches (what the car is for, features) on a loop. */
+  /** Closed-state search box: types example searches on a loop. */
   @ViewChild('searchTag') searchTag?: ElementRef<HTMLElement>;
 
-  /** Keep these short (about 24 characters): the box has a fixed width so the bar never shifts. */
   readonly searchHints = [
     '7-seater family, under 2.5M. . .',
     'fuel efficient  for town. . . ',
@@ -87,7 +85,6 @@ export class Nav implements AfterViewInit, OnDestroy {
 
   car1 = '1.png';
 
-  /** Feature text longer than this many words is cut with "..." and its title gets underlined. */
   readonly featureWordLimit = 40;
 
   activeSubmenu = 'home';
@@ -117,8 +114,6 @@ export class Nav implements AfterViewInit, OnDestroy {
       ],
       feature: this.feature('Our Values', 'Quality, trust and performance guide everything we do, from the cars we select to the way we look after every customer long after the sale.'),
     },
-  
- 
     {
       key: 'financing',
       label: 'Financing',
@@ -157,7 +152,6 @@ export class Nav implements AfterViewInit, OnDestroy {
     },
   ];
 
-  /** Every feature opens the blog. */
   private feature(title: string, text: string): MenuFeature {
     const words = text.trim().split(/\s+/);
     const long = words.length > this.featureWordLimit;
@@ -177,12 +171,10 @@ export class Nav implements AfterViewInit, OnDestroy {
       el.textContent = this.searchHints[0];
       return;
     }
-    // Runs outside Angular and writes straight to the element, so typing never triggers change detection.
     this.zone.runOutsideAngular(() => {
       this.hintTyper = new Typewriter({
         phrases: this.searchHints,
         render: text => { el.textContent = text; },
-        // pauses while the search overlay is open (the overlay has its own typing)
         canRun: () => !this.searchWindowOpened,
       });
       this.hintTyper.start();
@@ -191,6 +183,9 @@ export class Nav implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.hintTyper?.stop();
+    // Clean up the --hero-mix variable written by homes.ts so it doesn't
+    // leak into other routes that don't run the hero colour ScrollTrigger.
+    document.documentElement.style.removeProperty('--hero-mix');
   }
 
   trackByKey(_: number, item: MenuItem): string {
@@ -203,7 +198,7 @@ export class Nav implements AfterViewInit, OnDestroy {
       this.activeSubmenu = menu;
     }
   }
-  /** Navigates and closes the menu so the page opens full view (works for desktop and mobile). */
+
   go(target: MenuTarget): void {
     if (!target.path) return;
     this.router.navigate([target.path], target.query ? { queryParams: target.query } : {});

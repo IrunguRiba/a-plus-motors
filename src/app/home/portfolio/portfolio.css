@@ -2,6 +2,7 @@
    PORTFOLIO — Recommended scroller + Store grid + Brands
    No marquee. Drag/scroll belt. Card clicks navigate to /specs.
    Cards offer Share (copy link) + Bookmark only.
+   Hovering a card plays its review video over the image.
    ========================================================== */
 
    .recommended {
@@ -522,6 +523,7 @@
   }
   
   .store-image-container {
+    position: relative; /* anchors the hover preview + ▶ badge */
     width: 100%;
     aspect-ratio: 17.7 / 10;
     overflow: hidden;
@@ -914,6 +916,53 @@
     to { opacity: 1; transform: translateY(0); }
   }
   
+  /* ---------- HOVER VIDEO PREVIEW (belt + store cards) ----------
+     The card shows its image as usual. On hover the review video plays
+     over the whole image. It stays invisible until it is really playing
+     (.ready), so if playback is blocked the image simply stays visible. */
+  .has-video {
+    cursor: pointer;
+  }
+  
+  /* ▶ badge: this car has a review video (hidden while it plays) */
+  .video-hint {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    line-height: 1;
+    color: #fff;
+    background: rgba(15, 16, 16, 0.6);
+    border-radius: 50%;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  
+  .hover-preview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    object-fit: cover;
+    display: block;
+    background: #000;
+    z-index: 2;
+    pointer-events: none; /* clicks still go to the card / specs page */
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  
+  .hover-preview.ready {
+    opacity: 1;
+  }
+  
   /* ---------- RESPONSIVE ---------- */
   @media (max-width: 1100px) {
     .brand-row { grid-template-columns: repeat(3, 1fr); }
@@ -966,4 +1015,5 @@
     .drag-hint.show svg:first-child,
     .drag-hint.show svg:last-child { animation: none; }
     .copied-note { animation: none; }
+    .hover-preview { transition: none; }
   }

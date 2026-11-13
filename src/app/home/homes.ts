@@ -1,19 +1,34 @@
 import { Component, inject, AfterViewInit, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { Portfolio } from './portfolio/portfolio';
 import { Footer } from './footer/footer';
 import { Nav } from './nav/nav';
 import { Cookies } from './cookies/cookies';
 import { ChatBox } from './chat-box/chat-box';
+import { SafeVideoUrlPipe } from './portfolio/specs/safe-url.pipe';
+import { ApiServices } from '../services/api-services';
+import {
+  ReviewVideo,
+  resolveReviewVideo,
+  primeMutedVideo,
+  markReady,
+  prefersReducedMotion,
+} from '../home/portfolio/specs/review-video';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+interface HeroSlide {
+  id: number;
+  video: ReviewVideo;
+}
+
 @Component({
   selector: 'app-homes',
-  imports: [CommonModule, RouterOutlet, Portfolio, Footer, Nav, Cookies, ChatBox],
+  imports: [CommonModule, RouterOutlet, Portfolio, Footer, Nav, Cookies, ChatBox, SafeVideoUrlPipe],
   templateUrl: './homes.html',
   styleUrl: './homes.css',
 })
@@ -27,7 +42,24 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private gsapCtx?: gsap.Context;
   private router = inject(Router);
   private zone = inject(NgZone);
+  private api = inject(ApiServices);
   private docClickHandler = () => this.closeDropdown();
+
+  /* ---------- hero background video ---------- */
+  /** How long (ms) an embedded review (YouTube / Vimeo / Streamable) plays before the next random one. */
+  private static readonly HERO_EMBED_MS = 25000;
+
+  /** All review videos found on the web cars. */
+  heroPool: ReviewVideo[] = [];
+  /** 0 or 1 items: the review video currently playing behind the hero. */
+  heroSlides: HeroSlide[] = [];
+  /** False once the hero is fully covered by the page, so the video stops playing off-screen. */
+  heroActive = true;
+
+  private heroQueue: ReviewVideo[] = [];
+  private heroSeq = 0;
+  private heroTimer: ReturnType<typeof setTimeout> | null = null;
+  private heroSub?: Subscription;
 
   brands: string[] = [
     'Toyota', 'Honda', 'Nissan', 'Mazda', 'Subaru',
@@ -61,6 +93,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         opacity: 0, duration: 1.2, ease: 'power3.out', delay: 0.1, clearProps: 'opacity'
       });
     });
+
+    this.loadHeroVideos();
   }
 
   ngAfterViewInit(): void {
@@ -70,6 +104,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.zone.runOutsideAngular(() => {
       this.gsapCtx = gsap.context(() => {
         this.setupHeroPin();
+        this.setupHeroColor();
+        this.setupHeroVideoVisibility();
         this.setupNavBlend();
         this.setupReveals();
       });
@@ -86,7 +122,89 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     document.removeEventListener('click', this.docClickHandler);
+    this.heroSub?.unsubscribe();
+    if (this.heroTimer) clearTimeout(this.heroTimer);
     this.gsapCtx?.revert();
+  }
+
+  // ============== HERO VIDEO ==============
+
+  /** Collects every review video from the API and starts a random one. */
+  private loadHeroVideos(): void {
+    if (prefersReducedMotion()) return; // keep the calm dark hero, no motion
+
+    this.heroSub = this.api.getWebCars().subscribe({
+      next: (cars) => {
+        const seen = new Set<string>();
+        const pool: ReviewVideo[] = [];
+        for (const c of cars) {
+          const v = resolveReviewVideo(c.reviewVideoUrl);
+          if (!v || seen.has(v.src)) continue;
+          seen.add(v.src);
+          pool.push(v);
+        }
+        this.heroPool = pool;
+        this.heroQueue = [];
+        this.nextHeroVideo();
+      },
+      error: () => { /* no video: the hero stays on its dark background */ },
+    });
+  }
+
+  /** Picks the next random review (every video plays once before any repeats). */
+  nextHeroVideo(): void {
+    if (this.heroTimer) {
+      clearTimeout(this.heroTimer);
+      this.heroTimer = null;
+    }
+
+    if (!this.heroPool.length) {
+      this.heroSlides = [];
+      return;
+    }
+
+    if (!this.heroQueue.length) {
+      this.heroQueue = this.shuffle([...this.heroPool]);
+      const current = this.heroSlides[0]?.video.src;
+      if (this.heroQueue.length > 1 && this.heroQueue[0].src === current) {
+        this.heroQueue.push(this.heroQueue.shift()!);
+      }
+    }
+
+    const video = this.heroQueue.shift()!;
+    this.heroSlides = [{ id: ++this.heroSeq, video }];
+
+    // Embeds loop forever and give no "ended" event, so rotate them on a timer.
+    if (video.kind === 'embed' && this.heroPool.length > 1) {
+      this.heroTimer = setTimeout(() => this.nextHeroVideo(), Home.HERO_EMBED_MS);
+    }
+  }
+
+  onHeroLoaded(el: HTMLVideoElement): void {
+    primeMutedVideo(el);
+  }
+
+  onHeroPlaying(el: HTMLElement): void {
+    markReady(el);
+  }
+
+  onHeroEnded(): void {
+    this.nextHeroVideo();
+  }
+
+  /** A video that can't be played is dropped from the pool; the next one starts. */
+  onHeroError(slide: HeroSlide): void {
+    this.heroPool = this.heroPool.filter((v) => v.src !== slide.video.src);
+    this.heroQueue = this.heroQueue.filter((v) => v.src !== slide.video.src);
+    this.nextHeroVideo();
+  }
+
+  private shuffle<T>(arr: T[]): T[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 
   // ============== GSAP setups ==============
@@ -114,6 +232,47 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         end: 'top top',
         scrub: true,
       },
+    });
+  }
+
+  /**
+   * Slowly turns the hero into the portfolio colour while the page scrolls up.
+   * --hero-mix goes 0 → 1: the dark shade fades out, the portfolio-coloured
+   * layer fades in over the video, and the hero text/rings go from light to dark.
+   * The look itself is in homes.css (everything reads --hero-mix).
+   */
+  private setupHeroColor(): void {
+    gsap.fromTo(
+      '#hero',
+      { '--hero-mix': 0 },
+      {
+        '--hero-mix': 1,
+        ease: 'none',
+        immediateRender: true,
+        scrollTrigger: {
+          trigger: '.cover-layer',
+          start: 'top bottom',
+          end: 'top 30%',
+          scrub: 0.8, // a little lag so the change feels slow and soft
+          invalidateOnRefresh: true,
+        },
+      }
+    );
+  }
+
+  /** Stops the hero video once the cover layer has fully covered it. */
+  private setupHeroVideoVisibility(): void {
+    ScrollTrigger.create({
+      trigger: '.cover-layer',
+      start: 'top top',
+      onEnter: () => this.setHeroActive(false),
+      onLeaveBack: () => this.setHeroActive(true),
+    });
+  }
+
+  private setHeroActive(active: boolean): void {
+    this.zone.run(() => {
+      this.heroActive = active;
     });
   }
 

@@ -100,7 +100,8 @@ export class ApiServices {
       fuel: c.fuel,
       engine: `${((c.engine ?? 0) / 1000).toFixed(1)}L`,
       isNew: ageDays <= 30,
-      deal: false
+      deal: false,
+      reviewVideoUrl: c.reviewVideoUrl ?? ''
     };
   }
 }

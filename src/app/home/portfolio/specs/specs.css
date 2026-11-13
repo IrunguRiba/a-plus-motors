@@ -1993,3 +1993,26 @@
        animation: spin 1.6s linear infinite !important;
      }
    }
+   /* ============ iframe video wrapper ============ */
+.iframe-wrap {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  background: #000;
+  z-index: 2;
+}
+
+.iframe-wrap iframe.car-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* keep the close/fullscreen bar above the iframe */
+.video-controls--iframe {
+  z-index: 5;
+}

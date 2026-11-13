@@ -79,9 +79,6 @@
 .nav-items-wrapper.above-search { z-index: 10001; }
 .item-1-label.above-search { z-index: 10001 !important; }
 
-/* =========================================================
-   SEARCH BOX (UPDATED: Icon morphs to X when open)
-   ========================================================= */
 .search-box {
   justify-self: start;
   display: inline-flex;
@@ -206,16 +203,28 @@
   .search-box .search-tag { display: none; }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   A-PLUS MOTORS LTD — RESPONSIVE MARK
+   Font size, letter-spacing, gap, and the icon pills are all
+   driven by a single --mark-scale so every breakpoint scales
+   proportionally. Bottom / left use safe-area-aware spacing.
+   ───────────────────────────────────────────────────────────── */
 .item-1-label {
+  --mark-scale: 1;
+  --mark-gap: 10px;
+  --mark-icon-w: 64px;
+  --mark-icon-h: 12px;
+  --mark-icon-size: 24px 9px;
+
   margin: 0;
   position: fixed;
-  bottom: 40px;
-  left: 2em;
+  bottom: max(40px, env(safe-area-inset-bottom, 0px) + 40px);
+  left: max(2em, env(safe-area-inset-left, 0px) + 2em);
   z-index: 1005;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.65rem;
+  gap: var(--mark-gap);
+  font-size: calc(0.65rem * var(--mark-scale));
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.42em;
@@ -224,14 +233,15 @@
   color: var(--c-ink);
   pointer-events: none;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  max-width: calc(100vw - max(2em, env(safe-area-inset-left, 0px) + 2em) - 16px);
 }
 
 .item-1-label::before,
 .item-1-label::after {
   content: "";
   flex: none;
-  width: 64px;
-  height: 12px;
+  width: var(--mark-icon-w);
+  height: var(--mark-icon-h);
 }
 
 .item-1-label::before {
@@ -239,7 +249,7 @@
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0.5 1.5 27 10' fill='none' stroke='%237E5B47' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8.6H1.5V7.2Q1.5 6.3 2.5 6.1L6.6 5.4L9 2.7Q9.4 2.2 10 2.2H16.3Q17.1 2.2 17.7 2.8L20.3 5.2L24.4 5.9Q26.5 6.2 26.5 7.4V8.6H23M9 8.6H19M10.2 5.3L11.3 3.1H16L18.9 5.3Z M13.7 3.1V5.3'/%3E%3Ccircle cx='7' cy='8.6' r='2'/%3E%3Ccircle cx='21' cy='8.6' r='2'/%3E%3C/svg%3E"),
     linear-gradient(90deg, transparent, var(--c-ink));
   background-position: right center, left center;
-  background-size: 24px 9px, calc(100% - 28px) 1px;
+  background-size: var(--mark-icon-size), calc(100% - 28px) 1px;
   background-repeat: no-repeat;
 }
 
@@ -248,7 +258,7 @@
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0.5 1.5 27 10' fill='none' stroke='%237E5B47' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(28 0) scale(-1 1)'%3E%3Cpath d='M5 8.6H1.5V7.2Q1.5 6.3 2.5 6.1L6.6 5.4L9 2.7Q9.4 2.2 10 2.2H16.3Q17.1 2.2 17.7 2.8L20.3 5.2L24.4 5.9Q26.5 6.2 26.5 7.4V8.6H23M9 8.6H19M10.2 5.3L11.3 3.1H16L18.9 5.3Z M13.7 3.1V5.3'/%3E%3Ccircle cx='7' cy='8.6' r='2'/%3E%3Ccircle cx='21' cy='8.6' r='2'/%3E%3C/g%3E%3C/svg%3E"),
     linear-gradient(90deg, var(--c-ink), transparent);
   background-position: left center, right center;
-  background-size: 24px 9px, calc(100% - 28px) 1px;
+  background-size: var(--mark-icon-size), calc(100% - 28px) 1px;
   background-repeat: no-repeat;
 }
 
@@ -260,11 +270,11 @@
   transform: translateX(-50%);
   z-index: 1005;
   font-family: "Playfair Display", "Cormorant Garamond", Georgia, "Times New Roman", serif;
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-style: italic;
   font-weight: 100;
   line-height: 1;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--c-ink);
@@ -895,23 +905,37 @@ a.contact-row:focus-visible span:last-child {
 .close-search-btn:hover .cross-icon span:nth-child(1) { transform: rotate(135deg); }
 .close-search-btn:hover .cross-icon span:nth-child(2) { transform: rotate(45deg); }
 
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE — ITEM-1-LABEL ONLY
+   Everything else below is unchanged from your original file.
+   The mark now scales via --mark-scale, --mark-icon-w, etc.
+   ───────────────────────────────────────────────────────────── */
+
 @media (max-width: 1280px) {
   .menu-opened { --nav-w: 260px; }
   .submenu-panel { grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr); }
   .contact { gap: 8px 1.2rem; }
   .submenu-links li a { font-size: 1.12rem; }
+
+  .item-1-label {
+    --mark-scale: 0.95;
+    --mark-icon-w: 58px;
+    --mark-icon-h: 11px;
+    --mark-icon-size: 22px 8.5px;
+    letter-spacing: 0.38em;
+  }
 }
 
 @media (min-width: 1101px) and (max-height: 760px) {
   .contact-title { display: none; }
   .submenu-links li a { padding: 0.4rem 0; }
   .feature-sub { font-size: 0.86rem; line-height: 1.45; }
+
+  .item-1-label {
+    bottom: max(24px, env(safe-area-inset-bottom, 0px) + 24px);
+  }
 }
 
-/* =========================================================================
-   TABLET / MOBILE  (≤1100px)
-   - submenu feature: image on top, text below (UPDATED)
-   ========================================================================= */
 @media (max-width: 1100px) {
   .menu-opened {
     --nav-w: 100%;
@@ -1008,7 +1032,6 @@ a.contact-row:focus-visible span:last-child {
   .contact-row .ico { width: 18px; height: 18px; }
   .social-circle { width: 38px; height: 38px; }
 
-  /* ---- CAR ON TOP, TEXT BELOW (UPDATED) ---- */
   .submenu-aside {
     position: relative;
     flex: 1 1 0;
@@ -1034,7 +1057,7 @@ a.contact-row:focus-visible span:last-child {
   }
 
   .feature-media {
-    position: relative; /* stack naturally */
+    position: relative;
     width: 100%;
     height: auto;
     aspect-ratio: 1.5 / 1;
@@ -1054,12 +1077,10 @@ a.contact-row:focus-visible span:last-child {
 
   .submenu-feature:hover .feature-media img { transform: scale(1.05); }
 
-  /* No white gradient overlay anymore, just the natural image */
   .feature-media::after { display: none; }
 
   .feature-tag { display: none; }
 
-  /* Text sits below the image naturally */
   .feature-text {
     position: relative;
     z-index: 1;
@@ -1100,6 +1121,16 @@ a.contact-row:focus-visible span:last-child {
   }
 
   .bottom-slogan { display: none; }
+
+  .item-1-label {
+    --mark-scale: 0.9;
+    --mark-icon-w: 52px;
+    --mark-icon-h: 10px;
+    --mark-icon-size: 20px 8px;
+    letter-spacing: 0.34em;
+    bottom: max(28px, env(safe-area-inset-bottom, 0px) + 28px);
+    left: max(1.6em, env(safe-area-inset-left, 0px) + 1.6em);
+  }
 }
 
 @media (max-width: 768px) {
@@ -1130,7 +1161,6 @@ a.contact-row:focus-visible span:last-child {
   .contact-row { font-size: 0.82rem; }
   .contact-row .ico { display: none; }
 
-  /* Mobile Search Box / Icon (UPDATED) */
   .search-box {
     width: var(--btn-size, 46px);
     height: var(--btn-size, 46px);
@@ -1176,8 +1206,18 @@ a.contact-row:focus-visible span:last-child {
   .menu-bar.is-open .top-bar { width: 2.1rem; transform: translateY(4.25px) rotate(45deg); }
   .menu-bar.is-open .bottom-bar { width: 2.1rem; transform: translateY(-4.25px) rotate(-45deg); }
 
-  .item-1-label { left: 50%; bottom: 22px; transform: translateX(-50%); gap: 6px; font-size: 0.5rem; letter-spacing: 0.3em; }
-  .item-1-label::before, .item-1-label::after { width: 46px; height: 10px; }
+  .item-1-label {
+    --mark-scale: 0.82;
+    --mark-icon-w: 42px;
+    --mark-icon-h: 9px;
+    --mark-icon-size: 18px 7px;
+    gap: 8px;
+    letter-spacing: 0.3em;
+    bottom: max(18px, env(safe-area-inset-bottom, 0px) + 18px);
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(100vw - 32px);
+  }
 
   .close-search-btn { right: 0.8rem; }
 }
@@ -1190,6 +1230,23 @@ a.contact-row:focus-visible span:last-child {
   .contact { gap: 6px 0.9rem; }
   .submenu-aside { min-height: 40px; }
   .feature-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.98rem; }
+
+  .item-1-label {
+    bottom: max(14px, env(safe-area-inset-bottom, 0px) + 14px);
+  }
+}
+
+@media (max-width: 480px) {
+  .item-1-label {
+    --mark-scale: 0.75;
+    --mark-icon-w: 36px;
+    --mark-icon-h: 8px;
+    --mark-icon-size: 16px 6.5px;
+    gap: 6px;
+    letter-spacing: 0.26em;
+    bottom: max(14px, env(safe-area-inset-bottom, 0px) + 14px);
+    max-width: calc(100vw - 24px);
+  }
 }
 
 @media (max-width: 380px) {
@@ -1199,8 +1256,18 @@ a.contact-row:focus-visible span:last-child {
   .image-icon { height: 36px; }
   .slogan { font-size: 0.4rem; letter-spacing: 0.16em; }
   .slogan::before, .slogan::after { width: 8px; }
-  .item-1-label { font-size: 0.45rem; letter-spacing: 0.24em; }
-  .item-1-label::before, .item-1-label::after { width: 36px; }
+
+  .item-1-label {
+    --mark-scale: 0.68;
+    --mark-icon-w: 30px;
+    --mark-icon-h: 7px;
+    --mark-icon-size: 14px 6px;
+    gap: 5px;
+    letter-spacing: 0.22em;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px) + 12px);
+    max-width: calc(100vw - 20px);
+  }
+
   .submenu-links li a { font-size: 0.95rem; }
   .contact-row { font-size: 0.82rem; }
 }
