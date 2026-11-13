@@ -4,6 +4,7 @@
 
     <!-- ============================================================
          RECOMMENDED BELT — flagged + newest-cheapest fillers
+         Bookmarked / clicked cars are moved to the front.
          Clicking a card → /specs?id=<car.id>
          ============================================================ -->
     <div class="recommended-heading">
@@ -69,13 +70,46 @@
                   </span>
                 </div>
 
-                <button
-                  class="inquire-btn"
-                  type="button"
-                  (click)="openSpecs(car); $event.stopPropagation()"
-                >
-                  INQUIRE
-                </button>
+                <div class="car-cta-row">
+                  <button
+                    class="inquire-btn"
+                    type="button"
+                    (click)="openSpecs(car); $event.stopPropagation()"
+                  >
+                    INQUIRE
+                  </button>
+
+                  <!-- Same buttons as the store -->
+                  <div class="card-actions">
+                    <span class="copied-note" *ngIf="copiedId === car.id" role="status">
+                      Link copied
+                    </span>
+                    <button
+                      type="button"
+                      class="card-action share"
+                      [class.copied]="copiedId === car.id"
+                      aria-label="Copy link to share"
+                      (click)="shareCar(car, $event)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 15V3M12 3 7.5 7.5M12 3l4.5 4.5M5 12v8h14v-8" />
+                      </svg>
+                      <span class="action-count">{{ formatCount(shareCount(car)) }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="card-action bookmark"
+                      [class.active]="isBookmarked(car.id)"
+                      [attr.aria-pressed]="isBookmarked(car.id)"
+                      aria-label="Bookmark"
+                      (click)="toggleBookmark(car.id, $event, true)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 3h12v18l-6-4.5L6 21z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -149,29 +183,19 @@
                   </div>
 
                   <div class="card-actions">
-                    <button
-                      type="button"
-                      class="card-action like"
-                      [class.active]="isLiked(car.id)"
-                      [attr.aria-pressed]="isLiked(car.id)"
-                      aria-label="Like"
-                      (click)="toggleLike(car.id, $event)"
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 21 3.2 12.2A5.4 5.4 0 0 1 11 4.6l1 1 1-1a5.4 5.4 0 0 1 7.8 7.6z" />
-                      </svg>
-                      <span class="action-count">{{ formatCount(likeCount(car)) }}</span>
-                    </button>
+                    <span class="copied-note" *ngIf="copiedId === car.id" role="status">
+                      Link copied
+                    </span>
                     <button
                       type="button"
                       class="card-action share"
-                      aria-label="Share"
+                      [class.copied]="copiedId === car.id"
+                      aria-label="Copy link to share"
                       (click)="shareCar(car, $event)"
                     >
                       <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M12 15V3M12 3 7.5 7.5M12 3l4.5 4.5M5 12v8h14v-8" />
                       </svg>
-                      <span class="action-count">{{ formatCount(shareCount(car)) }}</span>
                     </button>
                     <button
                       type="button"
@@ -187,8 +211,6 @@
                     </button>
                   </div>
                 </div>
-
-                <span class="copied-note" *ngIf="copiedId === car.id" role="status">Link copied</span>
               </div>
 
               <button class="inquire-btn" type="button" (click)="openSpecs(car)">INQUIRE</button>

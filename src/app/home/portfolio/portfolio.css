@@ -1,6 +1,7 @@
 /* ==========================================================
    PORTFOLIO — Recommended scroller + Store grid + Brands
    No marquee. Drag/scroll belt. Card clicks navigate to /specs.
+   Cards offer Share (copy link) + Bookmark only.
    ========================================================== */
 
    .recommended {
@@ -13,6 +14,7 @@
     --surface: #E4E6E7;
     --sunk: #CBCECF;
     --hair: rgba(15, 16, 16, 0.22);
+    --ok: #4A943E;
   
     position: relative;
     width: 100%;
@@ -108,7 +110,7 @@
     width: 100%;
     margin-top: 24px;
   }
-
+  
   .belt-viewport {
     position: relative;
     width: 100%;
@@ -158,7 +160,7 @@
     -webkit-user-drag: none;
     user-drag: none;
   }
-
+  
   /* ---------- BELT ARROWS ---------- */
   .belt-arrow {
     position: absolute;
@@ -183,10 +185,10 @@
     animation: arrowIn 0.25s ease both;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
-
+  
   .belt-arrow-left { left: 16px; }
   .belt-arrow-right { right: 16px; }
-
+  
   .belt-arrow svg {
     display: block;
     width: 22px;
@@ -198,7 +200,7 @@
     stroke-linejoin: round;
     pointer-events: none;
   }
-
+  
   @media (hover: hover) {
     .belt-arrow:hover {
       background: var(--ink);
@@ -206,23 +208,23 @@
       color: var(--light);
     }
   }
-
+  
   .belt-arrow:active {
     background: var(--brown);
     border-color: var(--brown);
     color: #F4F5F5;
   }
-
+  
   .belt-arrow:focus-visible {
     outline: 1px dotted var(--ink);
     outline-offset: 3px;
   }
-
+  
   @keyframes arrowIn {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-
+  
   /* ---------- BELT DRAG HINT ---------- */
   .drag-hint {
     position: absolute;
@@ -247,11 +249,11 @@
     opacity: 0;
     transition: opacity 0.4s ease;
   }
-
+  
   .drag-hint.show {
     opacity: 1;
   }
-
+  
   .drag-hint svg {
     display: block;
     width: 14px;
@@ -262,15 +264,15 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-
+  
   .drag-hint.show svg:first-child { animation: hintNudgeLeft 1.1s ease-in-out infinite; }
   .drag-hint.show svg:last-child { animation: hintNudgeRight 1.1s ease-in-out infinite; }
-
+  
   @keyframes hintNudgeLeft {
     0%, 100% { transform: translateX(0); }
     50% { transform: translateX(-4px); }
   }
-
+  
   @keyframes hintNudgeRight {
     0%, 100% { transform: translateX(0); }
     50% { transform: translateX(4px); }
@@ -414,6 +416,15 @@
     color: var(--ink-soft);
   }
   
+  /* INQUIRE + Share/Bookmark on one row (belt cards) */
+  .car-cta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+  
   .car-details .inquire-btn {
     width: 100%;
     margin: 0;
@@ -429,6 +440,18 @@
     appearance: none;
     -webkit-appearance: none;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  
+  /* Inside the row the button takes the remaining width instead of 100% */
+  .car-cta-row .inquire-btn {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+  
+  .car-cta-row .card-actions {
+    flex: 0 0 auto;
+    margin-right: 0;
   }
   
   .car-details .inquire-btn:hover {
@@ -774,9 +797,9 @@
     50% { transform: translateY(-3px); }
   }
   
-  /* ---------- CARD ACTIONS (store cards) ---------- */
+  /* ---------- CARD ACTIONS (belt + store cards: Share + Bookmark) ---------- */
   .card-actions {
-    position: relative;
+    position: relative; /* anchor for the "Link copied" label */
     z-index: 2;
     display: inline-flex;
     align-items: center;
@@ -801,6 +824,7 @@
     -webkit-appearance: none;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    transition: color 0.2s ease, background-color 0.2s ease;
   }
   
   .card-action svg {
@@ -832,13 +856,15 @@
   
   @media (hover: hover) {
     .card-action:hover { background-color: rgba(15, 16, 16, 0.08); }
-    .card-action.like:hover { color: #4A943E; }
     .card-action.bookmark:hover { color: #790D16; }
+    .card-action.share:hover { color: var(--ok); }
   }
   
-  .card-action.like.active { color: #4A943E; }
   .card-action.bookmark.active { color: #790D16; }
   .card-action.active svg { fill: currentColor; }
+  
+  /* Share button while the link was just copied */
+  .card-action.share.copied { color: var(--ok); }
   
   .store-finance-row {
     display: flex;
@@ -852,15 +878,40 @@
     margin-left: auto;
   }
   
+  /* ---------- "LINK COPIED" LABEL ----------
+     Floats above the buttons so it never pushes the card layout around. */
   .copied-note {
-    align-self: flex-end;
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    z-index: 5;
+    padding: 6px 10px;
+    background: var(--ink);
+    color: var(--light);
     font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-    font-size: 11px;
+    font-size: 10.5px;
     line-height: 14px;
-    letter-spacing: 0.1em;
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     white-space: nowrap;
-    color: var(--ink);
+    pointer-events: none;
+    animation: noteIn 0.2s ease both;
+  }
+  
+  /* little arrow pointing at the share button */
+  .copied-note::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 38px;
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+  }
+  
+  @keyframes noteIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
   /* ---------- RESPONSIVE ---------- */
@@ -914,4 +965,5 @@
     .drag-hint { transition: none; }
     .drag-hint.show svg:first-child,
     .drag-hint.show svg:last-child { animation: none; }
+    .copied-note { animation: none; }
   }

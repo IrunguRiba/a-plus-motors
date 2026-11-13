@@ -32,7 +32,6 @@ interface Car {
   fuelType: string;
   transmission: string;
   financing: boolean;
-  likes: number;
   shares: number;
   body?: CarBody;
   recommended: boolean;
@@ -50,6 +49,11 @@ interface DragSample {
   t: number;
 }
 
+interface SavedState {
+  bookmarks: string[];
+  recent: string[];
+}
+
 @Component({
   selector: 'app-portfolio',
   standalone: true,
@@ -61,6 +65,14 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   readonly recommendedTarget = 6;
   readonly storeMax = 21;
   private static readonly STORE_COLS = 3;
+
+  /* ---------- local storage ---------- */
+  private static readonly STORAGE_KEY = 'aplus:portfolio:v1';
+  /** Max number of recently bookmarked / clicked cars remembered. */
+  private static readonly RECENT_MAX = 100;
+
+  /** How long (ms) the "Link copied" label stays visible. */
+  private static readonly COPIED_MS = 2000;
 
   /* ---------- belt tuning ---------- */
   /** Pixels the pointer must move before a press becomes a drag (otherwise it's a click). */
@@ -84,16 +96,23 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   @ViewChildren('reveal') revealElements!: QueryList<ElementRef>;
   @ViewChild('beltViewport') beltViewport?: ElementRef<HTMLDivElement>;
 
-  private likedIds = new Set<string>();
+  /** Bookmarked car ids (persisted). */
   private bookmarkedIds = new Set<string>();
+  /** Car ids the user bookmarked or clicked, most recent first (persisted). */
+  private recentIds: string[] = [];
   private sharedExtra = new Map<string, number>();
 
+  /** Id of the car whose link was just copied (drives the "Link copied" label). */
   copiedId: string | null = null;
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
   private carsSub?: Subscription;
 
+  /** Cars shown in the belt (already ordered). */
   recommendedCars: Car[] = [];
+  /** Unordered belt pool and store pool, re-ordered whenever the user interacts. */
+  private recommendedBase: Car[] = [];
+  private storePool: Car[] = [];
 
   private storeBaseCars: Car[] = [];
   filteredStoreCars: Car[] = [];
@@ -129,7 +148,75 @@ export class Portfolio implements AfterViewInit, OnDestroy {
     private zone: NgZone
   ) {
     this.displayBrands = [...this.brands];
+    this.loadState();
     this.fetchCars();
+  }
+
+  /* ============================================================
+     LOCAL STORAGE — bookmarks + recent interactions
+     ============================================================ */
+
+  private loadState(): void {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      const raw = localStorage.getItem(Portfolio.STORAGE_KEY);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw) as Partial<SavedState>;
+      const bookmarks = Array.isArray(parsed.bookmarks) ? parsed.bookmarks : [];
+      const recent = Array.isArray(parsed.recent) ? parsed.recent : [];
+
+      this.bookmarkedIds = new Set(bookmarks.filter((x) => typeof x === 'string'));
+      this.recentIds = recent.filter((x) => typeof x === 'string');
+    } catch {
+      /* corrupted or blocked storage — start fresh */
+    }
+  }
+
+  private saveState(): void {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      const state: SavedState = {
+        bookmarks: [...this.bookmarkedIds],
+        recent: this.recentIds,
+      };
+      localStorage.setItem(Portfolio.STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      /* storage full or blocked — ignore */
+    }
+  }
+
+  /** Moves a car id to the front of the "recent" list and saves it. */
+  private recordInteraction(id: string): void {
+    this.recentIds = [id, ...this.recentIds.filter((x) => x !== id)].slice(
+      0,
+      Portfolio.RECENT_MAX
+    );
+    this.saveState();
+  }
+
+  /**
+   * Stable sort: most recently bookmarked/clicked first, then other
+   * bookmarked cars, then everything else in its original order.
+   */
+  private prioritize(cars: Car[]): Car[] {
+    const rankOf = new Map<string, number>();
+    this.recentIds.forEach((id, i) => rankOf.set(id, i));
+
+    const rank = (c: Car): number => {
+      const r = rankOf.get(c.id);
+      if (r !== undefined) return r;
+      return this.bookmarkedIds.has(c.id) ? 1_000 : 100_000;
+    };
+
+    return [...cars].sort((a, b) => rank(a) - rank(b));
+  }
+
+  /** Rebuilds the belt and store lists using the current priority order. */
+  private applyOrder(): void {
+    this.recommendedCars = this.prioritize(this.recommendedBase);
+    this.storeBaseCars = this.prioritize(this.storePool).slice(0, this.storeMax);
+    this.setFilter(this.activeFilter);
   }
 
   /* ============================================================
@@ -164,7 +251,7 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
         const recommendedPool = [...flagged, ...fillers];
 
-        this.recommendedCars = this.dedupeById(
+        this.recommendedBase = this.dedupeById(
           recommendedPool.map((c) => this.toCar(c))
         );
 
@@ -175,8 +262,11 @@ export class Portfolio implements AfterViewInit, OnDestroy {
             .map((c) => this.toCar(c))
         );
 
-        this.storeBaseCars = this.shuffle([...storeCars]).slice(0, this.storeMax);
-        this.filteredStoreCars = [...this.storeBaseCars];
+        // Shuffle the whole pool once; the 21-car cut happens after priority ordering
+        // so a bookmarked / clicked car can never be cut from the grid.
+        this.storePool = this.shuffle([...storeCars]);
+
+        this.applyOrder();
 
         this.loading = false;
         this.cdr.markForCheck();
@@ -229,7 +319,6 @@ export class Portfolio implements AfterViewInit, OnDestroy {
       fuelType: c.fuel,
       transmission: c.transmission,
       financing: financingEnabled,
-      likes: 0,
       shares: 0,
       body: this.toBody(c.body),
       recommended: !!c.recommended,
@@ -691,6 +780,10 @@ export class Portfolio implements AfterViewInit, OnDestroy {
       console.warn('[openSpecs] missing car.id');
       return;
     }
+
+    // Remember the click so this car is first in its list next time.
+    this.recordInteraction(car.id);
+
     this.router.navigate(['/specs'], { queryParams: { id: car.id } });
   }
 
@@ -730,12 +823,10 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   }
 
   /* ============================================================
-     INTERACTIONS
+     INTERACTIONS — bookmark + share
      ============================================================ */
 
-  isLiked(id: string): boolean { return this.likedIds.has(id); }
   isBookmarked(id: string): boolean { return this.bookmarkedIds.has(id); }
-  likeCount(car: Car): number { return car.likes + (this.likedIds.has(car.id) ? 1 : 0); }
   shareCount(car: Car): number { return car.shares + (this.sharedExtra.get(car.id) ?? 0); }
 
   formatCount(n: number): string {
@@ -748,14 +839,83 @@ export class Portfolio implements AfterViewInit, OnDestroy {
     return (value >= 10 ? Math.round(value) : Math.round(value * 10) / 10).toString();
   }
 
-  toggleLike(id: string, event: Event) {
+  /**
+   * Toggles a bookmark (saved to localStorage). Bookmarking moves the car to
+   * the front of its list. `fromBelt` also glides the belt back to the start
+   * so the car stays in view.
+   */
+  toggleBookmark(id: string, event: Event, fromBelt = false) {
     event.stopPropagation();
-    this.likedIds.has(id) ? this.likedIds.delete(id) : this.likedIds.add(id);
+
+    const nowBookmarked = !this.bookmarkedIds.has(id);
+    if (nowBookmarked) {
+      this.bookmarkedIds.add(id);
+      this.recordInteraction(id); // saves + moves to front
+      this.applyOrder();
+
+      if (fromBelt) {
+        setTimeout(() => {
+          const el = this.beltViewport?.nativeElement;
+          if (!el) return;
+          this.zone.runOutsideAngular(() => this.animateScroll(el, 0, 450));
+        }, 0);
+      }
+    } else {
+      this.bookmarkedIds.delete(id);
+      this.saveState();
+    }
   }
 
-  toggleBookmark(id: string, event: Event) {
-    event.stopPropagation();
-    this.bookmarkedIds.has(id) ? this.bookmarkedIds.delete(id) : this.bookmarkedIds.add(id);
+  /** Direct link to a car's specs page, e.g. http://localhost:4200/specs?id=6ae416... */
+  private carUrl(car: Car): string {
+    const tree = this.router.createUrlTree(['/specs'], { queryParams: { id: car.id } });
+    return window.location.origin + this.router.serializeUrl(tree);
+  }
+
+  /** Phones/tablets (touch as the main pointer) get the native share sheet; desktops copy the link. */
+  private canNativeShare(): boolean {
+    return (
+      typeof navigator !== 'undefined' &&
+      typeof navigator.share === 'function' &&
+      !!window.matchMedia?.('(pointer: coarse)').matches
+    );
+  }
+
+  /** Copies text to the clipboard, falling back to a hidden textarea when the Clipboard API is blocked. */
+  private async copyText(text: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      /* fall through to legacy copy */
+    }
+
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Shows the "Link copied" label on one car for a moment. */
+  private showCopied(id: string) {
+    this.copiedId = id;
+    if (this.copiedTimer) clearTimeout(this.copiedTimer);
+    this.copiedTimer = setTimeout(() => {
+      this.copiedId = null;
+      this.cdr.markForCheck();
+    }, Portfolio.COPIED_MS);
+    this.cdr.markForCheck();
   }
 
   async shareCar(car: Car, event: Event) {
@@ -763,27 +923,30 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
     const title = `${car.year} ${car.make.replace(/\s+/g, '')} ${car.model.trim()}`;
     const text = `${title}: ${car.price}`;
-    const url = window.location.href;
+    const url = this.carUrl(car);
 
-    if (navigator.share) {
+    // Mobile: open the native share sheet.
+    if (this.canNativeShare()) {
       try {
         await navigator.share({ title, text, url });
         this.countShare(car.id);
-      } catch { /* dismissed */ }
-      return;
+        return;
+      } catch (err) {
+        if ((err as DOMException)?.name === 'AbortError') return; // user closed the sheet
+        // any other failure → fall back to copying the link
+      }
     }
 
-    try {
-      await navigator.clipboard.writeText(url);
+    // Desktop (or share sheet failed): copy the car link and say so.
+    if (await this.copyText(url)) {
       this.countShare(car.id);
-      this.copiedId = car.id;
-      if (this.copiedTimer) clearTimeout(this.copiedTimer);
-      this.copiedTimer = setTimeout(() => (this.copiedId = null), 1600);
-    } catch { /* blocked */ }
+      this.showCopied(car.id);
+    }
   }
 
   private countShare(id: string) {
     this.sharedExtra.set(id, (this.sharedExtra.get(id) ?? 0) + 1);
+    this.cdr.markForCheck();
   }
 
   /* ============================================================
