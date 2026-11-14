@@ -18,6 +18,14 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { ApiServices, ksh } from '../../../services/api-services';
 import { ApiCar } from '../../../interfaces/car-interface';
 import { SafeVideoUrlPipe } from './safe-url.pipe';
+import {
+  ReviewVideo,
+  resolveReviewVideo,
+  primeMutedVideo,
+  markReady,
+  canHover,
+  prefersReducedMotion,
+} from './review-video';
 
 type CarView = 'exterior' | 'interior';
 interface SpecRow {
@@ -37,6 +45,8 @@ interface SimilarCar {
   meta: string;
   why: string;
   image: string;
+  /** Review video played on hover (null when the car has none). */
+  preview: ReviewVideo | null;
 }
 
 type BodyBucket = 'suv' | 'truck' | 'van' | 'coupe' | 'hatchback' | 'sedan' | 'other';
@@ -107,6 +117,13 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   get financingLabel(): string {
     return this.financingEnabled ? 'Financing available' : 'Financing on request';
+  }
+
+  /** Stock status from the database, e.g. "inStock" becomes "In Stock". */
+  get availabilityLabel(): string {
+    const raw = String((this.car as any)?.availabilityStatus ?? '').trim();
+    if (!raw) return '';
+    return raw.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (ch) => ch.toUpperCase());
   }
 
   views: CarView[] = ['exterior', 'interior'];
@@ -184,6 +201,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.videoPlaying = false;
     this.zoom = 100;
     this.resetPan();
+    this.hoveredId = null;
 
     if (this.viewReady) {
       this.jumpToTop();
@@ -328,6 +346,7 @@ export class Specs implements AfterViewInit, OnDestroy {
         ? `Matches on ${this.joinReasons(reasons)}.`
         : 'Another strong option from our yard.',
       image: o.photos?.[0] ?? '',
+      preview: resolveReviewVideo(o.reviewVideoUrl),
     }));
   }
 
@@ -748,7 +767,7 @@ export class Specs implements AfterViewInit, OnDestroy {
   attempted = false;
   shareLabel = 'Share car link';
 
-  inquiry: { name: string; price: string } | null = null;
+  inquiry: { name: string; price: string; id?: string } | null = null;
   get modalName(): string {
     return this.inquiry?.name ?? this.carName;
   }
@@ -807,7 +826,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
   }
 
-  openModal(car?: { name: string; price: string }): void {
+  openModal(car?: { name: string; price: string; id?: string }): void {
     this.inquiry = car ?? null;
     if (this.submitted) {
       this.form = this.emptyForm();
@@ -835,19 +854,29 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.modalRoot?.nativeElement.querySelector('.im-scroll')?.scrollTo({ top: 0 });
   }
 
+  /** Full link to a car's specs page, e.g. https://site.com/specs?id=6ae416... */
+  private carLink(id: string): string {
+    const tree = this.router.createUrlTree(['/specs'], { queryParams: { id } });
+    return window.location.origin + this.location.prepareExternalUrl(this.router.serializeUrl(tree));
+  }
+
+  /** The message that is shared / copied: the car's name and price, then its link. */
+  private shareMessage(name: string, price: string, url: string): string {
+    return `${name} · ${price} — A Plus Motors\n${url}`;
+  }
+
   async shareCar(): Promise<void> {
-    const url = window.location.href;
-    const data = {
-      title: this.modalName,
-      text: `${this.modalName} · ${this.modalPrice} — A Plus Motors`,
-      url,
-    };
+    // The car in the modal (a similar car if that is what was clicked), not just this page.
+    const id = this.inquiry?.id ?? this.car?._id;
+    const url = id ? this.carLink(id) : window.location.href;
+    const message = this.shareMessage(this.modalName, this.modalPrice, url);
     try {
       if (navigator.share) {
-        await navigator.share(data);
+        // The link is inside the text so every app (WhatsApp, SMS, ...) gets it.
+        await navigator.share({ title: this.modalName, text: message });
         return;
       }
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(message);
       this.shareLabel = 'Link copied';
       setTimeout(() => (this.shareLabel = 'Share car link'), 2000);
     } catch {
@@ -863,6 +892,33 @@ export class Specs implements AfterViewInit, OnDestroy {
   /* ============================================================
      SIMILAR-CAR ACTIONS
      ============================================================ */
+
+  /* --- Hover review video on the similar cars (same as the portfolio) --- */
+  hoveredId: string | null = null;
+  private supportsHover = true;
+  private previewFailed = new Set<string>();
+
+  hasPreview(car: SimilarCar): boolean {
+    return !!car.preview && !this.previewFailed.has(car.id);
+  }
+  onCardEnter(car: SimilarCar): void {
+    if (!this.supportsHover || !this.hasPreview(car)) return;
+    this.hoveredId = car.id;
+  }
+  onCardLeave(car: SimilarCar): void {
+    if (this.hoveredId === car.id) this.hoveredId = null;
+  }
+  onPreviewCanPlay(el: HTMLVideoElement): void {
+    primeMutedVideo(el);
+  }
+  onPreviewReady(el: HTMLElement): void {
+    markReady(el);
+  }
+  /** A video that can't be played puts that card back to image-only. */
+  onPreviewError(car: SimilarCar): void {
+    this.previewFailed.add(car.id);
+    if (this.hoveredId === car.id) this.hoveredId = null;
+  }
 
   liked = new Set<string>();
   saved = new Set<string>();
@@ -883,19 +939,14 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   async shareCarItem(car: SimilarCar, e: Event): Promise<void> {
     e.stopPropagation();
-    const tree = this.router.createUrlTree(['/specs'], { queryParams: { id: car.id } });
-    const url =
-      window.location.origin + this.location.prepareExternalUrl(this.router.serializeUrl(tree));
+    const url = this.carLink(car.id);
+    const message = this.shareMessage(`${car.year} ${car.brand} ${car.name}`, car.price, url);
     try {
       if (navigator.share) {
-        await navigator.share({
-          title: car.name,
-          text: `Check out this ${car.brand} ${car.name} at A Plus Motors`,
-          url,
-        });
+        await navigator.share({ title: `${car.brand} ${car.name}`, text: message });
         return;
       }
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(message);
       this.copiedId = car.id;
       setTimeout(() => (this.copiedId = null), 2000);
     } catch {
@@ -905,7 +956,7 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   inquireCar(car: SimilarCar, e: Event): void {
     e.stopPropagation();
-    this.openModal({ name: `${car.brand} ${car.name}`, price: car.price });
+    this.openModal({ name: `${car.brand} ${car.name}`, price: car.price, id: car.id });
   }
 
   openSimilar(car: SimilarCar, e?: Event): void {
@@ -1039,6 +1090,7 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.viewReady = true;
+    this.supportsHover = canHover() && !prefersReducedMotion();
     this.jumpToTop();
     document.body.appendChild(this.modalRoot.nativeElement);
     this.observeCardImages();
