@@ -3,18 +3,35 @@
   <div class="recommended">
 
     <!-- ============================================================
-         RECOMMENDED BELT — flagged + newest-cheapest fillers
-         Bookmarked / clicked cars are moved to the front.
-         Clicking a card → /specs?id=<car.id>
-         Hovering a card plays its review video over the image.
+         DISCOVER — centered title + body-type filter
          ============================================================ -->
-    <div class="recommended-heading">
-      <h1>Recommended For You</h1>
-      <h2>
-        <span>Based on Insights: Most Liked</span><span>On Sale</span
-        ><span>Most Reviewed Cars</span><span>Social Engagements</span>
-      </h2>
+    <div class="discover-hero">
+      <h1 class="discover-title">DISCOVER</h1>
+
+      <nav class="body-filter" aria-label="Filter by body type" *ngIf="availableFilters.length">
+        <button
+          *ngFor="let f of availableFilters"
+          type="button"
+          class="body-filter-btn"
+          [class.active]="activeFilter === f.key"
+          [attr.aria-pressed]="activeFilter === f.key"
+          (click)="selectBody(f.key)"
+        >
+          <svg viewBox="0 0 120 50" aria-hidden="true">
+            <path class="body-shell" [attr.d]="f.path" />
+            <path class="body-glass" [attr.d]="f.windows" />
+            <path class="body-base" d="M5 38H19M37 38H83M101 38H115M19 38a9 9 0 0 1 18 0M83 38a9 9 0 0 1 18 0" />
+            <circle cx="28" cy="38" r="7" />
+            <circle cx="92" cy="38" r="7" />
+            <circle class="body-rim" cx="28" cy="38" r="2.5" />
+            <circle class="body-rim" cx="92" cy="38" r="2.5" />
+          </svg>
+          <span>{{ f.label }}</span>
+        </button>
+      </nav>
     </div>
+
+    <h2 class="belt-title">Recommended</h2>
 
     <div class="belt-wrap">
       <!-- Left arrow: hidden on the first car -->
@@ -45,8 +62,6 @@
             >
               <div class="car-image-container" [class.has-video]="hasPreview(car)">
                 <img [src]="car.image" [alt]="car.model" draggable="false" />
-
-                <!-- ▶ hint badge: this car has a review video (hidden while it plays) -->
                 <span
                   class="video-hint"
                   *ngIf="hasPreview(car) && hoveredId !== car.id"
@@ -179,14 +194,8 @@
       </div>
     </div>
   </div>
-
-  <!-- ============================================================
-       STORE — up to 21 cars (3 cols × 7 rows)
-       Hovering a card plays its review video over the image.
-       ============================================================ -->
-  <div class="cars-store">
+  <div class="cars-store" #storeSection>
     <div class="main-store">
-      <h1>Main Store</h1>
       <h2>
         <span>FINANCING AVAILABLE</span><span>TRADE IN</span><span>IMPORTING SUPPORTED</span
         ><span>TEST DRIVES AT PHYSICAL STORES</span>
@@ -194,6 +203,13 @@
     </div>
 
     <div class="car-rows-container">
+      <p class="store-empty" *ngIf="filterFallback" role="status">
+        No {{ activeFilterLabel }} in the store right now. Here are other cars you may like.
+      </p>
+      <p class="store-empty" *ngIf="!loading && storeRows.length === 0" role="status">
+        No cars available right now. Please check back soon.
+      </p>
+
       <div class="store-row" *ngFor="let row of storeRows; trackBy: trackByRow">
         <ng-container *ngFor="let car of row; trackBy: trackById">
           <div

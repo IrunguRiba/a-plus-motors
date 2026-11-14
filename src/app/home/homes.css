@@ -235,7 +235,7 @@
   line-height: 1.2;
   font-weight: 400;
   letter-spacing: 0.04em;
-  color: #202734;
+  color: #080616;
   text-transform: capitalize;
 }
 
@@ -246,7 +246,7 @@
   line-height: 1.65;
   font-weight: 300;
   letter-spacing: 0.02em;
-  color: #36415A;
+  color: #080616;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -256,11 +256,10 @@
 }
 
 .into-txt .highlight {
-  color: #2A1A0E;
+  color: #000000;
   font-weight: 400;
 }
 
-/* Reveal Animation */
 .reveal {
   opacity: 0;
   transform: translateY(30px);
@@ -277,9 +276,6 @@
   transform: translateY(0);
 }
 
-/* ============================================================
-   EXPERIENCE CIRCLES — VERY THIN HAIRLINE RINGS
-   ============================================================ */
 .experience-container {
   --ring: 280px;
   display: grid;
@@ -703,6 +699,16 @@ span {
 .search > .find-car:hover,
 .search > .find-car:active {
   background-color: var(--find);
+}
+
+/* Message under the search bar */
+.search-hint {
+  margin: 14px 0 0;
+  font-size: 0.85rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--light);
 }
 
 @media (max-width: 768px) {

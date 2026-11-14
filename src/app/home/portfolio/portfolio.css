@@ -1,9 +1,4 @@
-/* ==========================================================
-   PORTFOLIO — Recommended scroller + Store grid + Brands
-   No marquee. Drag/scroll belt. Card clicks navigate to /specs.
-   Cards offer Share (copy link) + Bookmark only.
-   Hovering a card plays its review video over the image.
-   ========================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600&display=swap');
 
    .recommended {
     --ink: #0F1010;
@@ -35,12 +30,125 @@
     margin-bottom: 48px;
   }
   
-  /* ---------- SECTION HEADINGS (Recommended + Main Store) ---------- */
-  .recommended-heading,
+  /* ---------- DISCOVER HERO (centered title + body-type filter) ---------- */
+  .discover-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    padding: 24px 28px 8px;
+    text-align: center;
+  }
+  
+  .discover-title {
+    margin: 0;
+    font-family: "Sora", "Manrope", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: clamp(26px, 3.4vw, 40px);
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #000;
+  }
+  
+  .body-filter {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    max-width: 100%;
+  }
+  
+  .body-filter-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 4px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: var(--ink-soft);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: color 0.2s ease;
+  }
+  
+  .body-filter-btn svg {
+    display: block;
+    width: 112px;
+    height: 46px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+  
+  .body-filter-btn span {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  
+  /* underline that grows from the centre on hover / active */
+  .body-filter-btn::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: #000;
+    transform: translateX(-50%) scaleX(0);
+    transition: transform 0.25s ease;
+  }
+  
+  @media (hover: hover) {
+    .body-filter-btn:hover { color: #000; }
+    .body-filter-btn:hover::after { transform: translateX(-50%) scaleX(1); }
+  }
+  
+  .body-filter-btn.active { color: #000; }
+  .body-filter-btn.active::after { transform: translateX(-50%) scaleX(1); }
+  
+  .body-filter-btn:focus-visible {
+    outline: 1px dotted var(--ink);
+    outline-offset: 3px;
+  }
+  
+  .body-filter-btn .body-glass { stroke-width: 1.1; opacity: 0.7; }
+  .body-filter-btn .body-rim { stroke-width: 1.1; }
+  .body-filter-btn.active .body-shell,
+  .body-filter-btn:hover .body-shell { stroke-width: 1.9; }
+  
+  /* ---------- RECOMMENDED TITLE (above the belt) ---------- */
+  .belt-title {
+    margin: 36px 0 0;
+    padding: 0 28px;
+    font-family: "Sora", "Manrope", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: clamp(15px, 1.6vw, 19px);
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #000;
+  }
+  
+  /* ---------- STORE STRIP (chips only) ---------- */
   .main-store {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 24px;
     padding: 14px 28px;
     background: var(--surface);
@@ -49,31 +157,17 @@
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
   
-  .recommended-heading h1,
-  .main-store h1 {
-    margin: 0;
-    font-size: 22px;
-    line-height: 28px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    color: #09251C;
-    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-    white-space: nowrap;
-  }
-  
-  .recommended-heading h2,
   .main-store h2 {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 8px;
     margin: 0;
     font-size: 0;
     font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
   
-  .recommended-heading h2 span,
   .main-store h2 span {
     display: inline-block;
     padding: 6px 12px;
@@ -91,14 +185,12 @@
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
   
-  .recommended-heading h2 span:hover,
   .main-store h2 span:hover {
     background: var(--ink);
     border-color: var(--ink);
     color: var(--light);
   }
   
-  .recommended-heading h2 span:active,
   .main-store h2 span:active {
     background: var(--brown);
     border-color: var(--brown);
@@ -480,16 +572,27 @@
     flex-direction: column;
     gap: 30px;
     width: 100%;
+    scroll-margin-top: 20px;
   }
   
   .car-rows-container {
     width: 100%;
   }
   
+  .store-empty {
+    margin: 24px 0;
+    text-align: center;
+    font-size: 15px;
+    line-height: 24px;
+    color: var(--ink-soft);
+  }
+  
   .store-row {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 24px;
+    padding: 1px;
+    margin-bottom: 10px;
     width: 100%;
   }
   
@@ -969,15 +1072,13 @@
   }
   
   @media (max-width: 900px) {
-    .recommended-heading,
     .main-store {
-      flex-direction: column;
-      align-items: flex-start;
       padding: 14px 16px;
       gap: 12px;
     }
-    .recommended-heading h2,
-    .main-store h2 { justify-content: flex-start; }
+  
+    .discover-hero { gap: 28px; }
+    .body-filter { gap: 8px 20px; }
   }
   
   @media (max-width: 800px) {
@@ -1001,6 +1102,23 @@
     .belt-arrow-left { left: 8px; }
     .belt-arrow-right { right: 8px; }
     .belt-arrow svg { width: 20px; height: 20px; }
+  
+    /* body-type filter: one swipeable row on phones */
+    .discover-hero { padding: 16px 0 4px; }
+    .body-filter {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      width: 100%;
+      overflow-x: auto;
+      padding: 0 16px;
+      box-sizing: border-box;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .body-filter::-webkit-scrollbar { display: none; }
+    .body-filter-btn { flex: 0 0 auto; }
+    .body-filter-btn svg { width: 92px; height: 38px; }
+    .belt-title { padding: 0 16px; }
   }
   
   @media (prefers-reduced-motion: reduce) {
@@ -1016,4 +1134,6 @@
     .drag-hint.show svg:last-child { animation: none; }
     .copied-note { animation: none; }
     .hover-preview { transition: none; }
+    .body-filter-btn,
+    .body-filter-btn::after { transition: none; }
   }

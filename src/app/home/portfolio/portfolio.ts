@@ -25,7 +25,7 @@ import {
   prefersReducedMotion,
 } from '../portfolio/specs/review-video';
 
-type CarBody = 'sedan' | 'suv' | 'truck' | 'van' | 'coupe' | 'hatchback';
+type CarBody = 'sedan' | 'suv' | 'truck' | 'van' | 'coupe' | 'hatchback' | 'wagon';
 type CarFilter = 'all' | CarBody;
 
 interface Car {
@@ -53,6 +53,15 @@ interface Brand {
   id: number;
   name: string;
   logo: string;
+}
+
+interface BodyFilterItem {
+  key: CarBody;
+  label: string;
+  /** SVG path (viewBox 0 0 120 50) for the side-view body outline; wheels are drawn in the template. */
+  path: string;
+  /** Window / detail lines drawn inside the body. */
+  windows: string;
 }
 
 interface DragSample {
@@ -106,6 +115,62 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
   @ViewChildren('reveal') revealElements!: QueryList<ElementRef>;
   @ViewChild('beltViewport') beltViewport?: ElementRef<HTMLDivElement>;
+  @ViewChild('storeSection') storeSection?: ElementRef<HTMLElement>;
+
+  /* ---------- body-type filter (shown under the DISCOVER title) ---------- */
+  readonly bodyFilters: BodyFilterItem[] = [
+    {
+      key: 'suv',
+      label: 'SUV',
+      path: 'M5 38V29Q5 26.5 9 26L22 24L31 13Q33 9 38 9H78Q83 9 86 13L97 24L109 26.5Q115 28 115 32V38',
+      windows: 'M33 23L38 12.5H55V23ZM59 23V12.5H77Q80 12.5 82 15L90 23Z',
+    },
+    {
+      key: 'sedan',
+      label: 'Sedan',
+      path: 'M5 38V31Q5 28.5 9 28L30 24Q36 22.5 40 18.5L47 13.5Q50 11.5 55 11.5H72Q80 11.5 87 18L106 26Q115 28 115 32V38',
+      windows: 'M38 23L45 15H62V23ZM66 23V15H72Q76 15 80 19L86 23Z',
+    },
+    {
+      key: 'hatchback',
+      label: 'Hatchback',
+      path: 'M5 38V30Q5 27.5 9 27L24 24.5L35 15Q38 11.5 44 11.5H72Q78 11.5 81 14.5L99 25L109 27Q115 28.5 115 32V38',
+      windows: 'M32 23.5L38 14.5H55V23.5ZM59 23.5V14.5H72Q75 14.5 77 17L84 23.5Z',
+    },
+    {
+      key: 'wagon',
+      label: 'Wagon',
+      path: 'M5 38V30Q5 27.5 9 27L24 24.5L33 14.5Q35 11 40 11H93Q98 11 100 14L106 26L109 27.5Q115 29 115 32V38',
+      windows: 'M31 23.5L37 14H52V23.5ZM56 23.5V14H72V23.5ZM76 23.5V14H93Q95 14 96 16L100 23.5Z',
+    },
+    {
+      key: 'coupe',
+      label: 'Coupe',
+      path: 'M5 38V33Q5 30 9 29L32 26Q40 25 46 19L54 14Q58 12 63 12H70Q76 12 82 17L96 26L109 28.5Q115 30 115 34V38',
+      windows: 'M46 24.5L53 16.5H68Q72 16.5 75 19L83 24.5Z',
+    },
+    {
+      key: 'truck',
+      label: 'Pickup',
+      path: 'M5 38V28Q5 25.5 9 25L22 23.5L32 12.5Q34 10 38 10H55Q58 10 59 13L61 24H108Q115 24 115 29V38',
+      windows: 'M33 22.5L38 13H55L57 22.5Z',
+    },
+    {
+      key: 'van',
+      label: 'Van',
+      path: 'M5 38V28Q5 25.5 9 25L20 23L32 11Q34 8.5 38 8.5H94Q99 8.5 101 12L108 26.5Q115 28 115 32V38',
+      windows: 'M33 22.5L38 12H52V22.5ZM56 22.5V12H72V22.5ZM76 22.5V12H92Q94 12 95 14L98 22.5Z',
+    },
+  ];
+
+  /** Only body types that actually exist in the store are shown as icons. */
+  availableFilters: BodyFilterItem[] = [];
+  /** True when the chosen body type had no cars and we are showing other cars instead. */
+  filterFallback = false;
+
+  get activeFilterLabel(): string {
+    return this.bodyFilters.find((f) => f.key === this.activeFilter)?.label ?? '';
+  }
 
   /** Bookmarked car ids (persisted). */
   private bookmarkedIds = new Set<string>();
@@ -124,6 +189,8 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   /** Unordered belt pool and store pool, re-ordered whenever the user interacts. */
   private recommendedBase: Car[] = [];
   private storePool: Car[] = [];
+  /** Every car shown on the web (belt + store). Body-type icons and filters search this. */
+  private allCars: Car[] = [];
 
   private storeBaseCars: Car[] = [];
   filteredStoreCars: Car[] = [];
@@ -234,7 +301,19 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   /** Rebuilds the belt and store lists using the current priority order. */
   private applyOrder(): void {
     this.recommendedCars = this.prioritize(this.recommendedBase);
-    this.storeBaseCars = this.prioritize(this.storePool).slice(0, this.storeMax);
+    this.storeBaseCars = this.prioritize(this.storePool);
+
+    // Icons only for body types that exist in stock (belt cars included).
+    this.availableFilters = this.bodyFilters.filter((f) =>
+      this.allCars.some((c) => this.matchesBody(c, f.key))
+    );
+    if (
+      this.activeFilter !== 'all' &&
+      !this.availableFilters.some((f) => f.key === this.activeFilter)
+    ) {
+      this.activeFilter = 'all';
+    }
+
     this.setFilter(this.activeFilter);
   }
 
@@ -274,16 +353,12 @@ export class Portfolio implements AfterViewInit, OnDestroy {
           recommendedPool.map((c) => this.toCar(c))
         );
 
-        const recommendedIds = new Set(recommendedPool.map((c) => c._id));
-        const storeCars = this.dedupeById(
-          web
-            .filter((c) => !recommendedIds.has(c._id))
-            .map((c) => this.toCar(c))
-        );
+        // Every web car goes in the store grid, belt cars included.
+        this.allCars = this.dedupeById(web.map((c) => this.toCar(c)));
 
         // Shuffle the whole pool once; the 21-car cut happens after priority ordering
         // so a bookmarked / clicked car can never be cut from the grid.
-        this.storePool = this.shuffle([...storeCars]);
+        this.storePool = this.shuffle([...this.allCars]);
 
         this.applyOrder();
 
@@ -350,6 +425,7 @@ export class Portfolio implements AfterViewInit, OnDestroy {
     const v = (value ?? '').toLowerCase();
     if (v.includes('suv') || v.includes('crossover')) return 'suv';
     if (v.includes('pickup') || v.includes('truck')) return 'truck';
+    if (v.includes('wagon') || v.includes('estate')) return 'wagon';
     if (v.includes('van') || v.includes('mpv')) return 'van';
     if (v.includes('coupe') || v.includes('coupé')) return 'coupe';
     if (v.includes('hatch')) return 'hatchback';
@@ -858,15 +934,40 @@ export class Portfolio implements AfterViewInit, OnDestroy {
      FILTERS — store grid only
      ============================================================ */
 
+  /**
+   * Body-type picker under the DISCOVER title. Clicking the active
+   * body type again clears the filter. The page then scrolls to the
+   * store grid so the result is visible.
+   */
+  selectBody(body: CarBody) {
+    this.setFilter(this.activeFilter === body ? 'all' : body);
+
+    setTimeout(() => {
+      this.storeSection?.nativeElement.scrollIntoView({
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    }, 0);
+  }
+
   setFilter(filter: CarFilter) {
     this.activeFilter = filter;
+
+    this.filterFallback = false;
 
     if (filter === 'all') {
       this.filteredStoreCars = [...this.storeBaseCars];
     } else {
-      this.filteredStoreCars = this.storeBaseCars.filter((car) =>
+      const matches = this.prioritize(this.allCars).filter((car) =>
         this.matchesBody(car, filter)
       );
+      if (matches.length) {
+        this.filteredStoreCars = matches;
+      } else {
+        // Next best thing: never show an empty store.
+        this.filteredStoreCars = [...this.storeBaseCars];
+        this.filterFallback = true;
+      }
     }
 
     this.cdr.markForCheck();
@@ -882,6 +983,7 @@ export class Portfolio implements AfterViewInit, OnDestroy {
       case 'coupe': return /coupe|coupé/.test(text);
       case 'hatchback': return /hatch|hatchback/.test(text);
       case 'sedan': return /sedan|saloon/.test(text);
+      case 'wagon': return /wagon|estate/.test(text);
     }
   }
 

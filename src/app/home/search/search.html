@@ -9,7 +9,8 @@
       <input
         #searchInput
         type="text"
-        [(ngModel)]="searchQuery"
+        [ngModel]="searchQuery"
+        (ngModelChange)="onQueryChange($event)"
         (keyup.enter)="onSearch()"
         placeholder="Search Anything. . ."
         aria-label="Search Anything"
@@ -41,10 +42,10 @@
     </button>
   </div>
 
-  <div class="most-searched">
-    <span class="most-label">Most searched</span>
+  <div class="most-searched" *ngIf="shownCars.length">
+    <span class="most-label" [class.is-note]="hasQuery" role="status">{{ listLabel }}</span>
     <div class="top-cars">
-      <article class="car-card" *ngFor="let car of topCars" (click)="searchFor(car.name)">
+      <article class="car-card" *ngFor="let car of shownCars; trackBy: trackById" (click)="openSpecs(car)">
         <div class="car-photo">
           <span class="car-flag" *ngIf="car.flag" [class.is-new]="car.flag === 'New arrival'">{{ car.flag }}</span>
           <img [src]="car.image" [alt]="car.name">
@@ -66,7 +67,7 @@
           <div><span class="spec-label">Engine</span><span class="spec-value">{{ car.engine }}</span></div>
         </div>
 
-        <button type="button" class="car-inquire" (click)="$event.stopPropagation(); searchFor(car.name)">Inquire</button>
+        <button type="button" class="car-inquire" (click)="$event.stopPropagation(); openSpecs(car)">Inquire</button>
       </article>
     </div>
   </div>

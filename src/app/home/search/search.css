@@ -147,6 +147,15 @@
   margin: 0;
 }
 
+/* When showing search results the label is a sentence, not a heading. */
+.most-label.is-note {
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  color: #3B3E3E;
+}
+
 .top-cars {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -493,10 +502,6 @@
     border-radius: 4px;
   }
 }
-
-/* =========================================================================
-   SMALL PHONES  (≤380px)
-   ========================================================================= */
 @media (max-width: 380px) {
   .car-card { row-gap: 0.35rem; padding: 0.45rem; }
   .car-photo { height: 120px; min-height: 120px; }
