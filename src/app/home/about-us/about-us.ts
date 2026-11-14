@@ -2,13 +2,13 @@ import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetec
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { gsap } from 'gsap';
-import { Nav2 } from '../nav-2/nav-2';
+
 
 
 @Component({
   selector: 'app-about-us',
   standalone: true,
-  imports: [CommonModule, Nav2],
+  imports: [CommonModule],
   templateUrl: './about-us.html',
   styleUrl: './about-us.css',
 })

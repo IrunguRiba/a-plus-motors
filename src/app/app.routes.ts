@@ -7,7 +7,7 @@ import { Financing } from './home/financing/financing';
 import { Specs, specsLeaveGuard } from './home/portfolio/specs/specs';
 import { PrivacyPolicy } from './home/privacy/privacy';
 import { Nav } from './home/nav/nav';
-import { Nav2 } from './home/nav-2/nav-2';
+
 import { TradeIn } from './home/trade-in-imported/trade-in/trade-in';
 import { Imported } from './home/trade-in-imported/imported/imported';
 import { TradeInImported } from './home/trade-in-imported/trade-in-imported';
@@ -26,7 +26,6 @@ export const routes: Routes = [
   component: PrivacyPolicy,
   outlet: 'privacy',  
 },
-  { path: 'floating-nav', component: Nav2 },
   {
     path: 'imported-trade-in',
     component: TradeInImported,

@@ -3,7 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import gsap from 'gsap';
-import { Nav2 } from '../nav-2/nav-2';
+
 import { ApiServices } from '../../services/api-services';
 import { StoreCar } from '../../interfaces/car-interface';
 import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
@@ -11,16 +11,14 @@ import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, Nav2, SafeVideoUrlPipe],
+  imports: [CommonModule, SafeVideoUrlPipe],
   templateUrl: './store.html',
   styleUrl: './store.css'
 })
 export class Store implements AfterViewInit, OnDestroy {
   @ViewChild('smoothContent', { static: true }) smoothContent!: ElementRef;
-  @ViewChild(Nav2, { read: ElementRef }) nav2!: ElementRef<HTMLElement>;
 
   private ctx!: gsap.Context;
-  private navCtx!: gsap.Context;
   private destroyed = false;
   private carsSub?: Subscription;
 
@@ -331,37 +329,16 @@ export class Store implements AfterViewInit, OnDestroy {
       });
     }, this.smoothContent.nativeElement);
 
-    this.setupFloatingNav();
-
     document.addEventListener('click', this.onDocumentClick, true);
     window.addEventListener('scroll', this.onScroll, { passive: true });
     document.addEventListener('wheel', this.onScroll, { passive: true });
     document.addEventListener('touchmove', this.onScroll, { passive: true });
   }
 
-  private setupFloatingNav(): void {
-    if (!this.nav2?.nativeElement) return;
-
-    const navEl = this.nav2.nativeElement;
-    const inner = navEl.querySelector('.floating-menu-wrapper') as HTMLElement | null;
-    const target = inner ?? navEl;
-
-    this.navCtx = gsap.context(() => {
-      gsap.from(target, {
-        opacity: 0,
-        x: -80,
-        duration: 0.9,
-        ease: 'power3.out',
-        delay: 0.2
-      });
-    }, navEl);
-  }
-
   ngOnDestroy(): void {
     this.destroyed = true;
     this.carsSub?.unsubscribe();
     this.ctx?.revert();
-    this.navCtx?.revert();
     document.removeEventListener('click', this.onDocumentClick, true);
     window.removeEventListener('scroll', this.onScroll);
     document.removeEventListener('wheel', this.onScroll);

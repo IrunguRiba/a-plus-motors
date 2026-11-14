@@ -1,7 +1,6 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Nav2 } from '../../nav-2/nav-2';
 import {
   ConditionOption,
   UpgradeVehicle,
@@ -37,7 +36,7 @@ const round10k = (n: number): number => Math.round(n / 10000) * 10000;
 
 @Component({
   selector: 'app-trade-in',
-  imports: [FormsModule, DecimalPipe, Nav2],
+  imports: [FormsModule, DecimalPipe],
   templateUrl: './trade-in.html',
   styleUrl: './trade-in.css',
 })

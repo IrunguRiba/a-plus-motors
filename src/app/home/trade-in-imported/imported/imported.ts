@@ -1,7 +1,7 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Nav2 } from '../../nav-2/nav-2';
+
 import {
   ImportCostRow,
   ImportStep,
@@ -16,7 +16,7 @@ const { SHIPPING_RATE, IMPORT_DUTY, EXCISE_DUTY, VAT, IDF, RDL } = IMPORT_RATES;
 
 @Component({
   selector: 'app-imported',
-  imports: [FormsModule, DecimalPipe, Nav2],
+  imports: [FormsModule, DecimalPipe],
   templateUrl: './imported.html',
   styleUrl: './imported.css',
 })

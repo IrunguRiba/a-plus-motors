@@ -5,7 +5,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { gsap } from 'gsap';
-import { Nav2 } from '../nav-2/nav-2';
 import {
   BlogComment,
   BlogBlock,
@@ -40,7 +39,7 @@ const WIDE_SCREEN_MIN = 1240;
 @Component({
   selector: 'app-blogs',
   standalone: true,
-  imports: [CommonModule, Nav2],
+  imports: [CommonModule],
   templateUrl: './blogs.html',
   styleUrl: './blogs.css',
 })
