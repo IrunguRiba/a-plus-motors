@@ -1,18 +1,17 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, inject, provideAppInitializer } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
-import {   ExtraOptions } from '@angular/router';
-
-
+import { ApiServices } from '../app/services/api-services';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(),
+    provideAppInitializer(() => inject(ApiServices).loadConfig()),
     provideRouter(
       routes,
       withInMemoryScrolling({
-        scrollPositionRestoration: 'enabled', 
+        scrollPositionRestoration: 'enabled',
         anchorScrolling: 'enabled'
       })
     )
