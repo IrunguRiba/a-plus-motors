@@ -111,12 +111,12 @@ export class Search implements OnInit, AfterViewInit, OnChanges, OnDestroy {
    * (in place, because the Typewriter holds this same array) with phrases built from the database.
    */
   readonly examples: string[] = [
-    'A family car that seats 7 comfortably',
-    'Fuel efficient car for city driving',
-    'SUV that handles rough roads',
-    'Automatic with low mileage under Ksh 3M',
-    'Safe, reliable car for a first-time driver',
-    'Spacious boot for luggage and road trips',
+    'Family car, seats 7 comfortably',
+    'Fuel efficient, city driving',
+    'SUV for rough roads',
+    'Automatic, low mileage, under Ksh 3M',
+    'Safe for a first-time driver',
+    'Spacious boot for road trips',
   ];
 
   /** Cars shown when nothing has been typed (recommended first, then newest). */
