@@ -140,39 +140,27 @@
     <h2>Value your car</h2>
 
     <div class="sec"><b>01</b><strong>Your car</strong></div>
-    <div class="grid-3">
-      <label class="field">
-        <span class="label">Make</span>
-        <select class="input" name="make" [(ngModel)]="make" (ngModelChange)="onMake()">
-          @for (m of makes; track m) { <option [value]="m">{{ m }}</option> }
-        </select>
-      </label>
-      <label class="field">
-        <span class="label">Model</span>
-        <select class="input" name="model" [(ngModel)]="model">
-          @for (m of modelsForMake; track m) { <option [value]="m">{{ m }}</option> }
-        </select>
-      </label>
-      <label class="field">
-        <span class="label">Year</span>
-        <select class="input" name="year" [(ngModel)]="year">
-          @for (y of years; track y) { <option [ngValue]="y">{{ y }}</option> }
-        </select>
-      </label>
-    </div>
-
     <div class="grid-2 end">
+      <label class="field">
+        <span class="label">Car</span>
+        <select class="input" name="carId" [(ngModel)]="carId" required>
+          @for (c of cars; track c.id) {
+            <option [value]="c.id">{{ c.label }}</option>
+          }
+        </select>
+      </label>
       <label class="field">
         <span class="label">Mileage (km)</span>
         <input class="input" name="mileage" [ngModel]="mileageText" (ngModelChange)="onMileage($event)" inputmode="numeric" autocomplete="off" />
       </label>
-      <div class="field">
-        <span class="label">Transmission</span>
-        <div class="seg">
-          @for (t of transmissions; track t) {
-            <button type="button" [class.on]="transmission === t" (click)="transmission = t"><span>{{ t }}</span></button>
-          }
-        </div>
+    </div>
+
+    <div class="field">
+      <span class="label">Transmission</span>
+      <div class="seg">
+        @for (t of transmissions; track t) {
+          <button type="button" [class.on]="transmission === t" (click)="transmission = t"><span>{{ t }}</span></button>
+        }
       </div>
     </div>
 
@@ -211,19 +199,7 @@
 
     <div class="divider"></div>
 
-    <div class="sec"><b>03</b><strong>Upgrade to</strong><span class="hint">Optional</span></div>
-    <label class="field">
-      <span class="label">Car you have in mind</span>
-      <select class="input" name="upgrade" [(ngModel)]="upgrade">
-        <option value="">No upgrade car selected</option>
-        @for (u of upgrades; track u.name) { <option [value]="u.name">{{ u.name }} · KES {{ u.price | number }}</option> }
-      </select>
-      <small class="help">Pick one and we will show your balance in the estimate.</small>
-    </label>
-
-    <div class="divider"></div>
-
-    <div class="sec"><b>04</b><strong>Book your inspection</strong></div>
+    <div class="sec"><b>03</b><strong>Book your inspection</strong></div>
     <div class="field">
       <span class="label">Day</span>
       <div class="chips">
@@ -252,18 +228,18 @@
     </div>
 
     <div class="submit">
-      <button class="btn hover-flip" type="submit">
+      <button class="btn hover-flip" type="submit" [disabled]="submitting">
         <span class="flip">
           <span class="face front">
-            <span>{{ submitted ? 'Inspection booked' : 'Book inspection' }}</span>
+            <span>{{ submitting ? 'Sending…' : (submitted ? 'Inspection booked' : 'Book inspection') }}</span>
           </span>
           <span class="face back">
-            <span>{{ submitted ? 'Inspection booked' : 'Book inspection' }}</span>
+            <span>{{ submitting ? 'Sending…' : (submitted ? 'Inspection booked' : 'Book inspection') }}</span>
           </span>
         </span>
       </button>
-      <p aria-live="polite" [class.err]="tried && !f.valid">
-        {{ submitted ? 'Booked. We will confirm shortly.' : (tried && !f.valid ? 'Please add your name and phone number so we can confirm your slot.' : 'Free, with no obligation to trade in or buy.') }}
+      <p aria-live="polite" [class.err]="(tried && !f.valid) || !!submitError">
+        {{ submitError ? submitError : (submitted ? 'Booked. We will confirm shortly.' : (tried && !f.valid ? 'Please add your name and phone number so we can confirm your slot.' : 'Free, with no obligation to trade in or buy.')) }}
       </p>
     </div>
   </form>
@@ -272,7 +248,7 @@
     <div class="panel-sticky">
       <p class="panel-label">Indicative offer</p>
       <p class="panel-amount"><small>KES</small>{{ millions(low) }} – {{ millions(high) }}<small class="unit">M</small></p>
-      <p class="panel-route">{{ year }} {{ make }} {{ model }} · {{ condition }}</p>
+      <p class="panel-route">{{ selectedCar.year }} {{ selectedCar.make }} {{ selectedCar.model }} · {{ condition }}</p>
       <div class="range">
         <div class="range-line"><i></i></div>
         <div class="range-labels"><span>Low</span><span>Mid · {{ millions(offer) }}M</span><span>High</span></div>
@@ -282,10 +258,6 @@
         <div class="prow"><span>Mileage · {{ pct(mileagePct) }}</span><span>{{ signed(mileageAmount) }}</span></div>
         <div class="prow"><span>Condition · {{ pct(conditionPct) }}</span><span>{{ signed(conditionAmount) }}</span></div>
         <div class="prow strong"><span>Estimated offer</span><span>KES {{ offer | number }}</span></div>
-        @if (selectedUpgrade) {
-          <div class="prow"><span>{{ selectedUpgrade.name }}</span><span>KES {{ selectedUpgrade.price | number }}</span></div>
-          <div class="prow strong"><span>{{ balance >= 0 ? 'Balance to pay' : 'Balance to receive' }}</span><span>KES {{ (balance < 0 ? -balance : balance) | number }}</span></div>
-        }
       </div>
       <p class="panel-note">Indicative only. The final offer is confirmed after an in-person inspection and depends on the car's real condition and the market on the day.</p>
     </div>

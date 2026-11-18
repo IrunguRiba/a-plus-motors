@@ -5,27 +5,34 @@ import { Subscription } from 'rxjs';
 import { ApiServices } from '../../../services/api-services';
 import {
   ConditionOption,
-  UpgradeVehicle,
   BookingDay,
   TradeInStep,
   Benefit,
   TradeInSpec,
   FaqItem,
   TradeInPayload,
-  TradeInCatalogue,
   ConditionAdjustments,
   TRADE_IN_CONSTANTS,
 } from '../../../interfaces/car-interface';
 
 const { REFERENCE_YEAR, ANNUAL_DEPRECIATION, KM_PER_YEAR, RANGE_SPREAD } = TRADE_IN_CONSTANTS;
 
-const CATALOGUE: TradeInCatalogue = {
-  Toyota: { Harrier: 2590000, Prado: 5200000, Fielder: 1150000 },
-  Nissan: { 'X-Trail': 2100000, Note: 900000 },
-  Mazda: { 'CX-5': 2800000, Demio: 850000 },
-  Honda: { Vezel: 1900000, Fit: 950000 },
-  Subaru: { Forester: 2400000, Impreza: 1300000 },
-};
+interface TradeCar {
+  id: string;
+  make: string;
+  model: string;
+  year: number;
+  price: number;
+  label: string;
+}
+
+const CARS: TradeCar[] = [
+  { id: '65f1a1b2c3d4e5f6a7b8c9d0', make: 'Toyota', model: 'Harrier', year: 2021, price: 4150000, label: '2021 Toyota Harrier' },
+  { id: '65f1a1b2c3d4e5f6a7b8c9d1', make: 'Mazda', model: 'CX-5', year: 2020, price: 3650000, label: '2020 Mazda CX-5' },
+  { id: '65f1a1b2c3d4e5f6a7b8c9d2', make: 'Subaru', model: 'Forester', year: 2021, price: 3200000, label: '2021 Subaru Forester' },
+  { id: '65f1a1b2c3d4e5f6a7b8c9d3', make: 'Nissan', model: 'X-Trail', year: 2019, price: 2100000, label: '2019 Nissan X-Trail' },
+  { id: '65f1a1b2c3d4e5f6a7b8c9d4', make: 'Honda', model: 'Vezel', year: 2020, price: 1900000, label: '2020 Honda Vezel' },
+];
 
 const CONDITION_ADJUSTMENT: ConditionAdjustments = {
   Excellent: 4,
@@ -47,8 +54,9 @@ export class TradeIn implements OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private submitSub?: Subscription;
 
-  makes = Object.keys(CATALOGUE);
-  years = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i);
+  cars = CARS;
+  carId = CARS[0].id;
+
   transmissions = ['Automatic', 'Manual', 'CVT'];
   fuels = ['Petrol', 'Diesel', 'Hybrid', 'EV'];
   conditions: ConditionOption[] = [
@@ -56,11 +64,6 @@ export class TradeIn implements OnDestroy {
     { name: 'Good', hint: 'Normal wear' },
     { name: 'Fair', hint: 'Visible wear' },
     { name: 'Needs work', hint: 'Repairs due' },
-  ];
-  upgrades: UpgradeVehicle[] = [
-    { name: 'Mazda CX-5 2020', price: 3650000 },
-    { name: 'Toyota Harrier 2022', price: 4150000 },
-    { name: 'Subaru Forester 2021', price: 3200000 },
   ];
   times = ['09:00', '11:00', '14:00', '16:00'];
   days: BookingDay[] = Array.from({ length: 7 }, (_, i) => {
@@ -84,7 +87,6 @@ export class TradeIn implements OnDestroy {
   activeSrc = this.videoSrc;
   activeThumb = this.videoThumb;
 
-  // Custom video controls (same as the import page)
   vLoading = false;
   vError = false;
   vPaused = false;
@@ -145,16 +147,12 @@ export class TradeIn implements OnDestroy {
     { q: 'Am I obliged to accept the final offer?', a: 'No. The inspection is free, with no obligation to trade in or buy.' },
   ];
 
-  make = 'Toyota';
-  model = 'Harrier';
-  year = 2021;
   mileage = 42000;
   mileageText = '42,000';
   transmission = 'Automatic';
   fuel = 'Petrol';
   condition = 'Good';
   photos: (string | null)[] = [null, null, null, null, null, null];
-  upgrade = 'Mazda CX-5 2020';
   dayIndex = 1;
   time = '11:00';
   name = '';
@@ -162,19 +160,18 @@ export class TradeIn implements OnDestroy {
   openFaq = 0;
   submitted = false;
   tried = false;
-  /** True while the trade-in request is in flight (disable the submit button with this). */
   submitting = false;
-  /** Shown in the form when the request fails. Empty when there is no error. */
   submitError = '';
-  /** Reference code returned by the backend, if any. */
   referenceCode = '';
 
-  get modelsForMake(): string[] { return Object.keys(CATALOGUE[this.make] ?? {}); }
-  get age(): number { return Math.max(0, new Date().getFullYear() - this.year); }
+  get selectedCar(): TradeCar {
+    return this.cars.find((c) => c.id === this.carId) ?? this.cars[0];
+  }
+  get age(): number { return Math.max(0, new Date().getFullYear() - this.selectedCar.year); }
 
   get market(): number {
-    const ref = CATALOGUE[this.make]?.[this.model] ?? 0;
-    return round10k(Math.max(0, ref * (1 - ANNUAL_DEPRECIATION * (this.year - REFERENCE_YEAR))));
+    const ref = this.selectedCar.price;
+    return round10k(Math.max(0, ref * (1 - ANNUAL_DEPRECIATION * (this.selectedCar.year - REFERENCE_YEAR))));
   }
 
   get mileagePct(): number {
@@ -189,22 +186,10 @@ export class TradeIn implements OnDestroy {
   get low(): number { return round10k(this.offer * (1 - RANGE_SPREAD)); }
   get high(): number { return round10k(this.offer * (1 + RANGE_SPREAD)); }
 
-  get selectedUpgrade(): UpgradeVehicle | undefined {
-    return this.upgrades.find((u) => u.name === this.upgrade);
-  }
-
-  get balance(): number { return (this.selectedUpgrade?.price ?? 0) - this.offer; }
-
   millions(n: number): string { return (n / 1000000).toFixed(2); }
-
   pct(n: number): string { return `${n > 0 ? '+' : ''}${n.toFixed(1)}%`; }
-
   signed(n: number): string {
     return `${n >= 0 ? '+' : '−'} ${Math.abs(n).toLocaleString('en-US')}`;
-  }
-
-  onMake(): void {
-    this.model = this.modelsForMake[0];
   }
 
   onMileage(value: string): void {
@@ -212,10 +197,6 @@ export class TradeIn implements OnDestroy {
     this.mileageText = this.mileage ? this.mileage.toLocaleString('en-US') : '';
   }
 
-  /**
-   * Photos are shrunk to a JPEG of at most 1280px before they are kept, so six of them
-   * still fit comfortably in the request body sent to the backend.
-   */
   onPhoto(index: number, event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -225,9 +206,7 @@ export class TradeIn implements OnDestroy {
         this.photos[index] = dataUrl;
         this.cdr.markForCheck();
       })
-      .catch(() => {
-        /* unreadable image: leave the slot empty */
-      });
+      .catch(() => {});
   }
 
   private compressImage(file: File, maxSide = 1280, quality = 0.72): Promise<string> {
@@ -265,18 +244,15 @@ export class TradeIn implements OnDestroy {
   openVideo(src: string = this.videoSrc, thumb: string = this.videoThumb): void {
     this.activeSrc = src;
     this.activeThumb = thumb;
-    if (!this.videoOpen) this.vMuted = false;   // keep the mute choice while moving between videos
+    if (!this.videoOpen) this.vMuted = false;
     this.vPaused = false; this.vProgress = 0; this.vCur = '0:00'; this.vDur = '0:00';
-    this.vLoading = true;    // shown until the browser has enough data to play
+    this.vLoading = true;
     this.vError = false;
     this.videoOpen = true;
     document.body.style.overflow = 'hidden';
   }
 
-  // ---------- Video controls ----------
   onVideoStart(): void { this.vLoading = true; this.vError = false; }
-
-  /** Enough data to play: hide the loader and sync the play/pause icon (autoplay may be blocked). */
   onVideoReady(v: HTMLVideoElement): void {
     this.vLoading = false;
     this.vError = false;
@@ -288,9 +264,8 @@ export class TradeIn implements OnDestroy {
     this.vError = false;
     this.vLoading = true;
     v.load();
-    v.play().catch(() => { /* autoplay blocked: user can press play */ });
+    v.play().catch(() => {});
   }
-
   private fmt(s: number): string {
     if (!isFinite(s) || s < 0) return '0:00';
     return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -308,10 +283,9 @@ export class TradeIn implements OnDestroy {
   toggleMute(v: HTMLVideoElement): void { v.muted = !v.muted; this.vMuted = v.muted; }
   fullscreenVideo(v: HTMLVideoElement): void { v.requestFullscreen?.().catch(() => {}); }
 
-  // ---------- Hover previews (muted, looping) ----------
   previewPlay(v: HTMLVideoElement): void {
     v.muted = true;
-    v.play().catch(() => { /* blocked or interrupted: the thumbnail stays visible */ });
+    v.play().catch(() => {});
   }
   previewShow(v: HTMLVideoElement): void { v.style.opacity = '1'; }
   previewStop(v: HTMLVideoElement): void {
@@ -320,7 +294,6 @@ export class TradeIn implements OnDestroy {
     v.style.opacity = '0';
   }
 
-  /** Playlist order: hero video, then steps 01 to 04. */
   private get playlist(): { video: string; thumb: string }[] {
     return [
       { video: this.videoSrc, thumb: this.videoThumb },
@@ -330,7 +303,6 @@ export class TradeIn implements OnDestroy {
   get videoIndex(): number {
     return Math.max(0, this.playlist.findIndex(p => p.video === this.activeSrc));
   }
-  /** Prev is hidden on the hero video; Next is hidden on the last step (only Prev is left there). */
   get hasPrev(): boolean { return this.videoIndex > 0; }
   get hasNext(): boolean { return this.videoIndex < this.playlist.length - 1; }
 
@@ -339,13 +311,11 @@ export class TradeIn implements OnDestroy {
     const n = this.playlist[this.videoIndex + 1];
     this.openVideo(n.video, n.thumb);
   }
-
   prevVideo(): void {
     if (!this.hasPrev) return;
     const p = this.playlist[this.videoIndex - 1];
     this.openVideo(p.video, p.thumb);
   }
-
   closeVideo(): void {
     this.videoOpen = false;
     this.vLoading = false;
@@ -355,9 +325,7 @@ export class TradeIn implements OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    if (this.videoOpen) {
-      this.closeVideo();
-    }
+    if (this.videoOpen) this.closeVideo();
   }
 
   ngOnDestroy(): void {
@@ -367,37 +335,30 @@ export class TradeIn implements OnDestroy {
 
   attempt(valid: boolean | null): void {
     this.tried = true;
-    if (valid) {
-      this.submit();
-    }
+    if (valid) this.submit();
   }
 
-  /** Sends the valuation and inspection booking to POST /api/requests/trade-in. */
   submit(): void {
     if (this.submitting) return;
 
     const payload: TradeInPayload = {
-      make: this.make,
-      model: this.model,
-      year: this.year,
+      carId: this.carId,
       mileage: this.mileage,
       transmission: this.transmission,
       fuel: this.fuel,
       condition: this.condition,
       photos: this.photos.filter((p): p is string => !!p),
-      upgrade: this.upgrade,
       dayIndex: this.dayIndex,
       time: this.time,
       name: this.name.trim(),
       phone: this.phone.trim(),
     };
 
-    // Extra context for the team: the actual booking day and the range the customer saw.
     const day = this.days[this.dayIndex];
     const body = {
       ...payload,
       bookingDay: day ? `${day.weekday} ${day.date}` : '',
-      estimate: { low: this.low, offer: this.offer, high: this.high, balance: this.balance },
+      estimate: { low: this.low, offer: this.offer, high: this.high },
     };
 
     this.submitting = true;
