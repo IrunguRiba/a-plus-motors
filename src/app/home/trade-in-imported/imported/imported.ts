@@ -1,6 +1,8 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { ApiServices } from '../../../services/api-services';
 
 import {
   ImportCostRow,
@@ -21,6 +23,10 @@ const { SHIPPING_RATE, IMPORT_DUTY, EXCISE_DUTY, VAT, IDF, RDL } = IMPORT_RATES;
   styleUrl: './imported.css',
 })
 export class Imported implements OnDestroy {
+  private api = inject(ApiServices);
+  private cdr = inject(ChangeDetectorRef);
+  private submitSub?: Subscription;
+
   countries = ['Japan', 'United Kingdom', 'UAE', 'South Africa'];
 
   fuels = ['Petrol', 'Diesel', 'Hybrid'];
@@ -110,6 +116,12 @@ export class Imported implements OnDestroy {
   openFaq = 0;
   submitted = false;
   tried = false;
+  /** True while the import request is in flight (disable the submit button with this). */
+  submitting = false;
+  /** Shown in the form when the request fails. Empty when there is no error. */
+  submitError = '';
+  /** Reference code returned by the backend, if any. */
+  referenceCode = '';
 
   get shipping(): number { return Math.round(this.price * SHIPPING_RATE); }
   get cif(): number { return this.price + this.shipping; }
@@ -247,6 +259,7 @@ export class Imported implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.submitSub?.unsubscribe();
     document.body.style.overflow = '';
   }
 
@@ -257,8 +270,10 @@ export class Imported implements OnDestroy {
     }
   }
 
+  /** Sends the quote request to POST /api/requests/import. */
   submit(): void {
-    // Typed payload ready for backend wiring:
+    if (this.submitting) return;
+
     const payload: ImportRequestPayload = {
       origin: this.origin,
       make: this.make,
@@ -267,12 +282,46 @@ export class Imported implements OnDestroy {
       fuel: this.fuel,
       engine: this.engine,
       price: this.price,
-      name: this.name,
-      phone: this.phone,
-      email: this.email,
-      notes: this.notes,
+      name: this.name.trim(),
+      phone: this.phone.trim(),
+      email: this.email.trim(),
+      notes: this.notes.trim(),
     };
-    // this.api.submitImportRequest(payload).subscribe(...)
-    this.submitted = true;
+
+    // The estimate the customer was looking at, so the team sees the same numbers.
+    const body = {
+      ...payload,
+      estimate: {
+        shipping: this.shipping,
+        cif: this.cif,
+        importDuty: this.importDuty,
+        excise: this.excise,
+        vat: this.vat,
+        idf: this.idf,
+        rdl: this.rdl,
+        total: this.total,
+      },
+    };
+
+    this.submitting = true;
+    this.submitError = '';
+    this.submitSub?.unsubscribe();
+    this.submitSub = this.api.submitImport(body).subscribe({
+      next: (res) => {
+        this.submitting = false;
+        this.submitted = true;
+        this.referenceCode = res?.code ?? res?.id ?? '';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.submitting = false;
+        this.submitError =
+          err?.error?.message ||
+          (err?.status === 0
+            ? 'Could not reach the server. Check your connection and try again.'
+            : 'We could not send your request. Please try again.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

@@ -34,13 +34,63 @@
     </div>
 </ng-template>
 
-<ng-template #sideInfoTpl let-sideInfo>
-    <div class="side-info" [ngClass]="'side-info-' + sideInfo.type" role="link" tabindex="0" (click)="onSideInfoClick(sideInfo)" (keydown.enter)="onSideInfoClick(sideInfo)">
+<!--
+  Side information template — information is SPLIT between the two cards.
+
+  `part`:
+    - 'lead' -> left (video) card: kicker, title, text, specs chips, CTA
+    - 'data' -> right (image) card: price, finance/calc, stats rows, CTA
+
+  `mediaMode`:
+    - 'video'  -> play the video with a light dark overlay
+    - 'images' -> auto-sliding gallery that fills the card (cover fit + blurred backdrop)
+-->
+<ng-template #sideInfoTpl let-sideInfo let-mediaMode="mediaMode" let-part="part">
+    <div class="side-info"
+         [ngClass]="['side-info-' + sideInfo.type, 'media-mode-' + (mediaMode || 'auto'), 'side-info-part-' + (part || 'lead')]"
+         role="link" tabindex="0"
+         (click)="onSideInfoClick(sideInfo)"
+         (keydown.enter)="onSideInfoClick(sideInfo)">
+
         <div class="side-info-media">
-            <video *ngIf="sideInfo.videoUrl" [src]="sideInfo.videoUrl" [poster]="sideInfo.imageUrl" [muted]="true" autoplay loop playsinline preload="metadata"></video>
-            <img *ngIf="!sideInfo.videoUrl" [src]="sideInfo.imageUrl" [alt]="sideInfo.title">
+            <!-- VIDEO MODE -->
+            <ng-container *ngIf="mediaMode !== 'images' && sideMedia(sideInfo) as v; else sideImagesOrImg">
+                <video *ngIf="v.kind === 'file'" [src]="v.src" [poster]="sideInfo.imageUrl" [muted]="true"
+                       autoplay loop playsinline preload="auto" disablepictureinpicture
+                       (loadeddata)="onSideVideoLoaded($any($event.target))"
+                       (error)="onSideVideoError(sideInfo)"></video>
+
+                <iframe *ngIf="v.kind === 'embed'" [src]="v.src | safeVideoUrl"
+                        title="" tabindex="-1" frameborder="0"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        style="position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none"></iframe>
+            </ng-container>
+
+            <!-- IMAGE MODE: cover-fit slideshow with a blurred backdrop fill -->
+            <ng-template #sideImagesOrImg>
+                <div class="side-info-slideshow" *ngIf="sideImages(sideInfo) as imgs; else sideImg">
+                    <img class="side-info-slide-blur"
+                         *ngFor="let src of imgs; let i = index"
+                         [src]="src" [alt]="''" aria-hidden="true"
+                         [class.is-active]="i === slideIndex(sideInfo)">
+                    <img class="side-info-slide"
+                         *ngFor="let src of imgs; let i = index"
+                         [src]="src" [alt]="sideInfo.title"
+                         [class.is-active]="i === slideIndex(sideInfo)">
+                </div>
+                <ng-template #sideImg>
+                    <div class="side-info-single">
+                        <img class="side-info-slide-blur" [src]="sideInfo.imageUrl" alt="" aria-hidden="true">
+                        <img class="side-info-slide" [src]="sideInfo.imageUrl" [alt]="sideInfo.title">
+                    </div>
+                </ng-template>
+            </ng-template>
         </div>
+
+        <!-- Lighter overlays so more of the footage shows through -->
         <div class="side-info-shade"></div>
+        <div class="side-info-overlay" *ngIf="mediaMode !== 'images' && sideMedia(sideInfo)"></div>
 
         <div class="side-info-top">
             <span class="side-info-tag"><i class="side-info-dot"></i>{{ sideInfo.tag }}</span>
@@ -55,35 +105,62 @@
         </div>
 
         <div class="side-info-content">
-            <p class="side-info-kicker">{{ sideInfo.kicker }}</p>
-            <h4 class="side-info-title">{{ sideInfo.title }}</h4>
-            <p class="side-info-text">{{ sideInfo.text }}</p>
 
-            <div class="side-info-specs" *ngIf="sideInfo.specs?.length">
-                <span *ngFor="let s of sideInfo.specs">{{ s }}</span>
-            </div>
+            <!-- ===================== LEAD (video / left) ===================== -->
+            <ng-container *ngIf="part === 'lead'">
+                <p class="side-info-kicker">{{ sideInfo.kicker }}</p>
+                <h4 class="side-info-title">{{ sideInfo.title }}</h4>
+                <p class="side-info-text">{{ sideInfo.text }}</p>
 
-            <div class="side-info-price" *ngIf="sideInfo.price">
-                <span class="side-info-price-label">{{ sideInfo.priceLabel }}</span>
-                <span class="side-info-price-value">{{ sideInfo.price }}</span>
-            </div>
+                <div class="side-info-specs" *ngIf="sideInfo.specs?.length">
+                    <span *ngFor="let s of sideInfo.specs">{{ s }}</span>
+                </div>
+            </ng-container>
 
-            <div class="side-info-calc" *ngIf="sideInfo.type === 'finance'" (click)="$event.stopPropagation()">
-                <span class="side-info-price-label">Estimated monthly</span>
-                <span class="side-info-price-value">KES {{ monthly(sideInfo) }}</span>
-                <label class="side-info-range">
-                    <span>{{ sideInfo.months }} months</span>
-                    <input type="range" min="12" max="72" step="6" [value]="sideInfo.months" (input)="setMonths(sideInfo, $event)">
-                </label>
-                <span class="side-info-fine">Indicative only. On KES {{ formatKes(sideInfo.carPrice) }} with 20% deposit at {{ sideInfo.rate }}% a year.</span>
-            </div>
+            <!-- ===================== DATA (image / right) ==================== -->
+            <ng-container *ngIf="part === 'data'">
+                <div class="side-info-price" *ngIf="sideInfo.price" (click)="$event.stopPropagation()">
+                    <span class="side-info-price-label">{{ sideInfo.priceLabel || 'Price' }}</span>
+                    <span class="side-info-price-value">{{ sideInfo.price }}</span>
+                </div>
+
+                <div class="side-info-calc" *ngIf="sideInfo.type === 'finance'" (click)="$event.stopPropagation()">
+                    <span class="side-info-price-label">Estimated monthly</span>
+                    <span class="side-info-price-value">KES {{ monthly(sideInfo) }}</span>
+                    <label class="side-info-range">
+                        <span>{{ sideInfo.months }} months</span>
+                        <input type="range" min="12" max="72" step="6" [value]="sideInfo.months" (input)="setMonths(sideInfo, $event)">
+                    </label>
+                    <span class="side-info-fine">Indicative only. On KES {{ formatKes(sideInfo.carPrice) }} with 20% deposit at {{ sideInfo.rate }}% a year.</span>
+                </div>
+
+                <dl class="side-info-stats" (click)="$event.stopPropagation()">
+                    <div *ngIf="sideInfo.price">
+                        <dt>{{ sideInfo.priceLabel || 'Price' }}</dt>
+                        <dd>{{ sideInfo.price }}</dd>
+                    </div>
+                    <div *ngIf="sideInfo.specs?.length">
+                        <dt>Key specs</dt>
+                        <dd>{{ sideInfo.specs?.join(' · ') }}</dd>
+                    </div>
+                    <div *ngIf="sideInfo.carPrice">
+                        <dt>From</dt>
+                        <dd>KES {{ monthly(sideInfo) }} / month</dd>
+                    </div>
+                    <div *ngIf="sideInfo.carId">
+                        <dt>Stock</dt>
+                        <dd>In showroom · Nairobi</dd>
+                    </div>
+                </dl>
+            </ng-container>
 
             <button class="side-info-cta" type="button">{{ sideInfo.cta }}</button>
         </div>
     </div>
 </ng-template>
 
-<div class="top-navs">
+<!-- Top navs are hidden while a blog is open -->
+<div class="top-navs" *ngIf="!selectedBlog">
     <nav class="main-nav">
         <button type="button" [class.active]="currentMainTab === 'blogs'" (click)="setMainTab('blogs')">Blogs</button>
         <button type="button" [class.active]="currentMainTab === 'store'" (click)="setMainTab('store'); goToStore()">Our Store</button>
@@ -196,15 +273,28 @@
 
 <div class="modal-backdrop" *ngIf="selectedBlog as blog" (click)="onBackdropClick($event)">
 
-    <div class="modal-bar">
-        <button type="button" (click)="closeBlog()">Back</button>
-        <button type="button" (click)="closeBlog()">Close</button>
+    <!-- Hanging maroon controls: back over the LEFT rail, Main Store over the RIGHT rail -->
+    <div class="modal-rail-controls">
+        <button class="rail-btn rail-back" type="button" aria-label="Back to blogs" (click)="closeBlog()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            <span>Back</span>
+        </button>
+
+        <button class="rail-btn rail-store" type="button" (click)="closeBlog(); goToStore()">
+            <span>Main store</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 9h16l-1.2 10.2A1 1 0 0 1 17.8 20H6.2a1 1 0 0 1-1-0.8L4 9zm4-2a4 4 0 0 1 8 0h-2a2 2 0 0 0-4 0H8z"/>
+            </svg>
+        </button>
     </div>
 
     <div class="modal-layout" (click)="onBackdropClick($event)">
 
+        <!-- LEFT rail = video, carries the LEAD half -->
         <aside class="modal-rail rail-left" *ngIf="wideScreen && sideInfoLeft">
-            <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoLeft }"></ng-container>
+            <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoLeft, mediaMode: 'video', part: 'lead' }"></ng-container>
         </aside>
 
         <article class="modal-panel" role="dialog" aria-modal="true" [attr.aria-label]="blog.title">
@@ -256,8 +346,9 @@
                     </ng-container>
                 </section>
 
-                <div class="side-info-inline" *ngIf="!wideScreen && sideInfoLeft">
-                    <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoLeft }"></ng-container>
+                <!-- On small screens, show the right (data) card inline -->
+                <div class="side-info-inline" *ngIf="!wideScreen && sideInfoRight">
+                    <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoRight, mediaMode: 'images', part: 'data' }"></ng-container>
                 </div>
 
                 <div class="modal-actions">
@@ -323,8 +414,9 @@
             </footer>
         </article>
 
+        <!-- RIGHT rail = image slideshow, carries the DATA half -->
         <aside class="modal-rail rail-right" *ngIf="wideScreen && sideInfoRight">
-            <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoRight }"></ng-container>
+            <ng-container *ngTemplateOutlet="sideInfoTpl; context: { $implicit: sideInfoRight, mediaMode: 'images', part: 'data' }"></ng-container>
         </aside>
     </div>
 </div>

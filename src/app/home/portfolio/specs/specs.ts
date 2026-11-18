@@ -1,6 +1,7 @@
 // src/app/home/portfolio/specs/specs.ts
 import {
   Component,
+  DestroyRef,
   ElementRef,
   AfterViewInit,
   OnDestroy,
@@ -15,7 +16,7 @@ import { ActivatedRoute, Router, CanDeactivateFn } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { gsap } from 'gsap';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
-import { ApiServices, ksh } from '../../../services/api-services';
+import { ApiServices, InquiryRequestPayload, ksh } from '../../../services/api-services';
 import { ApiCar } from '../../../interfaces/car-interface';
 import { SafeVideoUrlPipe } from './safe-url.pipe';
 import {
@@ -62,6 +63,10 @@ const MOTION = {
   leaveEase: 'power1.inOut',
 };
 
+/** Two taps/clicks closer than this (ms) and this (px) apart count as a double tap. */
+const DOUBLE_TAP_MS = 320;
+const DOUBLE_TAP_PX = 30;
+
 @Component({
   selector: 'app-specs',
   templateUrl: './specs.html',
@@ -85,9 +90,11 @@ export class Specs implements AfterViewInit, OnDestroy {
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @ViewChild('modalRoot') modalRoot!: ElementRef<HTMLElement>;
+  @ViewChild('lightRoot') lightRoot!: ElementRef<HTMLElement>;
 
   private viewReady = false;
   private loadSub?: Subscription;
+  private submitSub?: Subscription;
 
   private jumpToTop(): void {
     ScrollSmoother.get()?.scrollTo(0, false);
@@ -121,7 +128,7 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   /** Stock status from the database, e.g. "inStock" becomes "In Stock". */
   get availabilityLabel(): string {
-    const raw = String((this.car as any)?.availabilityStatus ?? '').trim();
+    const raw = String(this.car?.availabilityStatus ?? '').trim();
     if (!raw) return '';
     return raw.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (ch) => ch.toUpperCase());
   }
@@ -154,6 +161,11 @@ export class Specs implements AfterViewInit, OnDestroy {
     { label: 'Book a test drive', route: '/test-drive' },
   ];
 
+  /**
+   * Loads the catalogue from the API (cached in ApiServices), picks the requested car
+   * by ?id=, and falls back to a recommended / first web-visible car if the id is missing
+   * or unknown.
+   */
   private loadCar(id: string | null): void {
     this.loading = true;
     this.notFound = false;
@@ -181,15 +193,19 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   private applyCar(c: ApiCar, pool: ApiCar[]): void {
     this.notFound = false;
+    if (this.expanded) this.closeLightbox();
+
     this.car = c;
     this.seriesName = `${c.make} ${c.model}`;
     this.carName = `${c.year} ${c.make} ${c.model}`;
     this.carPrice = ksh(c.price);
 
+    // Order is kept: the FIRST photo of the car is the one shown when the page opens.
     const photos = Array.from(new Set((c.photos ?? []).filter(Boolean)));
     this.exteriorImages = photos;
     this.interiorImages = photos;
     this.reviewVid = (c.reviewVideoUrl ?? '').trim();
+    this.preloadImage(photos[0]);
 
     this.exteriorSpecs = this.buildExterior(c);
     this.interiorSpecs = this.buildInterior(c);
@@ -203,13 +219,44 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.resetPan();
     this.hoveredId = null;
 
+    // FIX: Always (re)wire lazy images once the new similar-car cards have rendered.
+    // The old code only did this inside `if (this.viewReady)` with a single
+    // setTimeout(0) — which fires before Angular flushes the @for cards, so every
+    // similar-car <img> kept its data-src and never got a `src` (blank cards).
+    this.scheduleCardImages();
+
     if (this.viewReady) {
       this.jumpToTop();
       setTimeout(() => {
-        this.observeCardImages();
         this.playEnter();
+        // Gallery strip starts at the first photo.
+        this.revealActiveThumb();
       }, 0);
     }
+  }
+
+  /**
+   * FIX: Run observeCardImages() after the DOM actually contains the newly-rendered
+   * cards. requestAnimationFrame fires after change detection; the extra setTimeout
+   * handles the case where Angular renders the cards a tick later. A 250ms retry is
+   * the safety net for slow/async renders.
+   */
+  private scheduleCardImages(): void {
+    const run = () => this.observeCardImages();
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => setTimeout(run, 0));
+    } else {
+      setTimeout(run, 0);
+    }
+    setTimeout(run, 250);
+  }
+
+  /** Starts loading the first photo right away so the viewer never opens on a blank stage. */
+  private preloadImage(src: string | undefined): void {
+    if (!src) return;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = src;
   }
 
   /* ============================================================
@@ -385,8 +432,12 @@ export class Specs implements AfterViewInit, OnDestroy {
      ============================================================ */
 
   view: CarView = 'exterior';
+  /** Index 0 is the car's first photo, which is what the viewer shows when the page opens. */
   activeIndex = 0;
   stackExpanded = false;
+
+  /** True while the enlarged (full-screen) image viewer is open. */
+  expanded = false;
 
   get images(): string[] {
     return this.view === 'exterior' ? this.exteriorImages : this.interiorImages;
@@ -407,7 +458,8 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   trimImage(e: Event): void {
     const img = e.target as HTMLImageElement;
-    const src = this.activeImage;
+    // The photo this <img> was rendered for (not whatever is active by the time it finishes loading).
+    const src = img.dataset['orig'] || this.activeImage;
     this.clampPan();
     if (this.tried.has(src) || !img.naturalWidth) return;
     this.tried.add(src);
@@ -489,6 +541,7 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   private afterNav(): void {
     this.videoPlaying = false;
+    this.zoom = 100;
     this.resetPan();
     this.revealActiveThumb();
   }
@@ -523,6 +576,33 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
 
   /* ============================================================
+     ENLARGED VIEWER (double click / double tap)
+     ============================================================ */
+
+  openLightbox(): void {
+    if (this.expanded || this.videoPlaying || !this.images.length) return;
+    this.zoom = 100;
+    this.resetPan();
+    this.expanded = true;
+    this.lockScroll(true);
+  }
+
+  closeLightbox(): void {
+    if (!this.expanded) return;
+    this.expanded = false;
+    this.zoom = 100;
+    this.resetPan();
+    if (!this.modalOpen) this.lockScroll(false);
+    this.revealActiveThumb();
+  }
+
+  /** Double click / double tap: opens the enlarged viewer, or toggles zoom inside it. */
+  private onDoubleTap(): void {
+    if (this.expanded) this.toggleZoom();
+    else this.openLightbox();
+  }
+
+  /* ============================================================
      ZOOM + PAN
      ============================================================ */
 
@@ -532,6 +612,7 @@ export class Specs implements AfterViewInit, OnDestroy {
   panY = 0;
   dragging = false;
   private drag?: { x: number; y: number; px: number; py: number };
+  private lastTap = { t: 0, x: 0, y: 0 };
 
   get zoomTransform(): string {
     return `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom / 100})`;
@@ -561,8 +642,10 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
 
   private clampPan(): void {
-    const stage = this.host.nativeElement.querySelector<HTMLElement>('.image-wrapper');
-    const img = this.host.nativeElement.querySelector<HTMLElement>('.car-img');
+    // The enlarged viewer is moved to <body>, so look inside it when it is open.
+    const root = this.expanded ? this.lightRoot?.nativeElement : this.host.nativeElement;
+    const stage = root?.querySelector<HTMLElement>('.image-wrapper');
+    const img = root?.querySelector<HTMLElement>('.car-img');
     if (!stage || !img || this.zoom <= 100) {
       this.resetPan();
       return;
@@ -591,9 +674,25 @@ export class Specs implements AfterViewInit, OnDestroy {
     const d = this.drag;
     this.drag = undefined;
     this.dragging = false;
-    if (!d || this.zoom > 100) return;
+    if (!d) return;
+
     const dx = e.clientX - d.x,
       dy = e.clientY - d.y;
+
+    // Double click (mouse) and double tap (touch) share one detector so both work on every device.
+    if (e.type === 'pointerup' && Math.hypot(dx, dy) < 10) {
+      const now = Date.now();
+      const isDouble =
+        now - this.lastTap.t < DOUBLE_TAP_MS &&
+        Math.hypot(e.clientX - this.lastTap.x, e.clientY - this.lastTap.y) < DOUBLE_TAP_PX;
+      this.lastTap = isDouble ? { t: 0, x: 0, y: 0 } : { t: now, x: e.clientX, y: e.clientY };
+      if (isDouble) {
+        this.onDoubleTap();
+        return;
+      }
+    }
+
+    if (this.zoom > 100) return;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) dx < 0 ? this.next() : this.prev();
   }
 
@@ -765,6 +864,10 @@ export class Specs implements AfterViewInit, OnDestroy {
   modalOpen = false;
   submitted = false;
   attempted = false;
+  /** True while the inquiry request is in flight (disable the submit button with this). */
+  submitting = false;
+  /** Message to show in the modal when the request fails. Empty when there is no error. */
+  submitError = '';
   shareLabel = 'Share car link';
 
   inquiry: { name: string; price: string; id?: string } | null = null;
@@ -828,6 +931,7 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   openModal(car?: { name: string; price: string; id?: string }): void {
     this.inquiry = car ?? null;
+    this.submitError = '';
     if (this.submitted) {
       this.form = this.emptyForm();
       this.submitted = false;
@@ -844,23 +948,51 @@ export class Specs implements AfterViewInit, OnDestroy {
   closeModal(): void {
     if (!this.modalOpen) return;
     this.modalOpen = false;
+    this.submitError = '';
     this.lockScroll(false);
   }
-
   submitInterest(): void {
     this.attempted = true;
-    if (!this.formValid) return;
-    this.submitted = true;
-    this.modalRoot?.nativeElement.querySelector('.im-scroll')?.scrollTo({ top: 0 });
+    if (!this.formValid || this.submitting) return;
+
+    const f = this.form;
+    const payload: InquiryRequestPayload = {
+      name: f.name.trim(),
+      phone: f.phone.trim(),
+      carId: this.inquiry?.id ?? this.car?._id,
+      carName: this.modalName,
+      price: this.modalPrice,
+      schedule: f.schedule,
+      viewingDate: f.schedule ? f.date : undefined,
+      viewingTime: f.schedule ? f.time : undefined,
+      tradeIn: f.tradeIn,
+      tradeMake: f.tradeIn ? f.tradeMake.trim() : undefined,
+      tradeYear: f.tradeIn ? f.tradeYear.trim() : undefined,
+      tradeMileage: f.tradeIn ? f.tradeMileage.trim() : undefined,
+    };
+
+    this.submitting = true;
+    this.submitError = '';
+    this.submitSub?.unsubscribe();
+    this.submitSub = this.api.submitInquiry(payload).subscribe({
+      next: () => {
+        this.submitting = false;
+        this.submitted = true;
+        this.modalRoot?.nativeElement.querySelector('.im-scroll')?.scrollTo({ top: 0 });
+      },
+      error: (err) => {
+        this.submitting = false;
+        this.submitError =
+          err?.error?.message ||
+          'We could not send your request. Please try again, or reach us on WhatsApp.';
+      },
+    });
   }
 
-  /** Full link to a car's specs page, e.g. https://site.com/specs?id=6ae416... */
   private carLink(id: string): string {
     const tree = this.router.createUrlTree(['/specs'], { queryParams: { id } });
     return window.location.origin + this.location.prepareExternalUrl(this.router.serializeUrl(tree));
   }
-
-  /** The message that is shared / copied: the car's name and price, then its link. */
   private shareMessage(name: string, price: string, url: string): string {
     return `${name} · ${price} — A Plus Motors\n${url}`;
   }
@@ -971,6 +1103,7 @@ export class Specs implements AfterViewInit, OnDestroy {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.modalOpen) this.closeModal();
+    else if (this.expanded) this.closeLightbox();
     else if (this.videoPlaying) this.closeVideo();
   }
 
@@ -979,9 +1112,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     ScrollSmoother.get()?.paused(lock);
   }
 
-  /* ============================================================
-     LAZY IMAGES
-     ============================================================ */
 
   private imgIo?: IntersectionObserver;
   private imgSafetyTimer?: ReturnType<typeof setTimeout>;
@@ -998,6 +1128,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     const imgs = Array.from(
       this.host.nativeElement.querySelectorAll<HTMLImageElement>('img[data-src]'),
     ).filter((i) => !i.getAttribute('src'));
+    if (!imgs.length) return;
     if (!('IntersectionObserver' in window)) {
       imgs.forEach((i) => this.loadLazyImg(i));
       return;
@@ -1084,16 +1215,13 @@ export class Specs implements AfterViewInit, OnDestroy {
     );
   }
 
-  /* ============================================================
-     LIFECYCLE
-     ============================================================ */
-
   ngAfterViewInit(): void {
     this.viewReady = true;
     this.supportsHover = canHover() && !prefersReducedMotion();
     this.jumpToTop();
     document.body.appendChild(this.modalRoot.nativeElement);
-    this.observeCardImages();
+    document.body.appendChild(this.lightRoot.nativeElement);
+    this.scheduleCardImages();
     this.startRoad();
     this.playEnter();
   }
@@ -1160,12 +1288,14 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.loadSub?.unsubscribe();
+    this.submitSub?.unsubscribe();
     this.imgIo?.disconnect();
     if (this.imgSafetyTimer) clearTimeout(this.imgSafetyTimer);
     this.roadTween?.kill();
     gsap.killTweensOf(this.panels);
     this.ctx?.revert();
     this.modalRoot?.nativeElement.remove();
+    this.lightRoot?.nativeElement.remove();
     this.lockScroll(false);
   }
 

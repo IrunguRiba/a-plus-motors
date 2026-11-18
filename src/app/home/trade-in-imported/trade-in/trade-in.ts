@@ -1,6 +1,8 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { ApiServices } from '../../../services/api-services';
 import {
   ConditionOption,
   UpgradeVehicle,
@@ -41,6 +43,10 @@ const round10k = (n: number): number => Math.round(n / 10000) * 10000;
   styleUrl: './trade-in.css',
 })
 export class TradeIn implements OnDestroy {
+  private api = inject(ApiServices);
+  private cdr = inject(ChangeDetectorRef);
+  private submitSub?: Subscription;
+
   makes = Object.keys(CATALOGUE);
   years = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i);
   transmissions = ['Automatic', 'Manual', 'CVT'];
@@ -156,6 +162,12 @@ export class TradeIn implements OnDestroy {
   openFaq = 0;
   submitted = false;
   tried = false;
+  /** True while the trade-in request is in flight (disable the submit button with this). */
+  submitting = false;
+  /** Shown in the form when the request fails. Empty when there is no error. */
+  submitError = '';
+  /** Reference code returned by the backend, if any. */
+  referenceCode = '';
 
   get modelsForMake(): string[] { return Object.keys(CATALOGUE[this.make] ?? {}); }
   get age(): number { return Math.max(0, new Date().getFullYear() - this.year); }
@@ -200,12 +212,50 @@ export class TradeIn implements OnDestroy {
     this.mileageText = this.mileage ? this.mileage.toLocaleString('en-US') : '';
   }
 
+  /**
+   * Photos are shrunk to a JPEG of at most 1280px before they are kept, so six of them
+   * still fit comfortably in the request body sent to the backend.
+   */
   onPhoto(index: number, event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => (this.photos[index] = reader.result as string);
-    reader.readAsDataURL(file);
+    this.compressImage(file)
+      .then((dataUrl) => {
+        this.photos[index] = dataUrl;
+        this.cdr.markForCheck();
+      })
+      .catch(() => {
+        /* unreadable image: leave the slot empty */
+      });
+  }
+
+  private compressImage(file: File, maxSide = 1280, quality = 0.72): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * k));
+        const h = Math.max(1, Math.round(img.naturalHeight * k));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        URL.revokeObjectURL(url);
+        if (!ctx) {
+          reject(new Error('canvas unavailable'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('could not read image'));
+      };
+      img.src = url;
+    });
   }
 
   toForm(): void {
@@ -311,6 +361,7 @@ export class TradeIn implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.submitSub?.unsubscribe();
     document.body.style.overflow = '';
   }
 
@@ -321,8 +372,10 @@ export class TradeIn implements OnDestroy {
     }
   }
 
+  /** Sends the valuation and inspection booking to POST /api/requests/trade-in. */
   submit(): void {
-    // Typed payload ready for backend wiring:
+    if (this.submitting) return;
+
     const payload: TradeInPayload = {
       make: this.make,
       model: this.model,
@@ -335,10 +388,39 @@ export class TradeIn implements OnDestroy {
       upgrade: this.upgrade,
       dayIndex: this.dayIndex,
       time: this.time,
-      name: this.name,
-      phone: this.phone,
+      name: this.name.trim(),
+      phone: this.phone.trim(),
     };
-    // this.api.submitTradeIn(payload).subscribe(...)
-    this.submitted = true;
+
+    // Extra context for the team: the actual booking day and the range the customer saw.
+    const day = this.days[this.dayIndex];
+    const body = {
+      ...payload,
+      bookingDay: day ? `${day.weekday} ${day.date}` : '',
+      estimate: { low: this.low, offer: this.offer, high: this.high, balance: this.balance },
+    };
+
+    this.submitting = true;
+    this.submitError = '';
+    this.submitSub?.unsubscribe();
+    this.submitSub = this.api.submitTradeIn(body).subscribe({
+      next: (res) => {
+        this.submitting = false;
+        this.submitted = true;
+        this.referenceCode = res?.code ?? res?.id ?? '';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.submitting = false;
+        this.submitError =
+          err?.status === 413
+            ? 'Your photos are too large to send. Remove one or two and try again.'
+            : err?.error?.message ||
+              (err?.status === 0
+                ? 'Could not reach the server. Check your connection and try again.'
+                : 'We could not send your request. Please try again.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

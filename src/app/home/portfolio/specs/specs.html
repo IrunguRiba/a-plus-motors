@@ -59,9 +59,13 @@
             <div class="image-wrapper" [class.zoomed]="zoom > 100" [class.dragging]="dragging"
                  (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
                  (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
-                 (dblclick)="toggleZoom()" (wheel)="onStageWheel($event)">
+                 (wheel)="onStageWheel($event)">
               <div class="zoom-layer" [style.transform]="zoomTransform">
-                <img *ngFor="let src of [displayImage]" [src]="src" crossorigin="anonymous" (load)="trimImage($event)"
+                <!-- FIX: dropped crossorigin="anonymous" — it blocked the image entirely when the
+                     image host did not send Access-Control-Allow-Origin. trimImage() already
+                     fails gracefully, so trimming is a nice-to-have, not a requirement. -->
+                <img [src]="displayImage" (load)="trimImage($event)"
+                     [attr.data-orig]="activeImage"
                      [alt]="carName + ' ' + view" class="car-img" draggable="false" />
               </div>
             </div>
@@ -71,12 +75,15 @@
                       [class.active]="zoom === z" [attr.aria-pressed]="zoom === z" (click)="setZoom(z)">{{ z }}%</button>
             </div>
             <button class="stage-btn watch-btn" type="button" *ngIf="hasReview" (click)="openVideo($event)">▶ Review video</button>
+            <button class="stage-btn expand-btn" type="button" (click)="openLightbox()" aria-label="Enlarge image" title="Enlarge (double click)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+            </button>
           </ng-container>
 
           <!-- VIDEO MODE -->
           <ng-container *ngIf="videoPlaying">
 
-            <!-- (a) Direct file: <video> with custom controls -->
+            <!-- (a) Direct file -->
             <ng-container *ngIf="isFileVideo">
               <video #stageVideo class="car-video" [src]="videoSource" autoplay playsinline preload="auto"
                      (click)="toggleVideo(stageVideo)"
@@ -115,7 +122,7 @@
               </div>
             </ng-container>
 
-            <!-- (b) YouTube / Vimeo: <iframe> with its own controls -->
+            <!-- (b) YouTube / Vimeo -->
             <ng-container *ngIf="isIframeVideo">
               <div class="iframe-wrap">
                 <iframe class="car-video" [src]="embedUrl | safeVideoUrl" title="Review video" frameborder="0"
@@ -134,7 +141,7 @@
               </div>
             </ng-container>
 
-            <!-- (c) Unknown / malformed URL -->
+            <!-- (c) Unknown URL -->
             <div class="video-loader video-error" *ngIf="!isFileVideo && !isIframeVideo" role="alert">
               <span class="loader-text">Video link is not supported</span>
               <button class="v-retry" type="button" (click)="closeVideo()">Back to photos</button>
@@ -149,7 +156,7 @@
         </div>
       </div>
 
-      <!-- RIGHT: GALLERY (overlapping stack) -->
+      <!-- RIGHT: GALLERY -->
       <aside class="gallery-col" [class.expanded]="stackExpanded">
         <button class="gal-toggle" type="button" (click)="toggleStack()">
           {{ stackExpanded ? 'Collapse' : 'Expand' }}
@@ -159,10 +166,9 @@
           <button class="stack-thumb" type="button" *ngFor="let img of images; let i = index"
                   [class.active]="i === activeIndex" [attr.aria-label]="view + ' image ' + (i + 1)"
                   (click)="selectImage(i)">
-            <img [src]="img" [alt]="view + ' ' + (i + 1)" loading="lazy" />
+            <img [src]="img" [alt]="view + ' ' + (i + 1)" [attr.loading]="i < 4 ? 'eager' : 'lazy'" />
           </button>
         </div>
-
       </aside>
     </div>
   </section>
@@ -186,13 +192,14 @@
         <article class="car-card" (click)="openSimilar(c, $event)"
                  (mouseenter)="onCardEnter(c)" (mouseleave)="onCardLeave(c)">
           <div class="car-image-wrapper" [class.has-video]="hasPreview(c)">
-            <img [attr.data-src]="c.image" [alt]="c.name" decoding="async"
+            <!-- FIX: bind src directly (same-origin, no crossorigin), so the card image
+                 renders immediately. data-src is kept so the existing lazy observer can
+                 still upgrade/hydrate it if you want, but src makes it always visible. -->
+            <img [src]="c.image" [alt]="c.name" decoding="async"
                  (load)="onCardImgLoad($event)" (error)="onCardImgError($event)" />
 
-            <!-- ▶ hint badge: this car has a review video (hidden while it plays) -->
             <span class="video-hint" *ngIf="hasPreview(c) && hoveredId !== c.id" aria-hidden="true">▶</span>
 
-            <!-- Hover preview: review video over the image -->
             <ng-container *ngIf="hoveredId === c.id && c.preview as pv">
               <video *ngIf="pv.kind === 'file'" class="hover-preview" [src]="pv.src" [muted]="true"
                      autoplay loop playsinline preload="auto" disablepictureinpicture
@@ -256,6 +263,43 @@
       </div>
     </footer>
   </section>
+
+  <!-- ================= ENLARGED IMAGE VIEWER ================= -->
+  <div class="lightbox" #lightRoot [class.is-open]="expanded" role="dialog" aria-modal="true"
+       [attr.aria-hidden]="!expanded" aria-label="Enlarged photo viewer">
+    <div class="lb-head">
+      <span class="lb-title">{{ carName }}</span>
+      <button class="lb-close" type="button" (click)="closeLightbox()" aria-label="Close enlarged view">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        <span>Close</span>
+      </button>
+    </div>
+
+    <div class="lb-stage">
+      <div class="image-wrapper" *ngIf="expanded" [class.zoomed]="zoom > 100" [class.dragging]="dragging"
+           (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
+           (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
+           (wheel)="onStageWheel($event)">
+        <div class="zoom-layer" [style.transform]="zoomTransform">
+          <!-- FIX: dropped crossorigin="anonymous" here too -->
+          <img [src]="displayImage" (load)="trimImage($event)"
+               [attr.data-orig]="activeImage"
+               [alt]="carName + ' ' + view" class="car-img" draggable="false" />
+        </div>
+      </div>
+
+      <div class="zoom-bar" role="group" aria-label="Zoom level">
+        <button class="zoom-btn" type="button" *ngFor="let z of zoomLevels"
+                [class.active]="zoom === z" [attr.aria-pressed]="zoom === z" (click)="setZoom(z)">{{ z }}%</button>
+      </div>
+
+      <div class="view-controls">
+        <button class="ctrl-btn" type="button" (click)="prev()" aria-label="Previous image">←</button>
+        <span class="ctrl-count"><strong>{{ counter }}</strong><em>{{ view }}</em></span>
+        <button class="ctrl-btn" type="button" (click)="next()" aria-label="Next image">→</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= INTEREST MODAL ================= -->
   <div class="interest-modal" #modalRoot [class.is-open]="modalOpen" role="dialog" aria-modal="true" aria-labelledby="imTitle" (click)="closeModal()">

@@ -1,11 +1,15 @@
 import {
-  Component, AfterViewInit, ElementRef, ViewChildren, QueryList,
+  Component, AfterViewInit, OnInit, ElementRef, ViewChildren, QueryList,
   ChangeDetectorRef, HostListener, OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { gsap } from 'gsap';
+import { ApiServices, ksh } from '../../services/api-services';
 import {
+  ApiCar,
   BlogComment,
   BlogBlock,
   BlogPost,
@@ -14,6 +18,22 @@ import {
   BlogFilter,
   NewCommentPayload,
 } from '../../interfaces/car-interface';
+// NOTE: adjust these two paths if blogs.ts is not in src/app/home/blogs
+import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
+import {
+  ReviewVideo,
+  resolveReviewVideo,
+  primeMutedVideo,
+  markReady,
+  prefersReducedMotion,
+} from '../portfolio/specs/review-video';
+
+/** A side-rail card. Cars from the catalogue also carry their id so a click opens their specs page. */
+interface SideCard extends SideInformation {
+  carId?: string;
+  /** Extra gallery images for the sliding advert. Falls back to imageUrl. */
+  imageUrls?: string[];
+}
 
 const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=80`;
 
@@ -36,25 +56,40 @@ const VIDEO = {
 // The modal switches to a single column and inline side information below this width.
 const WIDE_SCREEN_MIN = 1240;
 
+/** At most this many catalogue cars (with a review video) are put in the side-rail pool. */
+const MAX_CAR_CARDS = 10;
+
+/** How long each image stays before the slideshow advances (ms). */
+const SLIDE_INTERVAL_MS = 3500;
+
+const SIDE_TYPES: SideInformation['type'][] = ['car', 'video', 'finance', 'service'];
+
 @Component({
   selector: 'app-blogs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SafeVideoUrlPipe],
   templateUrl: './blogs.html',
   styleUrl: './blogs.css',
 })
-export class Blog implements AfterViewInit, OnDestroy {
+export class Blog implements OnInit, AfterViewInit, OnDestroy {
   currentMainTab: BlogMainTab = 'blogs';
   currentFilter: BlogFilter = 'latest';
   isVerifiedCustomer = false;
   toastMessage: string | null = null;
   private toastTimeout: any;
 
+  /** True until the first API response (or failure) arrives. */
+  loading = true;
+  private viewReady = false;
+  private loadSub?: Subscription;
+
   selectedBlog: BlogPost | null = null;
 
-  // Two random side-information items picked every time the modal opens
-  sideInfoLeft: SideInformation | null = null;
-  sideInfoRight: SideInformation | null = null;
+  // Two random side-information items picked every time the modal opens.
+  // When both rails show the SAME ad, the left rail gets the image slideshow
+  // and the right rail gets the video (no repeated media).
+  sideInfoLeft: SideCard | null = null;
+  sideInfoRight: SideCard | null = null;
   wideScreen = typeof window !== 'undefined' ? window.innerWidth >= WIDE_SCREEN_MIN : true;
 
   @ViewChildren('blogArticle') blogArticles!: QueryList<ElementRef>;
@@ -63,15 +98,212 @@ export class Blog implements AfterViewInit, OnDestroy {
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private host: ElementRef<HTMLElement>
+    private host: ElementRef<HTMLElement>,
+    private api: ApiServices,
   ) {}
 
+  ngOnInit(): void {
+    this.loadContent();
+  }
+
   ngAfterViewInit(): void {
+    this.viewReady = true;
     this.animateBlogsIn();
   }
 
   ngOnDestroy(): void {
+    this.loadSub?.unsubscribe();
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.stopSlideshows();
     document.body.style.overflow = '';
+  }
+
+  /* ---------- API ---------- */
+
+  /**
+   * Loads posts (GET /admin/blogs), side information (GET /admin/blogs/side-info) and the car
+   * catalogue together. Cars that have a review video become side-rail cards that play it.
+   * If a call fails or returns nothing, the built-in sample content below is shown instead,
+   * so the page is never empty.
+   */
+  private loadContent(): void {
+    this.loading = true;
+    this.loadSub?.unsubscribe();
+    this.loadSub = forkJoin({
+      posts: this.api.getBlogs().pipe(catchError(() => of([] as any[]))),
+      side: this.api.getSideInfo().pipe(catchError(() => of([] as any[]))),
+      cars: this.api.getWebCars().pipe(catchError(() => of([] as ApiCar[]))),
+    }).subscribe(({ posts, side, cars }) => {
+      const mapped = posts.map(p => this.mapPost(p));
+      const apiBlogs = mapped.filter(p => p.kind === 'blog');
+      const apiFacts = mapped.filter(p => p.kind === 'fact');
+
+      this.blogs = apiBlogs.length ? apiBlogs : this.fallbackBlogs;
+      this.facts = apiFacts.length ? apiFacts : this.fallbackFacts;
+
+      const apiSide = side.map(s => this.mapSideInfo(s));
+      const carCards = this.buildCarCards(cars);
+      const merged = [...apiSide, ...carCards];
+      if (merged.length) this.sideInfoPool = merged;
+      this.mediaCache.clear();
+      this.sideFailed.clear();
+
+      this.loading = false;
+      this.cdr.detectChanges();
+      if (this.viewReady) this.animateBlogsIn();
+    });
+  }
+
+  /** Posts use numeric ids in the UI; the backend's string ids are mapped to stable numbers. */
+  private idMap = new Map<string, number>();
+  private nextId = 1000;
+  private numericId(raw: any): number {
+    if (typeof raw === 'number') return raw;
+    const key = String(raw ?? '');
+    if (!key) return this.nextId++;
+    if (!this.idMap.has(key)) this.idMap.set(key, this.nextId++);
+    return this.idMap.get(key)!;
+  }
+
+  private mapPost(raw: any): BlogPost {
+    const body = this.mapBody(raw?.body ?? raw?.content);
+    const firstText = body.find(b => b.type === 'p')?.text ?? '';
+    const words = body.map(b => b.text ?? '').join(' ').split(/\s+/).filter(Boolean).length;
+
+    return {
+      id: this.numericId(raw?._id ?? raw?.id),
+      kind: raw?.kind === 'fact' ? 'fact' : 'blog',
+      title: String(raw?.title ?? ''),
+      author: String(raw?.author ?? 'A-plus Motors LTD'),
+      handle: String(raw?.handle ?? '@A-plus motors'),
+      category: String(raw?.category ?? (raw?.kind === 'fact' ? 'Did you know' : 'Blog')),
+      date: this.displayDate(raw?.date ?? raw?.createdAt),
+      readTime: String(raw?.readTime ?? `${Math.max(1, Math.round(words / 200))} min read`),
+      tags: Array.isArray(raw?.tags) ? raw.tags.map(String) : [],
+      excerpt: String(raw?.excerpt ?? raw?.summary ?? firstText),
+      imageUrl: String(raw?.imageUrl ?? raw?.image ?? raw?.coverImage ?? ''),
+      imageCaption: String(raw?.imageCaption ?? ''),
+      imageCredit: String(raw?.imageCredit ?? ''),
+      body: body.length ? body : [{ type: 'p', text: String(raw?.excerpt ?? '') }],
+      likes: Array.isArray(raw?.likes) ? raw.likes.length : Number(raw?.likes ?? 0),
+      liked: false,
+      bookmarked: false,
+      comments: Array.isArray(raw?.comments) ? raw.comments.map((c: any) => this.mapComment(c)) : [],
+    };
+  }
+
+  /** Accepts a block array, or a plain string where blank lines separate paragraphs. */
+  private mapBody(raw: any): BlogBlock[] {
+    if (Array.isArray(raw)) {
+      return raw
+        .filter(b => b && typeof b === 'object')
+        .map((b): BlogBlock => ({
+          type: b.type === 'quote' || b.type === 'img' ? b.type : 'p',
+          text: b.text,
+          url: b.url,
+          caption: b.caption,
+          credit: b.credit,
+          wide: !!b.wide,
+        }));
+    }
+    if (typeof raw === 'string') {
+      return raw
+        .split(/\n\s*\n/)
+        .map(t => t.trim())
+        .filter(Boolean)
+        .map((text): BlogBlock => ({ type: 'p', text }));
+    }
+    return [];
+  }
+
+  private mapComment(c: any): BlogComment {
+    return {
+      id: this.numericId(c?._id ?? c?.id ?? Date.now() + Math.random()),
+      author: String(c?.author ?? c?.name ?? 'Guest'),
+      time: this.displayDate(c?.time ?? c?.createdAt),
+      text: String(c?.text ?? ''),
+      verified: !!c?.verified,
+    };
+  }
+
+  private mapSideInfo(raw: any): SideCard {
+    const type: SideInformation['type'] = SIDE_TYPES.includes(raw?.type) ? raw.type : 'service';
+    const gallery = Array.isArray(raw?.imageUrls)
+      ? raw.imageUrls.map(String).filter(Boolean)
+      : [];
+    return {
+      id: String(raw?._id ?? raw?.id ?? Math.random().toString(36).slice(2)),
+      type,
+      tag: String(raw?.tag ?? ''),
+      kicker: String(raw?.kicker ?? ''),
+      title: String(raw?.title ?? ''),
+      text: String(raw?.text ?? ''),
+      ticker: String(raw?.ticker ?? ''),
+      cta: String(raw?.cta ?? 'Learn more'),
+      imageUrl: String(raw?.imageUrl ?? raw?.image ?? ''),
+      videoUrl: raw?.videoUrl || undefined,
+      imageUrls: gallery.length ? gallery : undefined,
+      specs: Array.isArray(raw?.specs) ? raw.specs.map(String) : undefined,
+      price: raw?.price != null ? String(raw.price) : undefined,
+      priceLabel: raw?.priceLabel,
+      carPrice: raw?.carPrice != null ? Number(raw.carPrice) : undefined,
+      rate: raw?.rate != null ? Number(raw.rate) : undefined,
+      months: raw?.months != null ? Number(raw.months) : undefined,
+      carId: raw?.carId ? String(raw.carId) : undefined,
+    };
+  }
+
+  /**
+   * Real cars from the catalogue that have a playable review video, as side-rail "car" cards.
+   * Their review video is stored in videoUrl, so the rail plays it (file, YouTube, Vimeo, Streamable).
+   * The car's photos are used as the gallery so the other rail can slide through images.
+   */
+  private buildCarCards(cars: ApiCar[]): SideCard[] {
+    const withVideo = cars.filter(
+      c => c.photos?.[0] && (c.reviewVideoUrl ?? '').trim() && resolveReviewVideo(c.reviewVideoUrl),
+    );
+
+    return this.shuffle(withVideo)
+      .slice(0, MAX_CAR_CARDS)
+      .map((c): SideCard => {
+        const specs = [
+          c.year ? String(c.year) : '',
+          c.engine > 0 ? `${c.engine.toLocaleString('en-US')} cc` : '',
+          c.transmission ?? '',
+          c.mileage > 0 ? `${c.mileage.toLocaleString('en-US')} km` : '',
+        ].filter(Boolean);
+
+        return {
+          id: `car-${c._id}`,
+          carId: c._id,
+          type: 'video',
+          tag: c.recommended ? 'Recommended car' : 'Live review',
+          kicker: c.recommended ? 'Our pick' : 'Watch the review',
+          title: `${c.year} ${c.make} ${c.model}`.trim(),
+          text: [specs.join(' · '), ksh(c.price)].filter(Boolean).join(' — '),
+          ticker: 'Watch the review • Inspected by our workshop • Trade-ins welcome • Financing available •',
+          cta: 'View this car',
+          imageUrl: c.photos[0],
+          imageUrls: c.photos.length > 1 ? [...c.photos] : undefined,
+          videoUrl: (c.reviewVideoUrl ?? '').trim(),
+          specs,
+          price: ksh(c.price),
+          priceLabel: c.negotiable ? 'Negotiable' : 'Cash price',
+        };
+      });
+  }
+
+  /** Turns an ISO timestamp into "Today", "3 days ago" and so on; other text is left as is. */
+  private displayDate(value: any): string {
+    if (!value) return '';
+    const d = new Date(value);
+    if (isNaN(d.getTime()) || !/^\d{4}-\d{2}-\d{2}/.test(String(value))) return String(value);
+    const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+    if (days <= 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.floor(days / 7)} week${days >= 14 ? 's' : ''} ago`;
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   @HostListener('window:resize')
@@ -127,8 +359,9 @@ export class Blog implements AfterViewInit, OnDestroy {
 
   /* ---------- Side information (side rails of the modal) ---------- */
 
-  // Placeholder cars, prices and finance terms. Replace with your real stock and partner terms.
-  private sideInfoPool: SideInformation[] = [
+  // Sample items, used until the API returns its own (side info and cars with review videos).
+  // Each advert carries BOTH an image (or gallery) and, where useful, a video.
+  private sideInfoPool: SideCard[] = [
     {
       id: 'car-harrier',
       type: 'car',
@@ -139,6 +372,8 @@ export class Blog implements AfterViewInit, OnDestroy {
       ticker: 'Right-hand drive • Full history • Inspected by our workshop • Warranty included •',
       cta: 'View this car',
       imageUrl: IMG.a,
+      imageUrls: [IMG.a, IMG.e, IMG.c],
+      videoUrl: VIDEO.drive,
       specs: ['2018', '2.0L Petrol', 'Auto', '42,000 km'],
       price: 'KES 3,450,000',
       priceLabel: 'Cash price'
@@ -153,7 +388,8 @@ export class Blog implements AfterViewInit, OnDestroy {
       ticker: 'Book a test drive • Same-day slots • No pressure • Bring a friend •',
       cta: 'Book a test drive',
       imageUrl: IMG.d,
-      videoUrl: VIDEO.drive
+      imageUrls: [IMG.d, IMG.b, IMG.a],
+      videoUrl: VIDEO.road
     },
     {
       id: 'finance-monthly',
@@ -165,6 +401,7 @@ export class Blog implements AfterViewInit, OnDestroy {
       ticker: 'Flexible terms • Quick approval • Trade-ins welcome • Bank partners •',
       cta: 'Explore financing',
       imageUrl: IMG.c,
+      imageUrls: [IMG.c, IMG.e, IMG.d],
       carPrice: 2400000,
       rate: 12,
       months: 48
@@ -179,6 +416,8 @@ export class Blog implements AfterViewInit, OnDestroy {
       ticker: 'All-wheel drive • Family ready • Fresh service • Low mileage •',
       cta: 'View this car',
       imageUrl: IMG.e,
+      imageUrls: [IMG.e, IMG.a, IMG.b],
+      videoUrl: VIDEO.drive,
       specs: ['2017', '2.0L Turbo', 'Auto', '58,000 km'],
       price: 'KES 2,950,000',
       priceLabel: 'Cash price'
@@ -193,6 +432,7 @@ export class Blog implements AfterViewInit, OnDestroy {
       ticker: 'Japan • UK • Full import service • Landed-cost quote in minutes •',
       cta: 'Start an import',
       imageUrl: IMG.b,
+      imageUrls: [IMG.b, IMG.d, IMG.e],
       videoUrl: VIDEO.road
     },
     {
@@ -204,27 +444,152 @@ export class Blog implements AfterViewInit, OnDestroy {
       text: 'Get a fair valuation and book an inspection. Trade it in against your next car in one visit.',
       ticker: 'Free valuation • Inspection booking • Fast payout • Upgrade today •',
       cta: 'Value my car',
-      imageUrl: IMG.d
+      imageUrl: IMG.d,
+      imageUrls: [IMG.d, IMG.c, IMG.b]
     }
   ];
 
-  private randomOf<T>(list: T[]): T {
-    return list[Math.floor(Math.random() * list.length)];
+  private shuffle<T>(list: T[]): T[] {
+    const a = [...list];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
   }
 
-  /** Left side info is always a random video. Right side info is a random different item, preferring a non-video. */
+  /**
+   * Picks the two ads shown in the rails.
+   *
+   * Preference order for the LEFT rail (image slideshow):
+   *   1. a real car that has BOTH a video and images
+   *   2. any ad that has BOTH a video and images
+   *   3. any ad with images
+   * The RIGHT rail (video) then tries to show the SAME ad, because a single
+   * advert is meant to fill both rails (one video, one image slideshow).
+   * If that ad has no playable video, a second ad with a video is used instead.
+   */
   private pickSideInformations(): void {
-    const videos = this.sideInfoPool.filter(a => a.type === 'video');
-    const left = this.randomOf(videos.length ? videos : this.sideInfoPool);
-    const others = this.sideInfoPool.filter(a => a.id !== left.id);
-    const nonVideo = others.filter(a => a.type !== 'video');
+    const pool = this.sideInfoPool;
+    const playable = (a: SideCard) => !!this.sideMedia(a);
+    const hasImages = (a: SideCard) => !!this.sideImages(a);
+
+    const carBoth = this.shuffle(pool.filter(a => !!a.carId && playable(a) && hasImages(a)));
+    const anyBoth = this.shuffle(pool.filter(a => playable(a) && hasImages(a)));
+    const left = carBoth[0] ?? anyBoth[0] ?? this.shuffle(pool)[0];
+
+    // Try to pair the left ad with itself (same advert, different media).
+    let right: SideCard | undefined;
+
+    if (playable(left) && hasImages(left)) {
+      // The same ad can fill both rails: video on one side, images on the other.
+      right = left;
+    } else if (playable(left)) {
+      // Left already has a video; find another ad with images for the right.
+      right = this.shuffle(pool.filter(a => a.id !== left.id && hasImages(a)))[0];
+    } else {
+      // Left has images; find a playable ad for the right, preferring one with images too.
+      right = this.shuffle(pool.filter(a => a.id !== left.id && playable(a) && hasImages(a)))[0]
+        ?? this.shuffle(pool.filter(a => a.id !== left.id && playable(a)))[0];
+    }
+
     this.sideInfoLeft = left;
-    this.sideInfoRight = this.randomOf(nonVideo.length ? nonVideo : others);
+    this.sideInfoRight = right ?? left;
+    this.startSlideshows();
   }
 
+  /** A car opens its specs page; any other card goes to the store. */
   onSideInfoClick(sideInfo: SideInformation): void {
+    const carId = (sideInfo as SideCard).carId;
     this.closeBlog();
-    this.goToStore();
+    if (carId) this.router.navigate(['/specs'], { queryParams: { id: carId } });
+    else this.goToStore();
+  }
+
+  /* ---------- Side-rail media ---------- */
+
+  private mediaCache = new Map<string, ReviewVideo | null>();
+  private sideFailed = new Set<string>();
+
+  /**
+   * The playable video for a side card (its review video / ad video), or null when it has none,
+   * failed to play, or the visitor prefers reduced motion. The template shows the image then.
+   */
+  sideMedia(item: SideInformation | null): ReviewVideo | null {
+    if (!item || !item.videoUrl || this.sideFailed.has(item.id)) return null;
+    if (typeof window !== 'undefined' && prefersReducedMotion()) return null;
+    if (!this.mediaCache.has(item.id)) {
+      this.mediaCache.set(item.id, resolveReviewVideo(item.videoUrl));
+    }
+    return this.mediaCache.get(item.id) ?? null;
+  }
+
+  /**
+   * The images used by the sliding advert. Uses the explicit gallery when present,
+   * otherwise the single imageUrl. Returns null when there is nothing to show.
+   */
+  sideImages(item: SideInformation | null): string[] | null {
+    if (!item) return null;
+    const extra = (item as SideCard).imageUrls ?? [];
+    const all = [item.imageUrl, ...extra].filter(Boolean);
+    const unique = Array.from(new Set(all));
+    return unique.length ? unique : null;
+  }
+
+  onSideVideoLoaded(el: HTMLVideoElement): void {
+    primeMutedVideo(el);
+  }
+  onSideVideoReady(el: HTMLElement): void {
+    markReady(el);
+  }
+  /** A video that cannot play puts that card back to its image. */
+  onSideVideoError(item: SideInformation | null): void {
+    if (!item) return;
+    this.sideFailed.add(item.id);
+    this.cdr.detectChanges();
+  }
+
+  /* ---------- Side-rail image slideshow ---------- */
+
+  private slideTimers = new Map<string, any>();
+  private slidePositions = new Map<string, number>();
+
+  /** Reads the current slide index for a given card. */
+  slideIndex(item: SideInformation): number {
+    return this.slidePositions.get(item.id) ?? 0;
+  }
+
+  /**
+   * Starts a per-card timer that advances the image index. Only cards with more than
+   * one image get a timer. Timers are cleared before re-starting (modal re-open).
+   */
+  private startSlideshows(): void {
+    this.stopSlideshows();
+    const cards = [this.sideInfoLeft, this.sideInfoRight].filter(Boolean) as SideCard[];
+    const seen = new Set<string>();
+
+    cards.forEach(card => {
+      if (seen.has(card.id)) return;
+      seen.add(card.id);
+      const imgs = this.sideImages(card);
+      if (!imgs || imgs.length < 2) return;
+
+      this.slidePositions.set(card.id, 0);
+      const timer = setInterval(() => {
+        const current = this.slidePositions.get(card.id) ?? 0;
+        const next = (current + 1) % imgs.length;
+        this.slidePositions.set(card.id, next);
+        // Only this card needs a re-render.
+        this.cdr.detectChanges();
+      }, SLIDE_INTERVAL_MS);
+      this.slideTimers.set(card.id, timer);
+    });
+  }
+
+  private stopSlideshows(): void {
+    this.slideTimers.forEach(timer => clearInterval(timer));
+    this.slideTimers.clear();
+    this.slidePositions.clear();
   }
 
   /** Indicative monthly payment: 20% deposit, fixed rate, equal instalments. */
@@ -247,9 +612,15 @@ export class Blog implements AfterViewInit, OnDestroy {
     return Math.round(value || 0).toLocaleString('en-KE');
   }
 
-  /* ---------- "Did you know" posts (left column) ---------- */
+  /* ---------- Posts ---------- */
 
-  facts: BlogPost[] = [
+  // The lists shown on the page. Filled from the API; the sample content below is the fallback.
+  facts: BlogPost[] = [];
+  blogs: BlogPost[] = [];
+
+  /* ---------- Sample "Did you know" posts (fallback) ---------- */
+
+  private fallbackFacts: BlogPost[] = [
     {
       id: 11,
       kind: 'fact',
@@ -389,9 +760,9 @@ export class Blog implements AfterViewInit, OnDestroy {
     }
   ];
 
-  /* ---------- Blog posts (feed) ---------- */
+  /* ---------- Sample blog posts (fallback) ---------- */
 
-  blogs: BlogPost[] = [
+  private fallbackBlogs: BlogPost[] = [
     {
       id: 1,
       kind: 'blog',
@@ -537,6 +908,14 @@ export class Blog implements AfterViewInit, OnDestroy {
       gsap.fromTo(panel, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', clearProps: 'opacity,transform' });
     }
 
+    // Review-video ads autoplay muted and loop (browsers block autoplay unless muted is set in code).
+    root.querySelectorAll<HTMLVideoElement>('.modal-rail video').forEach(v => {
+      v.loop = true;
+      v.playsInline = true;
+      primeMutedVideo(v);
+      v.addEventListener('canplay', () => primeMutedVideo(v), { once: true });
+    });
+
     const sideInfos = root.querySelectorAll('.modal-rail .side-info');
     if (sideInfos.length) {
       gsap.fromTo(
@@ -556,6 +935,7 @@ export class Blog implements AfterViewInit, OnDestroy {
   closeBlog(): void {
     if (!this.selectedBlog) return;
     this.selectedBlog = null;
+    this.stopSlideshows();
     document.body.style.overflow = '';
   }
 
@@ -576,6 +956,8 @@ export class Blog implements AfterViewInit, OnDestroy {
   private findPost(id: number): BlogPost | undefined {
     return this.blogs.find(b => b.id === id) || this.facts.find(f => f.id === id);
   }
+
+  // Likes, bookmarks and comments stay in the browser: the backend has no endpoint for them yet.
 
   toggleLike(id: number): void {
     const post = this.findPost(id);
@@ -618,7 +1000,7 @@ export class Blog implements AfterViewInit, OnDestroy {
     const text = input.value.trim();
     if (!text) return;
 
-    // Typed payload ready to send to a backend endpoint later:
+    // Typed payload ready for when a comments endpoint exists on the backend:
     const payload: NewCommentPayload = { postId, text };
     // this.api.postComment(payload).subscribe(...)
 

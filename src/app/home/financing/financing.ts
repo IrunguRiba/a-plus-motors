@@ -34,6 +34,9 @@ export class Financing implements OnInit, OnDestroy {
   private api = inject(ApiServices);
   private carsSub?: Subscription;
   private querySub?: Subscription;
+  private calcCarSub?: Subscription;
+  private applyCarSub?: Subscription;
+  private submitSub?: Subscription;
 
   whatsappNumber = '254707555666';
 
@@ -67,6 +70,9 @@ export class Financing implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.carsSub?.unsubscribe();
     this.querySub?.unsubscribe();
+    this.calcCarSub?.unsubscribe();
+    this.applyCarSub?.unsubscribe();
+    this.submitSub?.unsubscribe();
   }
 
   // ---------- Tabs ----------
@@ -225,11 +231,12 @@ export class Financing implements OnInit, OnDestroy {
 
   onCalcCarLinkChange(): void {
     const link = this.calcLink;
+    this.calcCarSub?.unsubscribe();
     if (!link) {
       this.linkedFinance = null;
       return;
     }
-    this.api.getCarById(link.id).subscribe({
+    this.calcCarSub = this.api.getCarById(link.id).subscribe({
       next: raw => {
         if (!raw) {
           this.linkedFinance = null;
@@ -283,6 +290,7 @@ export class Financing implements OnInit, OnDestroy {
   }
 
   private resetCalculator(): void {
+    this.calcCarSub?.unsubscribe();
     this.calcCarLink = '';
     this.linkedFinance = null;
     this.calc.price = 3000000;
@@ -395,6 +403,12 @@ export class Financing implements OnInit, OnDestroy {
   applyType: ApplyType = 'individual';
   attempted = false;
   submitted = false;
+  /** True while the application is in flight (disable the submit button with this). */
+  submitting = false;
+  /** Shown in the form when the request fails. Empty when there is no error. */
+  submitError = '';
+  /** Reference code returned by the backend, if any. */
+  referenceCode = '';
 
   employmentTypes = ['Employed', 'Self-employed', 'Other'];
   periods = ['12 months', '24 months', '36 months', '48 months', '60 months (new vehicles)'];
@@ -495,6 +509,7 @@ export class Financing implements OnInit, OnDestroy {
     if (this.figures) return;
     const f = form === 'company' ? this.bizForm : this.indForm;
     const link = this.parseCarLink(f.vehicle);
+    this.applyCarSub?.unsubscribe();
 
     if (!link) {
       if (form === 'company') {
@@ -508,7 +523,7 @@ export class Financing implements OnInit, OnDestroy {
       return;
     }
 
-    this.api.getCarById(link.id).subscribe({
+    this.applyCarSub = this.api.getCarById(link.id).subscribe({
       next: raw => {
         if (!raw) return;
 
@@ -531,7 +546,6 @@ export class Financing implements OnInit, OnDestroy {
         }
 
         const depositPct = Math.max(20, fin?.deposit ?? 20);
-        const rate = Math.max(0, fin?.rate ?? 0);
         const carTerm = fin?.term ?? 48;
 
         const opts = [12, 24, 36, 48, 60];
@@ -602,6 +616,7 @@ export class Financing implements OnInit, OnDestroy {
         ...this.figuresLines()
       ];
     }
+    if (this.referenceCode) lines.push(`Reference: ${this.referenceCode}`);
     return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(lines.filter(Boolean).join('\n'))}`;
   }
 
@@ -609,20 +624,65 @@ export class Financing implements OnInit, OnDestroy {
     if (type === this.applyType) return;
     if (this.submitted) this.resetForms();
     this.attempted = false;
+    this.submitError = '';
     this.applyType = type;
   }
 
+  /** "2,400,000" → 2400000 */
+  private toNumber(text: string): number | undefined {
+    const n = Number(String(text).replace(/[^\d.]/g, ''));
+    return text.trim() && isFinite(n) ? n : undefined;
+  }
+
+  /** Builds the body sent to POST /api/requests/financing. */
+  private buildApplicationPayload() {
+    const company = this.applyType === 'company';
+    const form = company ? this.bizForm : this.indForm;
+    const link = this.parseCarLink(form.vehicle);
+    const hideNumbers = company ? this.bizHideNumbers : this.indHideNumbers;
+
+    return {
+      applicantType: this.applyType,
+      ...form,
+      carId: link?.id,
+      carLink: link?.url,
+      amount: hideNumbers ? undefined : this.toNumber(form.amount),
+      period: hideNumbers ? undefined : form.period,
+      calculator: this.figures ?? undefined,
+    };
+  }
+
+  /** Sends the application to POST /api/requests/financing; the done screen only shows on success. */
   submitApplication(): void {
     this.attempted = true;
-    if (!this.formValid) return;
-    this.submitted = true;
+    if (!this.formValid || this.submitting) return;
 
-    // Now that the application is locked in, clear the calculator so returning
-    // to it shows fresh defaults.
-    this.resetCalculator();
+    this.submitting = true;
+    this.submitError = '';
+    this.submitSub?.unsubscribe();
+    this.submitSub = this.api.submitFinancing(this.buildApplicationPayload()).subscribe({
+      next: (res) => {
+        this.submitting = false;
+        this.submitted = true;
+        this.referenceCode = res?.code ?? res?.id ?? '';
 
-    this.cdr.detectChanges();
-    document.querySelector('.fn-done')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        // Now that the application is locked in, clear the calculator so returning
+        // to it shows fresh defaults.
+        this.resetCalculator();
+
+        this.cdr.detectChanges();
+        document.querySelector('.fn-done')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      },
+      error: (err) => {
+        this.submitting = false;
+        this.submitError =
+          err?.error?.message ||
+          (err?.status === 0
+            ? 'Could not reach the server. Check your connection and try again.'
+            : 'We could not send your application. Please try again, or reach us on WhatsApp.');
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   private resetForms(): void {
@@ -637,6 +697,9 @@ export class Financing implements OnInit, OnDestroy {
     this.figures = null;
     this.attempted = false;
     this.submitted = false;
+    this.submitting = false;
+    this.submitError = '';
+    this.referenceCode = '';
   }
 
   // ---------- Insurance ----------
