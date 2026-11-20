@@ -1,1139 +1,1102 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600&display=swap');
 
-   .recommended {
-    --ink: #0F1010;
-    --ink-soft: #3B3E3E;
-    --mid: #787C7C;
-    --light: #D8DADB;
-    --brown: #2E2910;
-    --brown-dark: #010736;
-    --surface: #E4E6E7;
-    --sunk: #CBCECF;
-    --hair: rgba(15, 16, 16, 0.22);
-    --ok: #4A943E;
-  
-    position: relative;
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
-    margin: 0 auto;
-    padding: 60px 0;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: geometricPrecision;
-    font-kerning: normal;
-    color: var(--ink);
+.recommended {
+  --ink: #0F1010;
+  --ink-soft: #3B3E3E;
+  --mid: #787C7C;
+  --light: #D8DADB;
+  --brown: #2E2910;
+  --brown-dark: #010736;
+  --surface: #E4E6E7;
+  --sunk: #CBCECF;
+  --hair: rgba(15, 16, 16, 0.22);
+  --ok: #4A943E;
+  --bronze: #C9A06B;
+
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  margin: 0 auto;
+  padding: 60px 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  font-kerning: normal;
+  color: var(--ink);
+}
+
+.recommended .recommended {
+  padding: 0;
+  margin-bottom: 48px;
+}
+
+/* ---------- DISCOVER HERO ---------- */
+.discover-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 24px 28px 8px;
+  text-align: center;
+}
+
+.discover-title {
+  margin: 0;
+  font-family: "Sora", "Manrope", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.body-filter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  max-width: 100%;
+}
+
+.body-filter-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--ink-soft);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: color 0.2s ease;
+}
+
+.body-filter-btn svg {
+  display: block;
+  width: 112px;
+  height: 46px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.body-filter-btn span {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.body-filter-btn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: #000;
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 0.25s ease;
+}
+
+@media (hover: hover) {
+  .body-filter-btn:hover { color: #000; }
+  .body-filter-btn:hover::after { transform: translateX(-50%) scaleX(1); }
+}
+
+.body-filter-btn.active { color: #000; }
+.body-filter-btn.active::after { transform: translateX(-50%) scaleX(1); }
+
+.body-filter-btn:focus-visible {
+  outline: 1px dotted var(--ink);
+  outline-offset: 3px;
+}
+
+.body-filter-btn .body-glass { stroke-width: 1.1; opacity: 0.7; }
+.body-filter-btn .body-rim { stroke-width: 1.1; }
+.body-filter-btn.active .body-shell,
+.body-filter-btn:hover .body-shell { stroke-width: 1.9; }
+
+/* ---------- BELT TITLE ---------- */
+.belt-title {
+  margin: 36px 0 0;
+  padding: 0 28px;
+  font-family: "Sora", "Manrope", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(15px, 1.6vw, 19px);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #000;
+}
+
+/* ---------- STORE STRIP ---------- */
+.main-store {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 14px 28px;
+  background: var(--surface);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--hair);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.main-store h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0;
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+.main-store h2 span {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid var(--hair);
+  background: transparent;
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.main-store h2 span:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--light);
+}
+
+.main-store h2 span:active {
+  background: var(--brown);
+  border-color: var(--brown);
+  color: #F4F5F5;
+}
+
+/* ---------- BELT ---------- */
+.belt-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.belt-viewport {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-top: 0;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  scroll-behavior: auto;
+  touch-action: auto;
+  overscroll-behavior-x: contain;
+  will-change: scroll-position;
+}
+
+.belt-viewport::-webkit-scrollbar { display: none; }
+.belt-viewport.is-dragging { cursor: grabbing; }
+.belt-viewport.is-dragging .car-card { pointer-events: none; transition: none; }
+
+.belt-track {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  width: max-content;
+  padding-bottom: 8px;
+}
+
+.belt-track > .car-card,
+.belt-track > .bridge-line { flex: 0 0 auto; }
+
+.belt-track img { -webkit-user-drag: none; user-drag: none; }
+
+/* ---------- BELT ARROWS ---------- */
+.belt-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  animation: arrowIn 0.25s ease both;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.belt-arrow-left { left: 16px; }
+.belt-arrow-right { right: 16px; }
+
+.belt-arrow svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .belt-arrow:hover { background: var(--ink); border-color: var(--ink); color: var(--light); }
+}
+
+.belt-arrow:active { background: var(--brown); border-color: var(--brown); color: #F4F5F5; }
+.belt-arrow:focus-visible { outline: 1px dotted var(--ink); outline-offset: 3px; }
+
+@keyframes arrowIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- DRAG HINT ---------- */
+.drag-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  background: var(--ink);
+  color: var(--light);
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.drag-hint.show { opacity: 1; }
+
+.drag-hint svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.drag-hint.show svg:first-child { animation: hintNudgeLeft 1.1s ease-in-out infinite; }
+.drag-hint.show svg:last-child { animation: hintNudgeRight 1.1s ease-in-out infinite; }
+
+@keyframes hintNudgeLeft { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-4px); } }
+@keyframes hintNudgeRight { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+
+.car-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 880px;
+  min-width: 880px;
+  background: var(--surface);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.car-card:hover { border-color: var(--brown); box-shadow: 0 0 0 1px var(--brown); }
+
+.car-image-container {
+  position: relative;
+  min-height: 340px;
+  overflow: hidden;
+  background: var(--sunk);
+  border-right: 1px solid var(--ink);
+}
+
+.car-image-container img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  filter: none;
+}
+
+.car-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 32px 36px;
+}
+
+.car-meta-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: -0.008em;
+  color: var(--ink-soft);
+}
+
+.car-meta-top span:first-child { font-weight: 600; color: var(--ink); }
+
+.car-title {
+  margin: 0 0 12px;
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.car-description {
+  margin: 0 0 20px;
+  max-width: 44ch;
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.car-specs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+
+.car-card .spec-chip {
+  padding: 5px 10px;
+  border-radius: 0;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.car-pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-bottom: 22px;
+}
+
+.starting-label {
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.car-price {
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.car-finance {
+  flex-basis: auto;
+  margin-top: 4px;
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.car-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.car-details .inquire-btn {
+  width: 100%;
+  margin: 0;
+  padding: 13px 24px;
+  background: transparent;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: var(--ink);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.car-cta-row .inquire-btn { flex: 1 1 auto; width: auto; min-width: 0; }
+.car-cta-row .card-actions { flex: 0 0 auto; margin-right: 0; }
+
+.car-details .inquire-btn:hover { background-color: var(--ink); color: var(--light); }
+.car-details .inquire-btn:active { background-color: var(--brown); border-color: var(--brown); color: #F4F5F5; }
+
+.bridge-line {
+  flex-shrink: 0;
+  align-self: center;
+  width: 40px;
+  height: 1px;
+  background: var(--ink);
+}
+
+/* ---------- STORE ---------- */
+.cars-store {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+  scroll-margin-top: 20px;
+}
+
+.car-rows-container { width: 100%; }
+
+.store-empty {
+  margin: 24px 0;
+  text-align: center;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--ink-soft);
+}
+
+.store-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  padding: 1px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.spec-chip {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.store-car-card {
+  border: 1px solid var(--hair);
+  background: var(--surface);
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.store-car-card:hover { transform: translateY(-4px); border-color: var(--brown); box-shadow: 0 0 0 1px var(--brown); }
+
+.store-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 17.7 / 10;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: var(--sunk);
+}
+
+.store-image-container img { width: 100%; height: 100%; object-fit: cover; }
+
+.store-car-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  font-family: inherit;
+}
+
+.store-car-header { display: flex; align-items: baseline; gap: 8px; font-size: 16px; color: var(--ink); }
+.store-car-year { font-weight: 500; color: var(--ink); }
+.store-car-model { font-weight: 500; color: var(--ink); }
+.store-car-specs { display: flex; flex-wrap: wrap; gap: 6px; }
+.store-car-pricing { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+.store-car-price { font-size: 20px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+
+.store-car-finance {
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.store-car-details .inquire-btn {
+  margin-top: 8px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--ink);
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.store-car-details .inquire-btn:hover { background-color: var(--ink); color: var(--light); }
+.store-car-details .inquire-btn:active { background-color: var(--brown); border-color: var(--brown); color: #F4F5F5; }
+
+.discover-section { display: flex; justify-content: center; margin-top: 10px; margin-bottom: 20px; }
+
+.discover-more-btn {
+  background: transparent;
+  border: 1px solid var(--ink);
+  padding: 14px 48px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.discover-more-btn:hover { background-color: var(--ink); color: var(--light); }
+.discover-more-btn:active { background-color: var(--brown); border-color: var(--brown); color: #F4F5F5; }
+
+/* ---------- BRANDS ---------- */
+.brand-display {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  padding: 28px;
+  border: 1px solid var(--ink);
+  box-sizing: border-box;
+  background: var(--surface);
+}
+
+.brand-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; width: 100%; }
+
+.brand-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  padding: 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--hair);
+  background: var(--surface);
+  cursor: pointer;
+  animation: brandFloat 7s ease-in-out infinite;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.brand-card:nth-child(2n) { animation-delay: -1.4s; }
+.brand-card:nth-child(3n) { animation-delay: -2.8s; }
+.brand-card:nth-child(5n) { animation-delay: -4.2s; }
+
+.brand-card::before,
+.brand-card::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  border: 0 solid var(--brown);
+  transition: width 0.35s ease, height 0.35s ease;
+  pointer-events: none;
+}
+
+.brand-card::before { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
+.brand-card::after { right: -1px; bottom: -1px; border-right-width: 1px; border-bottom-width: 1px; }
+
+.brand-card:hover,
+.brand-card:focus-visible { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); animation-play-state: paused; outline: none; }
+
+.brand-card:hover::before,
+.brand-card:hover::after,
+.brand-card:focus-visible::before,
+.brand-card:focus-visible::after { width: 22px; height: 22px; }
+
+.brand-bg {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(18px) saturate(1.1);
+  opacity: 0.28;
+  transform: scale(1.5);
+  transition: opacity 0.4s ease, transform 0.6s ease;
+  pointer-events: none;
+}
+
+.brand-card:hover .brand-bg,
+.brand-card:focus-visible .brand-bg { opacity: 0.42; transform: scale(1.65); }
+
+.brand-logo-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 60px;
+  margin-bottom: 10px;
+}
+
+.brand-logo-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: grayscale(0.35);
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+.brand-card:hover .brand-logo-container img,
+.brand-card:focus-visible .brand-logo-container img { transform: scale(1.07); filter: grayscale(0); }
+
+.brand-name {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--ink);
+  background: linear-gradient(var(--brown), var(--brown)) left bottom / 100% 1px no-repeat;
+  transition: background-size 0.35s ease;
+}
+
+.brand-card:hover .brand-name,
+.brand-card:focus-visible .brand-name { background-size: 0 1px; background-position: right bottom; }
+
+@keyframes brandFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+/* ---------- CARD ACTIONS ---------- */
+.card-actions {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: -6px;
+}
+
+.card-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.card-action svg {
+  display: block;
+  flex-shrink: 0;
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+  pointer-events: none;
+}
+
+.action-count {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.card-action:focus-visible { outline: 1px dotted var(--ink); outline-offset: 2px; }
+
+@media (hover: hover) {
+  .card-action:hover { background-color: rgba(15, 16, 16, 0.08); }
+  .card-action.bookmark:hover { color: #790D16; }
+  .card-action.share:hover { color: var(--ok); }
+}
+
+.card-action.bookmark.active { color: #790D16; }
+.card-action.active svg { fill: currentColor; }
+.card-action.share.copied { color: var(--ok); }
+
+.store-finance-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 10px;
+}
+
+.store-finance-row .card-actions { margin-left: auto; }
+
+.copied-note {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  padding: 6px 10px;
+  background: var(--ink);
+  color: var(--light);
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: noteIn 0.2s ease both;
+}
+
+.copied-note::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 38px;
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+}
+
+@keyframes noteIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---------- HOVER VIDEO PREVIEW ---------- */
+.has-video { cursor: pointer; }
+
+.video-hint {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+  color: #fff;
+  background: rgba(15, 16, 16, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.hover-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+  display: block;
+  background: #000;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.hover-preview.ready { opacity: 1; }
+
+/* ============================================================
+   CLIENT REVIEWS — styled to match footer comment cards
+   ============================================================ */
+
+.reviews {
+  position: relative;
+  width: 100%;
+  padding: 60px 0 70px;
+  box-sizing: border-box;
+  background: #D8DADB;
+  border-top: 1px solid #000000;
+  color: #000000;
+  font-family: "DM Mono", monospace;
+}
+
+.reviews-title {
+  margin: 0 0 40px;
+  padding: 0 28px;
+  font-family: "DM Mono", monospace;
+  font-size: clamp(16px, 1.8vw, 22px);
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.reviews-wrapper {
+  position: relative;
+  margin-top: 0;
+}
+
+/* connecting line that the cards sit on */
+.reviews-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #000000;
+  z-index: 1;
+}
+
+.reviews-marquee {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
+}
+
+.reviews-track {
+  display: flex;
+  align-items: stretch;
+  width: max-content;
+  animation: reviews-scroll 70s linear infinite;
+  will-change: transform;
+}
+
+.reviews-marquee:hover .reviews-track,
+.reviews-marquee:focus-within .reviews-track {
+  animation-play-state: paused;
+}
+
+@keyframes reviews-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.review-card {
+  flex: 0 0 400px;
+  width: 400px;
+  margin-right: 30px;
+  background-color: #D8DADB;
+  border: 1px solid #000000;
+  border-radius: 4px;
+  padding: 28px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #000000;
+  font-family: "DM Mono", monospace;
+}
+
+.review-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.review-star {
+  color: #D4621A;
+}
+
+.review-star.empty {
+  opacity: 0.25;
+}
+
+.review-verified {
+  margin-left: auto;
+  font-family: "DM Mono", monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #000000;
+  border: 1px solid #2A1A0E;
+  padding: 2px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+
+.review-card .review-quote {
+  font-family: "DM Mono", monospace;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #000000;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.review-card .review-body {
+  font-family: "DM Mono", monospace;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #000000;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.review-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed #000000;
+  font-size: 0.8rem;
+  color: #000000;
+}
+
+.review-card .review-author {
+  font-weight: 500;
+  color: #000000;
+}
+
+.review-purchase,
+.review-date {
+  opacity: 0.75;
+  color: #000000;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1100px) {
+  .brand-row { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .main-store { padding: 14px 16px; gap: 12px; }
+  .discover-hero { gap: 28px; }
+  .body-filter { gap: 8px 20px; }
+  .reviews-line { display: none; }
+
+  .review-card {
+    flex-basis: 300px;
+    width: 300px;
+    margin-right: 20px;
+    padding: 22px;
   }
-  
-  .recommended .recommended {
-    padding: 0;
-    margin-bottom: 48px;
-  }
-  
-  /* ---------- DISCOVER HERO (centered title + body-type filter) ---------- */
-  .discover-hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 28px;
-    padding: 24px 28px 8px;
-    text-align: center;
-  }
-  
-  .discover-title {
-    margin: 0;
-    font-family: "Sora", "Manrope", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(26px, 3.4vw, 40px);
-    line-height: 1.1;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #000;
-  }
-  
+  .reviews-track { animation-duration: 55s; }
+}
+
+@media (max-width: 800px) {
+  .car-card { grid-template-columns: 1fr; width: 86vw; min-width: 300px; }
+  .car-image-container { min-height: 220px; border-right: none; border-bottom: 1px solid var(--ink); }
+  .car-details { padding: 24px 20px; }
+  .car-title { font-size: 26px; line-height: 32px; }
+  .car-price { font-size: 26px; line-height: 32px; }
+  .store-row { grid-template-columns: 1fr; }
+  .brand-display { padding: 16px; }
+  .brand-row { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .belt-arrow { width: 40px; height: 40px; }
+  .belt-arrow-left { left: 8px; }
+  .belt-arrow-right { right: 8px; }
+  .belt-arrow svg { width: 20px; height: 20px; }
+
+  .discover-hero { padding: 16px 0 4px; }
   .body-filter {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px 28px;
-    max-width: 100%;
-  }
-  
-  .body-filter-btn {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 4px 12px;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    color: var(--ink-soft);
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    transition: color 0.2s ease;
-  }
-  
-  .body-filter-btn svg {
-    display: block;
-    width: 112px;
-    height: 46px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    pointer-events: none;
-  }
-  
-  .body-filter-btn span {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    line-height: 16px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
-  
-  /* underline that grows from the centre on hover / active */
-  .body-filter-btn::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    width: 100%;
-    height: 2px;
-    background: #000;
-    transform: translateX(-50%) scaleX(0);
-    transition: transform 0.25s ease;
-  }
-  
-  @media (hover: hover) {
-    .body-filter-btn:hover { color: #000; }
-    .body-filter-btn:hover::after { transform: translateX(-50%) scaleX(1); }
-  }
-  
-  .body-filter-btn.active { color: #000; }
-  .body-filter-btn.active::after { transform: translateX(-50%) scaleX(1); }
-  
-  .body-filter-btn:focus-visible {
-    outline: 1px dotted var(--ink);
-    outline-offset: 3px;
-  }
-  
-  .body-filter-btn .body-glass { stroke-width: 1.1; opacity: 0.7; }
-  .body-filter-btn .body-rim { stroke-width: 1.1; }
-  .body-filter-btn.active .body-shell,
-  .body-filter-btn:hover .body-shell { stroke-width: 1.9; }
-  
-  /* ---------- RECOMMENDED TITLE (above the belt) ---------- */
-  .belt-title {
-    margin: 36px 0 0;
-    padding: 0 28px;
-    font-family: "Sora", "Manrope", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(15px, 1.6vw, 19px);
-    line-height: 1.2;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #000;
-  }
-  
-  /* ---------- STORE STRIP (chips only) ---------- */
-  .main-store {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    padding: 14px 28px;
-    background: var(--surface);
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px solid var(--hair);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  }
-  
-  .main-store h2 {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin: 0;
-    font-size: 0;
-    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  }
-  
-  .main-store h2 span {
-    display: inline-block;
-    padding: 6px 12px;
-    border: 1px solid var(--hair);
-    background: transparent;
-    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-    font-size: 10.5px;
-    line-height: 14px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
-  
-  .main-store h2 span:hover {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--light);
-  }
-  
-  .main-store h2 span:active {
-    background: var(--brown);
-    border-color: var(--brown);
-    color: #F4F5F5;
-  }
-  
-  /* ---------- BELT (draggable horizontal scroller) ---------- */
-  .belt-wrap {
-    position: relative;
-    width: 100%;
-    margin-top: 24px;
-  }
-  
-  .belt-viewport {
-    position: relative;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
     width: 100%;
     overflow-x: auto;
-    overflow-y: hidden;
-    margin-top: 0;
+    padding: 0 16px;
+    box-sizing: border-box;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    cursor: grab;
-    user-select: none;
-    -webkit-user-select: none;
-    scroll-behavior: auto;
-    touch-action: auto;
-    overscroll-behavior-x: contain;
-    will-change: scroll-position;
   }
-  
-  .belt-viewport::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .belt-viewport.is-dragging {
-    cursor: grabbing;
-  }
-  
-  .belt-viewport.is-dragging .car-card {
-    pointer-events: none; /* no hover flicker or transitions mid-drag */
-    transition: none;
-  }
-  
-  .belt-track {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    width: max-content;
-    padding-bottom: 8px;
-  }
-  
-  .belt-track > .car-card,
-  .belt-track > .bridge-line {
-    flex: 0 0 auto;
-  }
-  
-  /* -webkit-user-drag: none prevents the ghost-image drag
-     without disabling clicks on the card image. */
-  .belt-track img {
-    -webkit-user-drag: none;
-    user-drag: none;
-  }
-  
-  /* ---------- BELT ARROWS ---------- */
-  .belt-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 3;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    background: var(--surface);
-    color: var(--ink);
-    border: 1px solid var(--ink);
-    border-radius: 0;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    animation: arrowIn 0.25s ease both;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
-  
-  .belt-arrow-left { left: 16px; }
-  .belt-arrow-right { right: 16px; }
-  
-  .belt-arrow svg {
-    display: block;
-    width: 22px;
-    height: 22px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    pointer-events: none;
-  }
-  
-  @media (hover: hover) {
-    .belt-arrow:hover {
-      background: var(--ink);
-      border-color: var(--ink);
-      color: var(--light);
-    }
-  }
-  
-  .belt-arrow:active {
-    background: var(--brown);
-    border-color: var(--brown);
-    color: #F4F5F5;
-  }
-  
-  .belt-arrow:focus-visible {
-    outline: 1px dotted var(--ink);
-    outline-offset: 3px;
-  }
-  
-  @keyframes arrowIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  /* ---------- BELT DRAG HINT ---------- */
-  .drag-hint {
-    position: absolute;
-    left: 50%;
-    bottom: 24px;
-    transform: translateX(-50%);
-    z-index: 3;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 16px;
-    background: var(--ink);
-    color: var(--light);
-    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-    font-size: 10.5px;
-    line-height: 14px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-  }
-  
-  .drag-hint.show {
-    opacity: 1;
-  }
-  
-  .drag-hint svg {
-    display: block;
-    width: 14px;
-    height: 14px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  
-  .drag-hint.show svg:first-child { animation: hintNudgeLeft 1.1s ease-in-out infinite; }
-  .drag-hint.show svg:last-child { animation: hintNudgeRight 1.1s ease-in-out infinite; }
-  
-  @keyframes hintNudgeLeft {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(-4px); }
-  }
-  
-  @keyframes hintNudgeRight {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(4px); }
-  }
-  
-  .car-card {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 880px;
-    min-width: 880px;
-    background: var(--surface);
-    border: 1px solid var(--ink);
-    border-radius: 0;
-    overflow: hidden;
-    box-sizing: border-box;
-    cursor: pointer;
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .car-card:hover {
-    border-color: var(--brown);
-    box-shadow: 0 0 0 1px var(--brown);
-  }
-  
-  .car-image-container {
-    position: relative;
-    min-height: 340px;
-    overflow: hidden;
-    background: var(--sunk);
-    border-right: 1px solid var(--ink);
-  }
-  
-  .car-image-container img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    object-fit: cover;
-    filter: none;
-  }
-  
-  .car-details {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-width: 0;
-    padding: 32px 36px;
-  }
-  
-  .car-meta-top {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 16px;
-    margin-bottom: 14px;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 15px;
-    line-height: 20px;
-    font-weight: 500;
-    letter-spacing: -0.008em;
-    text-transform: none;
-    color: var(--ink-soft);
-  }
-  
-  .car-meta-top span:first-child {
-    font-weight: 600;
-    color: var(--ink);
-  }
-  
-  .car-title {
-    margin: 0 0 12px;
-    font-size: 30px;
-    line-height: 36px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: var(--ink);
-  }
-  
-  .car-description {
-    margin: 0 0 20px;
-    max-width: 44ch;
-    font-size: 15px;
-    line-height: 24px;
-    font-weight: 400;
-    color: var(--ink);
-  }
-  
-  .car-specs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 22px;
-  }
-  
-  .car-card .spec-chip {
-    padding: 5px 10px;
-    border-radius: 0;
-    font-size: 11px;
-    line-height: 14px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-  
-  .car-pricing {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    margin-bottom: 22px;
-  }
-  
-  .starting-label {
-    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-    font-size: 11px;
-    line-height: 14px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-  
-  .car-price {
-    font-size: 30px;
-    line-height: 36px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--ink);
-  }
-  
-  .car-finance {
-    flex-basis: auto;
-    margin-top: 4px;
-    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-    font-size: 11px;
-    line-height: 14px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-  
-  /* INQUIRE + Share/Bookmark on one row (belt cards) */
-  .car-cta-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    width: 100%;
-  }
-  
-  .car-details .inquire-btn {
-    width: 100%;
-    margin: 0;
-    padding: 13px 24px;
-    background: transparent;
-    border: 1px solid var(--ink);
-    border-radius: 0;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    color: var(--ink);
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
-  
-  /* Inside the row the button takes the remaining width instead of 100% */
-  .car-cta-row .inquire-btn {
-    flex: 1 1 auto;
-    width: auto;
-    min-width: 0;
-  }
-  
-  .car-cta-row .card-actions {
-    flex: 0 0 auto;
-    margin-right: 0;
-  }
-  
-  .car-details .inquire-btn:hover {
-    background-color: var(--ink);
-    color: var(--light);
-  }
-  
-  .car-details .inquire-btn:active {
-    background-color: var(--brown);
-    border-color: var(--brown);
-    color: #F4F5F5;
-  }
-  
-  .bridge-line {
-    flex-shrink: 0;
-    align-self: center;
-    width: 40px;
-    height: 1px;
-    background: var(--ink);
-  }
-  
-  /* ---------- STORE ---------- */
-  .cars-store {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    width: 100%;
-    scroll-margin-top: 20px;
-  }
-  
-  .car-rows-container {
-    width: 100%;
-  }
-  
-  .store-empty {
-    margin: 24px 0;
-    text-align: center;
-    font-size: 15px;
-    line-height: 24px;
-    color: var(--ink-soft);
-  }
-  
-  .store-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
-    padding: 1px;
-    margin-bottom: 10px;
-    width: 100%;
-  }
-  
-  .spec-chip {
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.3px;
-    color: var(--ink);
-    background: transparent;
-    border: 1px solid var(--ink);
-    border-radius: 999px;
-    padding: 3px 10px;
-    white-space: nowrap;
-  }
-  
-  .store-car-card {
-    border: 1px solid var(--hair);
-    background: var(--surface);
-    padding: 16px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    cursor: pointer;
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .store-car-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--brown);
-    box-shadow: 0 0 0 1px var(--brown);
-  }
-  
-  .store-image-container {
-    position: relative; /* anchors the hover preview + ▶ badge */
-    width: 100%;
-    aspect-ratio: 17.7 / 10;
-    overflow: hidden;
-    margin-bottom: 16px;
-    background: var(--sunk);
-  }
-  
-  .store-image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .store-car-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    font-family: inherit;
-  }
-  
-  .store-car-header {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    font-size: 16px;
-    color: var(--ink);
-  }
-  
-  .store-car-year {
-    font-weight: 500;
-    color: var(--ink);
-  }
-  
-  .store-car-model {
-    font-weight: 500;
-    color: var(--ink);
-  }
-  
-  .store-car-specs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  
-  .store-car-pricing {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-top: 2px;
-  }
-  
-  .store-car-price {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--ink);
-    white-space: nowrap;
-  }
-  
-  .store-car-finance {
-    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-    font-size: 10.5px;
-    line-height: 14px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-  
-  .store-car-details .inquire-btn {
-    margin-top: 8px;
-    width: 100%;
-    background: transparent;
-    border: 1px solid var(--ink);
-    padding: 10px 0;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    color: var(--ink);
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
-  
-  .store-car-details .inquire-btn:hover {
-    background-color: var(--ink);
-    color: var(--light);
-  }
-  
-  .store-car-details .inquire-btn:active {
-    background-color: var(--brown);
-    border-color: var(--brown);
-    color: #F4F5F5;
-  }
-  
-  .discover-section {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .discover-more-btn {
-    background: transparent;
-    border: 1px solid var(--ink);
-    padding: 14px 48px;
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    color: var(--ink);
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
-  
-  .discover-more-btn:hover {
-    background-color: var(--ink);
-    color: var(--light);
-  }
-  
-  .discover-more-btn:active {
-    background-color: var(--brown);
-    border-color: var(--brown);
-    color: #F4F5F5;
-  }
-  
-  /* ---------- BRANDS ---------- */
-  .brand-display {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    padding: 28px;
-    border: 1px solid var(--ink);
-    box-sizing: border-box;
-    background: var(--surface);
-  }
-  
-  .brand-row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
-    width: 100%;
-  }
-  
-  .brand-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 4 / 3;
-    padding: 16px;
-    box-sizing: border-box;
-    border: 1px solid var(--hair);
-    background: var(--surface);
-    cursor: pointer;
-    animation: brandFloat 7s ease-in-out infinite;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .brand-card:nth-child(2n) { animation-delay: -1.4s; }
-  .brand-card:nth-child(3n) { animation-delay: -2.8s; }
-  .brand-card:nth-child(5n) { animation-delay: -4.2s; }
-  
+  .body-filter::-webkit-scrollbar { display: none; }
+  .body-filter-btn { flex: 0 0 auto; }
+  .body-filter-btn svg { width: 92px; height: 38px; }
+  .belt-title { padding: 0 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-card { animation: none; }
   .brand-card::before,
-  .brand-card::after {
-    content: "";
-    position: absolute;
-    z-index: 2;
-    width: 0;
-    height: 0;
-    border: 0 solid var(--brown);
-    transition: width 0.35s ease, height 0.35s ease;
-    pointer-events: none;
-  }
-  
-  .brand-card::before {
-    top: -1px;
-    left: -1px;
-    border-top-width: 1px;
-    border-left-width: 1px;
-  }
-  
-  .brand-card::after {
-    right: -1px;
-    bottom: -1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-  }
-  
-  .brand-card:hover,
-  .brand-card:focus-visible {
-    border-color: var(--ink);
-    box-shadow: 0 0 0 1px var(--ink);
-    animation-play-state: paused;
-    outline: none;
-  }
-  
-  .brand-card:hover::before,
-  .brand-card:hover::after,
-  .brand-card:focus-visible::before,
-  .brand-card:focus-visible::after {
-    width: 22px;
-    height: 22px;
-  }
-  
-  .brand-bg {
-    position: absolute;
-    inset: 0;
-    clip-path: inset(0);
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    filter: blur(18px) saturate(1.1);
-    opacity: 0.28;
-    transform: scale(1.5);
-    transition: opacity 0.4s ease, transform 0.6s ease;
-    pointer-events: none;
-  }
-  
-  .brand-card:hover .brand-bg,
-  .brand-card:focus-visible .brand-bg {
-    opacity: 0.42;
-    transform: scale(1.65);
-  }
-  
-  .brand-logo-container {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 60px;
-    margin-bottom: 10px;
-  }
-  
-  .brand-logo-container img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    filter: grayscale(0.35);
-    transition: transform 0.4s ease, filter 0.4s ease;
-  }
-  
-  .brand-card:hover .brand-logo-container img,
-  .brand-card:focus-visible .brand-logo-container img {
-    transform: scale(1.07);
-    filter: grayscale(0);
-  }
-  
-  .brand-name {
-    position: relative;
-    z-index: 1;
-    padding-bottom: 3px;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-align: center;
-    color: var(--ink);
-    background: linear-gradient(var(--brown), var(--brown)) left bottom / 100% 1px no-repeat;
-    transition: background-size 0.35s ease;
-  }
-  
-  .brand-card:hover .brand-name,
-  .brand-card:focus-visible .brand-name {
-    background-size: 0 1px;
-    background-position: right bottom;
-  }
-  
-  @keyframes brandFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-  }
-  
-  /* ---------- CARD ACTIONS (belt + store cards: Share + Bookmark) ---------- */
-  .card-actions {
-    position: relative; /* anchor for the "Link copied" label */
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    margin-right: -6px;
-  }
-  
-  .card-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    min-width: 34px;
-    height: 34px;
-    padding: 0 6px;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    color: var(--ink);
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    transition: color 0.2s ease, background-color 0.2s ease;
-  }
-  
-  .card-action svg {
-    display: block;
-    flex-shrink: 0;
-    width: 19px;
-    height: 19px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.6;
-    stroke-linecap: butt;
-    stroke-linejoin: miter;
-    pointer-events: none;
-  }
-  
-  .action-count {
-    font-size: 13px;
-    line-height: 16px;
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0;
-    pointer-events: none;
-  }
-  
-  .card-action:focus-visible {
-    outline: 1px dotted var(--ink);
-    outline-offset: 2px;
-  }
-  
-  @media (hover: hover) {
-    .card-action:hover { background-color: rgba(15, 16, 16, 0.08); }
-    .card-action.bookmark:hover { color: #790D16; }
-    .card-action.share:hover { color: var(--ok); }
-  }
-  
-  .card-action.bookmark.active { color: #790D16; }
-  .card-action.active svg { fill: currentColor; }
-  
-  /* Share button while the link was just copied */
-  .card-action.share.copied { color: var(--ok); }
-  
-  .store-finance-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 4px 10px;
-  }
-  
-  .store-finance-row .card-actions {
-    margin-left: auto;
-  }
-  
-  /* ---------- "LINK COPIED" LABEL ----------
-     Floats above the buttons so it never pushes the card layout around. */
-  .copied-note {
-    position: absolute;
-    right: 0;
-    bottom: calc(100% + 8px);
-    z-index: 5;
-    padding: 6px 10px;
-    background: var(--ink);
-    color: var(--light);
-    font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-    font-size: 10.5px;
-    line-height: 14px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    pointer-events: none;
-    animation: noteIn 0.2s ease both;
-  }
-  
-  /* little arrow pointing at the share button */
-  .copied-note::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    right: 38px;
-    border: 5px solid transparent;
-    border-top-color: var(--ink);
-  }
-  
-  @keyframes noteIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  /* ---------- HOVER VIDEO PREVIEW (belt + store cards) ----------
-     The card shows its image as usual. On hover the review video plays
-     over the whole image. It stays invisible until it is really playing
-     (.ready), so if playback is blocked the image simply stays visible. */
-  .has-video {
-    cursor: pointer;
-  }
-  
-  /* ▶ badge: this car has a review video (hidden while it plays) */
-  .video-hint {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 3;
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    line-height: 1;
-    color: #fff;
-    background: rgba(15, 16, 16, 0.6);
-    border-radius: 50%;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-  
-  .hover-preview {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    object-fit: cover;
-    display: block;
-    background: #000;
-    z-index: 2;
-    pointer-events: none; /* clicks still go to the card / specs page */
-    opacity: 0;
-    transition: opacity 0.25s ease;
-  }
-  
-  .hover-preview.ready {
-    opacity: 1;
-  }
-  
-  /* ---------- RESPONSIVE ---------- */
-  @media (max-width: 1100px) {
-    .brand-row { grid-template-columns: repeat(3, 1fr); }
-  }
-  
-  @media (max-width: 900px) {
-    .main-store {
-      padding: 14px 16px;
-      gap: 12px;
-    }
-  
-    .discover-hero { gap: 28px; }
-    .body-filter { gap: 8px 20px; }
-  }
-  
-  @media (max-width: 800px) {
-    .car-card {
-      grid-template-columns: 1fr;
-      width: 86vw;
-      min-width: 300px;
-    }
-    .car-image-container {
-      min-height: 220px;
-      border-right: none;
-      border-bottom: 1px solid var(--ink);
-    }
-    .car-details { padding: 24px 20px; }
-    .car-title { font-size: 26px; line-height: 32px; }
-    .car-price { font-size: 26px; line-height: 32px; }
-    .store-row { grid-template-columns: 1fr; }
-    .brand-display { padding: 16px; }
-    .brand-row { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .belt-arrow { width: 40px; height: 40px; }
-    .belt-arrow-left { left: 8px; }
-    .belt-arrow-right { right: 8px; }
-    .belt-arrow svg { width: 20px; height: 20px; }
-  
-    /* body-type filter: one swipeable row on phones */
-    .discover-hero { padding: 16px 0 4px; }
-    .body-filter {
-      flex-wrap: nowrap;
-      justify-content: flex-start;
-      width: 100%;
-      overflow-x: auto;
-      padding: 0 16px;
-      box-sizing: border-box;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-    .body-filter::-webkit-scrollbar { display: none; }
-    .body-filter-btn { flex: 0 0 auto; }
-    .body-filter-btn svg { width: 92px; height: 38px; }
-    .belt-title { padding: 0 16px; }
-  }
-  
-  @media (prefers-reduced-motion: reduce) {
-    .brand-card { animation: none; }
-    .brand-card::before,
-    .brand-card::after,
-    .brand-bg,
-    .brand-logo-container img,
-    .brand-name { transition: none; }
-    .belt-arrow { animation: none; }
-    .drag-hint { transition: none; }
-    .drag-hint.show svg:first-child,
-    .drag-hint.show svg:last-child { animation: none; }
-    .copied-note { animation: none; }
-    .hover-preview { transition: none; }
-    .body-filter-btn,
-    .body-filter-btn::after { transition: none; }
-  }
+  .brand-card::after,
+  .brand-bg,
+  .brand-logo-container img,
+  .brand-name { transition: none; }
+  .belt-arrow { animation: none; }
+  .drag-hint { transition: none; }
+  .drag-hint.show svg:first-child,
+  .drag-hint.show svg:last-child { animation: none; }
+  .copied-note { animation: none; }
+  .hover-preview { transition: none; }
+  .body-filter-btn,
+  .body-filter-btn::after { transition: none; }
+
+  .reviews-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .reviews-track { animation: none; }
+}

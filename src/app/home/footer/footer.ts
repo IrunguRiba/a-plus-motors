@@ -1,98 +1,259 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  NgZone,
+  AfterViewInit,
+  OnInit,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
+import { ApiServices } from '../../services/api-services';
+import {
+  ReviewVideo,
+  resolveReviewVideo,
+  primeMutedVideo,
+  markReady,
+  prefersReducedMotion,
+} from '../portfolio/specs/review-video';
 
-interface Review {
-  rating: number;
-  quote: string;
-  body: string;
-  author: string;
-  purchase: string;
-  date: string;
+interface FooterLink {
+  label: string;
+  path: string;
+  query?: Record<string, string>;
+}
+
+interface FooterGroup {
+  key: string;
+  title: string;
+  links: FooterLink[];
+}
+
+interface Social {
+  label: string;
+  icon: string;
+  href: string;
+}
+
+interface FooterSlide {
+  id: number;
+  video: ReviewVideo;
 }
 
 @Component({
   selector: 'app-footer',
-  imports: [],
+  imports: [SafeVideoUrlPipe],
   templateUrl: './footer.html',
   styleUrl: './footer.css',
 })
-export class Footer {
+export class Footer implements OnInit, AfterViewInit, OnDestroy {
   currentYear = new Date().getFullYear();
   copyright = 'copyright.png';
   legal = 'insurance.png';
 
-  starScale = [1, 2, 3, 4, 5];
+  /** Same logo as the nav. */
+  logoImg = 'fav3.png';
 
-  reviews: Review[] = [
+  /** Link groups mirror the nav menu. */
+  footerMenu: FooterGroup[] = [
     {
-      rating: 5,
-      quote: 'Absolute five-star experience from start to finish.',
-      body: 'The paperwork was handled efficiently, and I drove off the lot in my new vehicle the same afternoon with a full tank of gas. Highly recommend them if you want a transparent, stress-free dealership experience!',
-      author: 'David K.',
-      purchase: '2026 Toyota RAV4',
-      date: '2 weeks ago',
+      key: 'home',
+      title: 'Explore',
+      links: [
+        { label: 'Featured Cars', path: '/store' },
+        { label: 'New Arrivals', path: '/store' },
+        { label: 'Latest Offers', path: '/store' },
+        { label: 'Blogs', path: '/blogs' },
+      ],
     },
     {
-      rating: 5,
-      quote: 'Honest prices and no hidden surprises.',
-      body: 'Every figure was explained before I signed. The team walked me through the options patiently and the car was exactly as described. I will be back for my next purchase.',
-      author: 'Grace W.',
-      purchase: '2026 Mazda CX-5',
-      date: '1 month ago',
+      key: 'buycar',
+      title: 'Showroom',
+      links: [
+        { label: 'All Cars', path: '/store' },
+        { label: 'New Cars', path: '/store' },
+        { label: 'Import', path: '/imported-trade-in', query: { tab: 'import' } },
+        { label: 'Trade-in', path: '/imported-trade-in', query: { tab: 'trade-in' } },
+      ],
     },
     {
-      rating: 5,
-      quote: 'Financing made simple.',
-      body: 'I was nervous about the loan process, but they handled the bank side quickly and kept me updated at every step. Approval came through in days, not weeks.',
-      author: 'Peter M.',
-      purchase: '2025 Subaru Forester',
-      date: '1 month ago',
+      key: 'financing',
+      title: 'Financing',
+      links: [
+        { label: 'Loan Options', path: '/financing', query: { tab: 'options' } },
+        { label: 'Calculate Payments', path: '/financing', query: { tab: 'calculator' } },
+        { label: 'Apply Now', path: '/financing', query: { tab: 'apply' } },
+        { label: 'Insurance Partners', path: '/financing', query: { tab: 'insurance' } },
+      ],
     },
     {
-      rating: 4,
-      quote: 'Great selection and a smooth trade-in.',
-      body: 'They valued my old car fairly and the swap was done in one visit. Delivery took a day longer than promised, but the communication was excellent throughout.',
-      author: 'Amina S.',
-      purchase: '2024 Honda Vezel',
-      date: '2 months ago',
+      key: 'about',
+      title: 'About Us',
+      links: [
+        { label: 'Our Story', path: '/about-us' },
+        { label: 'Our Team', path: '/about-us' },
+        { label: 'Careers', path: '/about-us' },
+        { label: 'News & Media', path: '/about-us' },
+      ],
     },
     {
-      rating: 5,
-      quote: 'Imported exactly the car I asked for.',
-      body: 'From auction selection to clearing at the port, they kept me informed and the landed cost matched the quote. The car arrived in perfect condition.',
-      author: 'Brian O.',
-      purchase: '2023 Toyota Harrier',
-      date: '2 months ago',
-    },
-    {
-      rating: 5,
-      quote: 'Professional team that actually listens.',
-      body: 'I knew my budget and what I needed for the family. They did not push me toward anything more expensive and found a perfect fit within a week.',
-      author: 'Faith N.',
-      purchase: '2025 Nissan X-Trail',
-      date: '3 months ago',
-    },
-    {
-      rating: 5,
-      quote: 'After-sales support you can rely on.',
-      body: 'I had a small question a week after purchase and they responded within the hour. It is rare to find a dealership that cares after the sale.',
-      author: 'Samuel T.',
-      purchase: '2026 Toyota Fortuner',
-      date: '3 months ago',
-    },
-    {
-      rating: 5,
-      quote: 'Clean cars, clean process.',
-      body: 'The inspection report was detailed and the vehicle was spotless. Transfer of ownership was handled for me, which saved a lot of time.',
-      author: 'Lucy A.',
-      purchase: '2025 Mazda CX-30',
-      date: '4 months ago',
+      key: 'subsidiaries',
+      title: 'Subsidiaries',
+      links: [
+        { label: 'A Plus Motors', path: '/about-us' },
+        { label: 'A Plus Finance', path: '/about-us' },
+        { label: 'A Plus Insurance', path: '/about-us' },
+        { label: 'A Plus Auto Parts', path: '/about-us' },
+      ],
     },
   ];
 
-  marqueeReviews: Review[] = [...this.reviews, ...this.reviews];
+  /** Same icons as the nav. Fill in the empty hrefs with your real profile URLs. */
+  socials: Social[] = [
+    { label: 'Instagram', icon: 'ig.png', href: '' },
+    { label: 'Facebook', icon: 'facebook.png', href: '' },
+    { label: 'Twitter', icon: 'twitter.png', href: '' },
+    { label: 'YouTube', icon: 'youtube.png', href: '' },
+    { label: 'WhatsApp', icon: 'whatsapp.png', href: 'https://wa.me/254707555666' },
+    { label: 'Call us', icon: 'call.png', href: 'tel:+254707555666' },
+    { label: 'Email us', icon: 'gmail.png', href: 'mailto:info@aplusmotors.biz' },
+  ];
+
+  // ============== BACKGROUND VIDEO (same approach as the home hero) ==============
+
+  private static readonly EMBED_MS = 25000;
+
+  /** All review videos found on the web cars. */
+  videoPool: ReviewVideo[] = [];
+  /** 0 or 1 items: the review video currently playing behind the footer. */
+  videoSlides: FooterSlide[] = [];
+  /** Only true while the footer is near the viewport, so nothing plays off-screen. */
+  videoActive = false;
+
+  private videoQueue: ReviewVideo[] = [];
+  private videoSeq = 0;
+  private videoTimer: ReturnType<typeof setTimeout> | null = null;
+  private videoSub?: Subscription;
+  private observer?: IntersectionObserver;
+
+  private api = inject(ApiServices);
+  private zone = inject(NgZone);
+  private host = inject(ElementRef<HTMLElement>);
 
   constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    if (prefersReducedMotion()) return; // keep the calm dark footer, no motion
+
+    this.videoSub = this.api.getWebCars().subscribe({
+      next: (cars) => {
+        const seen = new Set<string>();
+        const pool: ReviewVideo[] = [];
+        for (const c of cars ?? []) {
+          const v = resolveReviewVideo(c.reviewVideoUrl);
+          if (!v || seen.has(v.src)) continue;
+          seen.add(v.src);
+          pool.push(v);
+        }
+        this.videoPool = pool;
+        this.videoQueue = [];
+        this.nextVideo();
+      },
+      error: () => { /* no video: the footer stays on its dark background */ },
+    });
+  }
+
+  ngAfterViewInit(): void {
+    if (typeof IntersectionObserver === 'undefined') {
+      this.videoActive = true;
+      return;
+    }
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.some((e) => e.isIntersecting);
+        this.zone.run(() => (this.videoActive = visible));
+      },
+      { rootMargin: '300px 0px 300px 0px' }
+    );
+    this.observer.observe(this.host.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.observer?.disconnect();
+    this.videoSub?.unsubscribe();
+    if (this.videoTimer) clearTimeout(this.videoTimer);
+  }
+
+  /** Picks the next random review (every video plays once before any repeats). */
+  nextVideo(): void {
+    if (this.videoTimer) {
+      clearTimeout(this.videoTimer);
+      this.videoTimer = null;
+    }
+
+    if (!this.videoPool.length) {
+      this.videoSlides = [];
+      return;
+    }
+
+    if (!this.videoQueue.length) {
+      this.videoQueue = this.shuffle([...this.videoPool]);
+      const current = this.videoSlides[0]?.video.src;
+      if (this.videoQueue.length > 1 && this.videoQueue[0].src === current) {
+        this.videoQueue.push(this.videoQueue.shift()!);
+      }
+    }
+
+    const video = this.videoQueue.shift()!;
+    this.videoSlides = [{ id: ++this.videoSeq, video }];
+
+    // Embeds loop forever and give no "ended" event, so rotate them on a timer.
+    if (video.kind === 'embed' && this.videoPool.length > 1) {
+      this.videoTimer = setTimeout(() => this.nextVideo(), Footer.EMBED_MS);
+    }
+  }
+
+  onVideoLoaded(el: HTMLVideoElement): void {
+    primeMutedVideo(el);
+  }
+
+  onVideoPlaying(el: HTMLElement): void {
+    markReady(el);
+  }
+
+  onVideoEnded(): void {
+    this.nextVideo();
+  }
+
+  /** A video that can't be played is dropped from the pool; the next one starts. */
+  onVideoError(slide: FooterSlide): void {
+    this.videoPool = this.videoPool.filter((v) => v.src !== slide.video.src);
+    this.videoQueue = this.videoQueue.filter((v) => v.src !== slide.video.src);
+    this.nextVideo();
+  }
+
+  private shuffle<T>(arr: T[]): T[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // ============== NAVIGATION ==============
+
+  /** Click on the footer logo — same behavior as the nav logo (scroll to top). */
+  goHome(event?: Event): void {
+    event?.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  go(target: FooterLink, event?: Event): void {
+    event?.preventDefault();
+    this.router.navigate([target.path], target.query ? { queryParams: target.query } : {});
+  }
 
   goToPrivacy(event?: Event): void {
     event?.preventDefault();

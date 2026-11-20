@@ -1,33 +1,107 @@
 <section class="footer-container">
-  <h1>What Clients Say</h1>
 
-  <div class="comments-wrapper">
-    <div class="connecting-line"></div>
-
-    <div class="marquee" aria-label="Client reviews">
-      <div class="marquee-track">
-        @for (review of marqueeReviews; track $index) {
-          <div class="comment-card" [attr.aria-hidden]="$index >= reviews.length ? 'true' : null">
-            <div class="rating">
-              @for (s of starScale; track s) {
-                <span class="star" [class.empty]="s > review.rating">★</span>
-              }
-              <span class="verified-badge">Verified Buyer</span>
-            </div>
-            <p class="quote">"{{ review.quote }}"</p>
-            <p class="body-text">{{ review.body }}</p>
-            <div class="client-meta">
-              <span class="author">— {{ review.author }}</span>
-              <span class="purchase-info">Purchased: {{ review.purchase }}</span>
-              <span class="review-date">Reviewed {{ review.date }}</span>
-            </div>
-          </div>
+  <!-- Pinned background video: stays fixed while the footer scrolls over it -->
+  <div class="footer-media" aria-hidden="true">
+    @if (videoActive) {
+      @for (slide of videoSlides; track slide.id) {
+        @if (slide.video.kind === 'file') {
+          <video
+            class="footer-video"
+            [src]="slide.video.src"
+            [muted]="true"
+            [loop]="videoPool.length === 1"
+            autoplay playsinline
+            preload="auto"
+            disablepictureinpicture
+            (loadeddata)="onVideoLoaded($any($event.target))"
+            (playing)="onVideoPlaying($any($event.target))"
+            (ended)="onVideoEnded()"
+            (error)="onVideoError(slide)"></video>
+        } @else {
+          <iframe
+            class="footer-video footer-embed"
+            [src]="slide.video.src | safeVideoUrl"
+            title=""
+            tabindex="-1"
+            frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            referrerpolicy="strict-origin-when-cross-origin"
+            (load)="onVideoPlaying($any($event.target))"></iframe>
         }
-      </div>
-    </div>
+      }
+    }
+    <div class="footer-shade"></div>
   </div>
 
-  <div class="map">
+  <div class="footer-inner">
+
+    <!-- ================= MAIN GRID ================= -->
+    <div class="main-grid">
+
+      <!-- Logo + slogan, contact button, socials, assist message -->
+      <div class="brand-col">
+
+        <!-- Logo + slogan (mirrors nav's .logo-wrapper / .slogan) -->
+        <div class="brand-logo-wrapper" (click)="goHome()">
+          <img class="brand-logo" [src]="logoImg" alt="A-Plus Motors">
+          <span class="brand-slogan">Driving That Suits You ...</span>
+        </div>
+
+        <a class="cta" href="#" (click)="goToContact($event)">
+          <span class="cta-label">Contact Us</span>
+          <svg class="cta-arrow" viewBox="0 0 24 24" width="22" height="22" fill="none"
+               stroke="currentColor" stroke-width="1.2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12H21M15 6L21 12L15 18"/>
+          </svg>
+        </a>
+
+        <ul class="socials">
+          @for (s of socials; track s.label) {
+            <li>
+              <a [attr.href]="s.href || null"
+                 [attr.aria-label]="s.label"
+                 [attr.target]="s.href.startsWith('http') ? '_blank' : null"
+                 rel="noopener">
+                <img [src]="s.icon" [alt]="s.label">
+              </a>
+            </li>
+          }
+        </ul>
+
+        <!-- Assist message below the socials -->
+        <p class="assist">
+          <span class="assist-accent">We will be delighted to assist</span>
+          <span class="assist-line">you with any vehicle request.</span>
+        </p>
+
+      </div>
+
+      <!-- Link groups (same as the nav menu) + location -->
+      <div class="menu-cols">
+        @for (group of footerMenu; track group.key) {
+          <nav class="link-col" [attr.aria-label]="group.title">
+            <h3 class="col-title"><span class="dash"></span>{{ group.title }}</h3>
+            <ul class="link-list">
+              @for (l of group.links; track l.label) {
+                <li><a href="#" (click)="go(l, $event)"><span>{{ l.label }}</span></a></li>
+              }
+            </ul>
+          </nav>
+        }
+
+        <div class="link-col location-col">
+          <h3 class="col-title"><span class="dash"></span>Location</h3>
+          <p class="loc-address">Along Thika Road Highway,<br>Near Safari Park Hotel</p>
+          <p class="loc-contact">
+            <a href="tel:+254707555666">+254707555666</a><br>
+            <a href="mailto:info@aplusmotors.biz">info@aplusmotors.biz</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MAP ================= -->
     <div class="map-wrapper">
       <iframe
         title="A-Plus Motors Thika Road Branch Map"
@@ -40,38 +114,21 @@
         referrerpolicy="no-referrer-when-downgrade">
       </iframe>
     </div>
-    <div class="location-card">
-      <h3>Location</h3>
-      <p class="loc-address">Along Thika Road Highway,<br>Near Safari Park Hotel</p>
-      <p class="loc-contact">+254707555666<br>info@aplusmotors.biz</p>
+
+    <!-- ================= COPYRIGHT ================= -->
+    <div class="copyright">
+      <p>
+        <span class="brand-name">AVITALINC</span>
+        <span class="sq-dot" aria-hidden="true"></span>
+        <span class="brand-name">A PLUSMOTORSLTD</span>
+        <span class="sq-dot" aria-hidden="true"></span>
+        &copy; {{ currentYear }}. All rights reserved
+      </p>
+
+      <a class="privacy-policy" href="#" (click)="goToPrivacy($event)">
+        <span>Privacy Policy</span>
+      </a>
     </div>
-  </div>
 
-  <div class="nav-link">
-    <ul class="nav-links-list">
-      <li>
-        <a (click)="goToFinancing($event)"><span>Financing</span></a>
-      </li>
-      <li>
-        <a (click)="goToContact($event)"><span>Contact Us</span></a>
-      </li>
-      <li>
-        <a (click)="goToSubsidiaries($event)"><span>Subsidiaries</span></a>
-      </li>
-    </ul>
-  </div>
-
-  <div class="copyright">
-    <p>
-      <span class="brand-name">AVITALINC</span>
-      <span class="sq-dot" aria-hidden="true"></span>
-      <span class="brand-name">A PLUSMOTORSLTD</span>
-      <span class="sq-dot" aria-hidden="true"></span>
-      &copy; {{ currentYear }}. All rights reserved
-    </p>
-
-    <a class="privacy-policy" (click)="goToPrivacy($event)">
-      <span>Privacy Policy</span>
-    </a>
   </div>
 </section>

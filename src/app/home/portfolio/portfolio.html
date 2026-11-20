@@ -344,4 +344,42 @@
       </div>
     </div>
   </div>
+
+  <!-- ============================================================
+       CLIENT REVIEWS (bottom of the page, portfolio background)
+       ============================================================ -->
+  <section class="reviews" aria-label="Client reviews">
+    <h2 class="reviews-title">What Clients Say</h2>
+
+    <div class="reviews-wrapper">
+      <div class="reviews-line"></div>
+
+      <div class="reviews-marquee">
+        <div class="reviews-track">
+          <div
+            class="review-card"
+            *ngFor="let review of marqueeReviews; let i = index"
+            [attr.aria-hidden]="i >= reviews.length ? 'true' : null"
+          >
+            <div class="review-rating">
+              <span
+                class="review-star"
+                *ngFor="let s of starScale"
+                [class.empty]="s > review.rating"
+                >★</span
+              >
+              <span class="review-verified">Verified Buyer</span>
+            </div>
+            <p class="review-quote">"{{ review.quote }}"</p>
+            <p class="review-body">{{ review.body }}</p>
+            <div class="review-meta">
+              <span class="review-author">— {{ review.author }}</span>
+              <span class="review-purchase">Purchased: {{ review.purchase }}</span>
+              <span class="review-date">Reviewed {{ review.date }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>

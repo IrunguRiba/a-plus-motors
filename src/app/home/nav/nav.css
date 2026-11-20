@@ -15,6 +15,10 @@
   --curve: cubic-bezier(0.65, 0, 0.35, 1);
   --nav-mix: 0;
 
+  /* footer state: while this is 0 the nav is fully transparent to the
+     page background; 1 means it has lifted its own colours back. */
+  --footer-mix: 0;
+
   position: fixed;
   top: 0;
   left: 0;
@@ -49,7 +53,8 @@
   transition:
     width var(--t) var(--curve),
     border-radius var(--t) var(--curve),
-    box-shadow 0.3s ease;
+    box-shadow 0.3s ease,
+    background-color 0.4s ease;
 }
 
 .nav-items-wrapper::before {
@@ -65,6 +70,44 @@
 }
 
 .nav-items-wrapper.nav-lifted { box-shadow: 0 14px 34px -20px rgba(15, 16, 16, 0.55); }
+
+/* ---------- Footer state -------------------------------------
+   When the nav reaches the footer it goes back to the same solid
+   colours it has at the top of the page (light surface, dark ink),
+   instead of melting into the dark footer video.               */
+.nav-items-wrapper.nav-footer,
+.nav-items-wrapper.above-footer {
+  background: rgba(228, 230, 231, 1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-color: var(--c-ink);
+  color: var(--c-ink);
+}
+
+.nav-items-wrapper.nav-footer::before,
+.nav-items-wrapper.above-footer::before {
+  opacity: 1;
+}
+
+.nav-footer .search-box {
+  background: rgba(15, 16, 16, 0.05);
+}
+
+.nav-footer .search-box:hover { background: rgba(15, 16, 16, 0.09); }
+
+.nav-footer .search-box .icon-search { color: var(--c-brown); }
+.nav-footer .search-box .cross-icon span { background: var(--c-ink); }
+.nav-footer .search-box .search-tag { color: var(--c-ink); }
+.nav-footer .search-box .search-tag::after { background: var(--c-brown); }
+
+.nav-footer .image-icon { filter: none; }
+.nav-footer .slogan { color: var(--c-ink); }
+.nav-footer .slogan::before { background: linear-gradient(90deg, transparent, var(--c-mid)); }
+.nav-footer .slogan::after { background: linear-gradient(90deg, var(--c-mid), transparent); }
+
+.nav-footer .menu-bar span { background-color: var(--c-ink); }
+
+.nav-footer .item-1-label { color: var(--c-ink); }
 
 .menu-open .nav-items-wrapper {
   width: calc(100% - var(--gutter) * 2);
@@ -205,9 +248,6 @@
 
 /* ─────────────────────────────────────────────────────────────
    A-PLUS MOTORS LTD — RESPONSIVE MARK
-   Font size, letter-spacing, gap, and the icon pills are all
-   driven by a single --mark-scale so every breakpoint scales
-   proportionally. Bottom / left use safe-area-aware spacing.
    ───────────────────────────────────────────────────────────── */
 .item-1-label {
   --mark-scale: 1;
@@ -234,6 +274,7 @@
   pointer-events: none;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   max-width: calc(100vw - max(2em, env(safe-area-inset-left, 0px) + 2em) - 16px);
+  transition: color 0.4s ease;
 }
 
 .item-1-label::before,
@@ -313,6 +354,7 @@
   object-fit: contain;
   z-index: 1001;
   filter: none;
+  transition: filter 0.4s ease;
 }
 
 .slogan {
@@ -330,6 +372,7 @@
   color: var(--c-ink);
   white-space: nowrap;
   z-index: 1001;
+  transition: color 0.4s ease;
 }
 
 .slogan::before,
@@ -361,7 +404,7 @@
   background-color: var(--c-ink);
   align-self: flex-end;
   transform-origin: center;
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.4s ease;
 }
 
 .top-bar { width: 2.4rem; }
@@ -907,8 +950,6 @@ a.contact-row:focus-visible span:last-child {
 
 /* ─────────────────────────────────────────────────────────────
    RESPONSIVE — ITEM-1-LABEL ONLY
-   Everything else below is unchanged from your original file.
-   The mark now scales via --mark-scale, --mark-icon-w, etc.
    ───────────────────────────────────────────────────────────── */
 
 @media (max-width: 1280px) {

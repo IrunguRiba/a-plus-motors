@@ -83,6 +83,11 @@ export class Nav implements AfterViewInit, OnDestroy {
 
   private hintTyper?: Typewriter;
 
+  /** True while the footer is in view — nav returns to its top colours. */
+  atFooter = false;
+  private footerObserver?: IntersectionObserver;
+  private footerObserverSetup = false;
+
   car1 = '1.png';
 
   readonly featureWordLimit = 40;
@@ -166,25 +171,46 @@ export class Nav implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     const el = this.searchTag?.nativeElement;
-    if (!el) return;
-    if (prefersReducedMotion()) {
-      el.textContent = this.searchHints[0];
-      return;
+    if (el) {
+      if (prefersReducedMotion()) {
+        el.textContent = this.searchHints[0];
+      } else {
+        this.zone.runOutsideAngular(() => {
+          this.hintTyper = new Typewriter({
+            phrases: this.searchHints,
+            render: text => { el.textContent = text; },
+            canRun: () => !this.searchWindowOpened,
+          });
+          this.hintTyper.start();
+        });
+      }
     }
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.footerObserverSetup) return;
+    const footer = document.querySelector('app-footer, .footer-container, footer');
+    if (!footer) return;
+    this.footerObserverSetup = true;
+
     this.zone.runOutsideAngular(() => {
-      this.hintTyper = new Typewriter({
-        phrases: this.searchHints,
-        render: text => { el.textContent = text; },
-        canRun: () => !this.searchWindowOpened,
-      });
-      this.hintTyper.start();
+      this.footerObserver = new IntersectionObserver(
+        entries => {
+          for (const entry of entries) {
+            this.zone.run(() => {
+              this.atFooter = entry.isIntersecting;
+            });
+          }
+        },
+        { threshold: 0, rootMargin: '0px 0px 0px 0px' }
+      );
+      this.footerObserver.observe(footer);
     });
   }
 
   ngOnDestroy(): void {
     this.hintTyper?.stop();
-    // Clean up the --hero-mix variable written by homes.ts so it doesn't
-    // leak into other routes that don't run the hero colour ScrollTrigger.
+    this.footerObserver?.disconnect();
     document.documentElement.style.removeProperty('--hero-mix');
   }
 
