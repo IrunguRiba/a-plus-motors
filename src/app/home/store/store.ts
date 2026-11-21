@@ -7,11 +7,12 @@ import gsap from 'gsap';
 import { ApiServices } from '../../services/api-services';
 import { StoreCar } from '../../interfaces/car-interface';
 import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
+import { Footer } from '../footer/footer';
 
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, SafeVideoUrlPipe],
+  imports: [CommonModule, SafeVideoUrlPipe, Footer],
   templateUrl: './store.html',
   styleUrl: './store.css'
 })
@@ -49,7 +50,7 @@ export class Store implements AfterViewInit, OnDestroy {
   loading = true;
   error = '';
 
-  readonly pageSize = 6;
+  readonly pageSize = 12;
   page = 1;
   totalPages = 1;
 

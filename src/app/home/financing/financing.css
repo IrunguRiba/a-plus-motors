@@ -864,12 +864,7 @@ form > .fn-btn-solid.fn-btn-full,
 
 /* ---------- Footer links ---------- */
 .fn-footer {
-  margin-top: 40px;
   border-top: var(--border-thin);
-  display: flex;
-  justify-content: flex-end;
-  padding: 40px;
-  gap: 80px;
 }
 .fn-footer-link {
   display: inline-flex;

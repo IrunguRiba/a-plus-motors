@@ -19,11 +19,12 @@ import {
   CoverType,
   Insurer,
 } from '../../interfaces/car-interface';
+import { Footer } from '../footer/footer';
 
 @Component({
   selector: 'app-financing',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Footer],
   templateUrl: './financing.html',
   styleUrl: './financing.css',
 })

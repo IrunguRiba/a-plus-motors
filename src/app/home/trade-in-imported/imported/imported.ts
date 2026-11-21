@@ -13,12 +13,13 @@ import {
   ImportRequestPayload,
   IMPORT_RATES,
 } from '../../../interfaces/car-interface';
+import { Footer } from '../../footer/footer';
 
 const { SHIPPING_RATE, IMPORT_DUTY, EXCISE_DUTY, VAT, IDF, RDL } = IMPORT_RATES;
 
 @Component({
   selector: 'app-imported',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, Footer],
   templateUrl: './imported.html',
   styleUrl: './imported.css',
 })

@@ -10,6 +10,7 @@ import {
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, CanDeactivateFn } from '@angular/router';
@@ -19,6 +20,7 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { ApiServices, InquiryRequestPayload, ksh } from '../../../services/api-services';
 import { ApiCar } from '../../../interfaces/car-interface';
 import { SafeVideoUrlPipe } from './safe-url.pipe';
+import { Footer } from '../../footer/footer';
 import {
   ReviewVideo,
   resolveReviewVideo,
@@ -70,7 +72,7 @@ const DOUBLE_TAP_PX = 30;
 @Component({
   selector: 'app-specs',
   templateUrl: './specs.html',
-  imports: [CommonModule, FormsModule, SafeVideoUrlPipe],
+  imports: [CommonModule, FormsModule, SafeVideoUrlPipe, Footer],
   styleUrls: ['./specs.css'],
   host: { style: 'overflow: clip' },
 })

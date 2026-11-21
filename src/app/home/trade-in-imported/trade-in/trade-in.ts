@@ -14,6 +14,7 @@ import {
   ConditionAdjustments,
   TRADE_IN_CONSTANTS,
 } from '../../../interfaces/car-interface';
+import { Footer } from '../../footer/footer';
 
 const { REFERENCE_YEAR, ANNUAL_DEPRECIATION, KM_PER_YEAR, RANGE_SPREAD } = TRADE_IN_CONSTANTS;
 
@@ -45,7 +46,7 @@ const round10k = (n: number): number => Math.round(n / 10000) * 10000;
 
 @Component({
   selector: 'app-trade-in',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, Footer],
   templateUrl: './trade-in.html',
   styleUrl: './trade-in.css',
 })

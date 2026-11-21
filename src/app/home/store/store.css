@@ -521,10 +521,7 @@
 
 .footer-wrapper {
   border-top: var(--border-thin);
-  display: flex;
-  justify-content: flex-end;
-  padding: 40px 40px;
-  gap: 80px;
+  overflow: hidden;
 }
 
 /* Store footer links — sharp 1px border + underline sweep on the label */
@@ -691,4 +688,9 @@
   .hover-preview {
     transition: none;
   }
+}
+.footer{
+width: 100vw;
+margin: 0;
+padding:0;
 }
