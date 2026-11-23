@@ -1,81 +1,99 @@
-<div class="about-us-container">
-  
-    <!-- Top Navigation Bar -->
-    <nav class="nav-wrapper">
-      <div class="nav-item">Why Us</div>
-      <div class="nav-item" (click)="goToStore()">OUR STORE</div>
-      <div class="nav-item" (click)="goToFinance()">FINANCING</div>
-      <div class="nav-item" (click)="goToBlogs()">SUBSIDIARIES</div>
-      <div class="nav-item" (click)="goHome()">HOME</div>
-    </nav>
-  
-    <!-- Section Navigation Tabs -->
-    <div class="section-tabs">
-      <div 
-        *ngFor="let page of pages; let i = index"
-        class="tab-item"
-        [ngClass]="{'active': i === activeIndex}"
-        (click)="setActivePage(i)"
-      >
-        {{ page.navText }}
-      </div>
+<app-nav
+  [searchWindowOpened]="searchWindowOpened"
+  [isMenuOpen]="isMenuOpen"
+  [logoImg]="logoImg"
+  (openSearchEvent)="openSearch()"
+  (closeSearchEvent)="closeSearch($event)"
+  (toggleMenuEvent)="toggleMenu()">
+</app-nav>
+
+<div class="about-container">
+
+  <section class="stage">
+    <div class="head-media" aria-hidden="true">
+      @for (slide of videoSlides; track slide.id) {
+        @if (slide.video.kind === 'file') {
+          <video
+            class="footer-video"
+            [src]="slide.video.src"
+            [muted]="true"
+            [loop]="videoPool.length === 1"
+            autoplay playsinline
+            preload="auto"
+            disablepictureinpicture
+            (loadeddata)="onVideoLoaded($any($event.target))"
+            (playing)="onVideoPlaying($any($event.target))"
+            (ended)="onVideoEnded()"
+            (error)="onVideoError(slide)"></video>
+        } @else {
+          <iframe
+            class="footer-video footer-embed"
+            [src]="slide.video.src | safeVideoUrl"
+            title=""
+            tabindex="-1"
+            frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            referrerpolicy="strict-origin-when-cross-origin"
+            (load)="onVideoPlaying($any($event.target))"></iframe>
+        }
+      }
+      <div class="head-shade"></div>
     </div>
-  
-    <!-- Main Content Area (Animated via GSAP) -->
-    <main class="content-area" #contentArea>
-      
-      <!-- Header Section -->
-      <header class="page-header">
-        <h1>{{ pages[activeIndex].title }}</h1>
-        <div class="divider"></div>
-      </header>
-  
-      <!-- Body Text -->
-      <div class="page-body">
-        <p>{{ pages[activeIndex].content }}</p>
-      </div>
-  
-      <!-- Review Section Marquee controlled by GSAP -->
-      <div class="comments-wrapper" *ngIf="pages[activeIndex].reviews && pages[activeIndex].reviews.length > 0">
-        <div class="connecting-line"></div>
-    
-        <div class="marquee-container">
-          <div class="marquee-track" #marqueeTrack (mouseenter)="pauseMarquee()" (mouseleave)="resumeMarquee()">
-            
-            <!-- First set of 5 reviews -->
-            <div class="comment-card" *ngFor="let rev of pages[activeIndex].reviews">
-              <div class="rating">
-                <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-                <span class="verified-badge">Verified Buyer</span>
-              </div>
-              <p class="quote">{{ rev.quote }}</p>
-              <p class="body-text">{{ rev.body }}</p>
-              <div class="client-meta">
-                <span class="author">{{ rev.author }}</span>
-                <span class="purchase-info">{{ rev.purchase }}</span>
-                <span class="review-date">{{ rev.date }}</span>
-              </div>
-            </div>
-  
-            <!-- Duplicate set for seamless looping -->
-            <div class="comment-card" *ngFor="let rev of pages[activeIndex].reviews">
-              <div class="rating">
-                <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-                <span class="verified-badge">Verified Buyer</span>
-              </div>
-              <p class="quote">{{ rev.quote }}</p>
-              <p class="body-text">{{ rev.body }}</p>
-              <div class="client-meta">
-                <span class="author">{{ rev.author }}</span>
-                <span class="purchase-info">{{ rev.purchase }}</span>
-                <span class="review-date">{{ rev.date }}</span>
+
+    <div class="head-text">
+      <h1>15+ Years of Experience</h1>
+      <span class="rule"></span>
+      <p>Driving That Suits You ...</p>
+    </div>
+  </section>
+
+  <!-- Scrollable details, centred at 60% width -->
+  <div class="about-body">
+    <div class="about-col">
+
+      <nav class="jump" aria-label="On this page">
+        @for (s of sections; track s.id) {
+          <a tabindex="0" role="link"
+             (click)="scrollTo(s.id)" (keydown.enter)="scrollTo(s.id)">{{ s.title }}</a>
+        }
+        <a tabindex="0" role="link" (click)="scrollTo('faq')" (keydown.enter)="scrollTo('faq')">FAQs</a>
+      </nav>
+
+      @for (s of sections; track s.id) {
+        <section class="block" [id]="s.id">
+          <h2 class="block-title">{{ s.title }}</h2>
+          <span class="line"></span>
+          @for (p of s.paragraphs; track $index) {
+            <p>{{ p }}</p>
+          }
+        </section>
+      }
+
+      <!-- FAQ (end of page) -->
+      <section class="block" id="faq">
+        <h2 class="block-title">FAQs</h2>
+        <span class="line"></span>
+
+        <div class="faq-list">
+          @for (f of faqs; track f.q; let i = $index) {
+            <div class="faq-item" [class.open]="openFaq === i">
+              <button type="button" class="faq-q"
+                      (click)="toggleFaq(i)"
+                      [attr.aria-expanded]="openFaq === i">
+                <span>{{ f.q }}</span>
+                <span class="faq-icon" aria-hidden="true"></span>
+              </button>
+              <div class="faq-a">
+                <div class="faq-a-inner"><p>{{ f.a }}</p></div>
               </div>
             </div>
-  
-          </div>
+          }
         </div>
-      </div>
-  
-    </main>
+      </section>
+
+    </div>
   </div>
+
+</div>
+
 <app-footer></app-footer>

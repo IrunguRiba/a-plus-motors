@@ -1,4 +1,11 @@
-import { Component, ElementRef, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  AfterViewInit,
+  ViewChild,
+  Renderer2
+} from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -8,43 +15,67 @@ import { ApiServices } from '../../services/api-services';
 import { StoreCar } from '../../interfaces/car-interface';
 import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
 import { Footer } from '../footer/footer';
+import { Nav } from '../nav/nav';
 
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, SafeVideoUrlPipe, Footer],
+  imports: [CommonModule, SafeVideoUrlPipe, Footer, Nav],
   templateUrl: './store.html',
   styleUrl: './store.css'
 })
 export class Store implements AfterViewInit, OnDestroy {
+  // ------------------------------------------------------------------
+  // View refs
+  // ------------------------------------------------------------------
   @ViewChild('smoothContent', { static: true }) smoothContent!: ElementRef;
+  /** The `.store` block — used to decide when the car grid is the active
+   *  scroll context. NOT a sentinel; this is the real element. */
+  @ViewChild('storeBlock', { static: true }) storeBlock!: ElementRef<HTMLElement>;
+  /** The `.footer-wrapper` — any overlap with it forces the filter bar off. */
+  @ViewChild('footerBlock', { static: true }) footerBlock!: ElementRef<HTMLElement>;
 
+  // ------------------------------------------------------------------
+  // Internal lifecycle
+  // ------------------------------------------------------------------
   private ctx!: gsap.Context;
   private destroyed = false;
   private carsSub?: Subscription;
 
+  private storeObserver?: IntersectionObserver;
+  private footerObserver?: IntersectionObserver;
+
+  /** Latest "is the car grid on screen" reading. */
+  private storeInView = false;
+  /** Latest "is the footer on screen" reading. */
+  private footerInView = false;
+
+  /** Bound to `[class.is-visible]` on `.main-nav-wrapper`. */
+  filterNavVisible = false;
+
+  /** Throttle timestamp for the scroll-driven fallback sync. */
+  private lastScrollSync = 0;
+
+  // ------------------------------------------------------------------
+  // Persistence keys
+  // ------------------------------------------------------------------
   private readonly LIKED_KEY = 'aplus.store.liked';
   private readonly SAVED_KEY = 'aplus.store.saved';
 
-  /**
-   * Base URL of the API/media server. Used when the API returns a relative
-   * review-video path such as "/uploads/review.mp4". Change to your real host
-   * (or read it from environment.ts).
-   */
+  /** Base URL of the API/media server for relative video paths. */
   private static readonly MEDIA_BASE = 'http://localhost:4000';
 
-  constructor(
-    private router: Router,
-    private location: Location,
-    private api: ApiServices
-  ) {
-    this.liked = this.load(this.LIKED_KEY);
-    this.saved = this.load(this.SAVED_KEY);
-    this.fetchCars();
-  }
+  // ------------------------------------------------------------------
+  // Main nav state (bound to <app-nav>)
+  // ------------------------------------------------------------------
+  searchWindowOpened = false;
+  isMenuOpen = false;
+  logoImg = 'assets/logo.png'; // adjust to your real logo path
 
+  // ------------------------------------------------------------------
+  // Car list state
+  // ------------------------------------------------------------------
   private allCars: StoreCar[] = [];
-
   cars: StoreCar[] = [];
 
   loading = true;
@@ -70,13 +101,27 @@ export class Store implements AfterViewInit, OnDestroy {
   hoveredCarId: string | null = null;
   supportsHover = true;
 
-  /** Cars whose review video failed to load: they fall back to image only. */
+  /** Cars whose review video failed to load — fall back to image only. */
   private previewFailed = new Set<string>();
+
+  constructor(
+    private router: Router,
+    private location: Location,
+    private api: ApiServices,
+    private renderer: Renderer2
+  ) {
+    this.liked = this.load(this.LIKED_KEY);
+    this.saved = this.load(this.SAVED_KEY);
+    this.fetchCars();
+  }
 
   trackById(_: number, car: StoreCar): string {
     return car.id;
   }
 
+  // ------------------------------------------------------------------
+  // Data
+  // ------------------------------------------------------------------
   fetchCars(): void {
     this.loading = true;
     this.error = '';
@@ -88,6 +133,9 @@ export class Store implements AfterViewInit, OnDestroy {
         this.years = Array.from(new Set(list.map(c => c.year))).sort((a, b) => +b - +a);
         this.loading = false;
         this.refresh();
+        // The grid just grew — re-evaluate visibility so the bar shows
+        // immediately if the user is already scrolled into the grid.
+        this.syncVisibilityFromLayout();
       },
       error: () => {
         this.loading = false;
@@ -131,7 +179,11 @@ export class Store implements AfterViewInit, OnDestroy {
       this.ctx.add(() => {
         gsap.fromTo('.car-card',
           { opacity: 0, x: -60, scale: 0.85 },
-          { opacity: 1, x: 0, scale: 1, duration: 0.35, ease: 'power2.out', stagger: 0.04, clearProps: 'opacity,transform' }
+          {
+            opacity: 1, x: 0, scale: 1,
+            duration: 0.35, ease: 'power2.out',
+            stagger: 0.04, clearProps: 'opacity,transform'
+          }
         );
       });
     }, 0);
@@ -141,6 +193,25 @@ export class Store implements AfterViewInit, OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // ------------------------------------------------------------------
+  // Main nav handlers
+  // ------------------------------------------------------------------
+  openSearch(): void {
+    this.searchWindowOpened = true;
+  }
+
+  closeSearch(event?: Event): void {
+    event?.stopPropagation();
+    this.searchWindowOpened = false;
+  }
+
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  // ------------------------------------------------------------------
+  // Filters / view
+  // ------------------------------------------------------------------
   setActiveView(view: 'all' | 'favorites', event?: Event): void {
     event?.stopPropagation();
     this.activeView = view;
@@ -220,46 +291,32 @@ export class Store implements AfterViewInit, OnDestroy {
     } catch { }
   }
 
-  /* ============================================================
-     FULL-IMAGE HOVER PREVIEW (video / iframe)
-     ============================================================ */
-
-  /** Clean up whatever the API returns (spaces, //host, relative paths). */
+  // ------------------------------------------------------------------
+  // Hover preview (video / iframe)
+  // ------------------------------------------------------------------
   private normalize(raw?: string | null): string | null {
-    let u = (raw ?? '').toString().trim();
+    const u = (raw ?? '').toString().trim();
     if (!u) return null;
     if (u.startsWith('//')) return 'https:' + u;
     if (/^https?:\/\//i.test(u)) return u;
-    // relative path from the API -> serve it from the media server
     return Store.MEDIA_BASE.replace(/\/+$/, '') + '/' + u.replace(/^\/+/, '');
   }
 
-  /** Embed URL for known video hosts, otherwise null. */
   private embedFor(u: string): string | null {
     const yt = u.match(
-      /(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([\w-]{11})/i,
+      /(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([\w-]{11})/i
     );
     if (yt) {
-      return (
-        `https://www.youtube-nocookie.com/embed/${yt[1]}` +
-        `?rel=0&autoplay=1&mute=1&loop=1&playlist=${yt[1]}&playsinline=1&controls=0&modestbranding=1`
-      );
+      return `https://www.youtube-nocookie.com/embed/${yt[1]}` +
+        `?rel=0&autoplay=1&mute=1&loop=1&playlist=${yt[1]}&playsinline=1&controls=0&modestbranding=1`;
     }
-
     const vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
     if (vm) return `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=1&loop=1&background=1`;
-
     const sm = u.match(/streamable\.com\/(?:e\/)?([a-z0-9]+)/i);
     if (sm) return `https://streamable.com/e/${sm[1]}?autoplay=1&muted=1&loop=1`;
-
     return null;
   }
 
-  /**
-   * Anything that is not a known embed host is played with a <video> tag,
-   * even when the URL has no extension (Cloudinary, S3, GridFS, /api/video/:id ...).
-   * If the browser can't play it, (error) puts the card back to image-only.
-   */
   private fileUrl(car: StoreCar): string | null {
     const u = this.normalize(car.reviewVideoUrl);
     if (!u || this.embedFor(u)) return null;
@@ -271,13 +328,8 @@ export class Store implements AfterViewInit, OnDestroy {
     return u ? this.embedFor(u) : null;
   }
 
-  previewFileUrl(car: StoreCar): string | null {
-    return this.fileUrl(car);
-  }
-
-  previewEmbedUrl(car: StoreCar): string | null {
-    return this.embedUrl(car);
-  }
+  previewFileUrl(car: StoreCar): string | null { return this.fileUrl(car); }
+  previewEmbedUrl(car: StoreCar): string | null { return this.embedUrl(car); }
 
   hasPreview(car: StoreCar): boolean {
     if (this.previewFailed.has(car.id)) return false;
@@ -300,23 +352,134 @@ export class Store implements AfterViewInit, OnDestroy {
   }
 
   onPreviewCanPlay(el: HTMLVideoElement): void {
-    // Angular doesn't reflect the `muted` attribute onto dynamically created
-    // <video> elements, and browsers block autoplay unless the property is set.
     el.muted = true;
     el.defaultMuted = true;
-    if (el.paused) {
-      el.play().catch(() => { /* autoplay suppressed — image stays visible */ });
-    }
+    if (el.paused) el.play().catch(() => { });
   }
 
   onPreviewReady(el: HTMLElement): void {
-    // Reveal the preview only once it is actually playing / loaded
     el.classList.add('ready');
   }
 
+  // ==================================================================
+  // FILTER NAV VISIBILITY
+  //
+  // Rule: show the filter bar  <=>  car grid has scrolled past the
+  //                                 top of the viewport
+  //                             AND footer is NOT on screen.
+  //
+  // - Load at top:        grid top >= 0   -> hidden
+  // - Scroll into grid:   grid top < 0, footer out of view -> shown
+  // - Reach the footer:   footer in view  -> hidden
+  // - Scroll past footer: grid bottom <= 0 -> hidden
+  // - Scroll back up:     symmetric
+  //
+  // Both IntersectionObserver (for smooth edge detection while
+  // scrolling) and a throttled geometry read (for instant correct
+  // state on mount and on content-size changes) drive the same
+  // `applyFilterNavVisibility()` decision. They cannot get out of
+  // sync because they use the same rule.
+  // ==================================================================
+
+  private setupFilterNavVisibility(): void {
+    if (typeof IntersectionObserver === 'undefined') {
+      // Very old browser — just show it.
+      this.filterNavVisible = true;
+      return;
+    }
+
+    // ---- Store block observer ----
+    // `.store` is the whole car grid area. We don't use a sentinel here
+    // because we need the grid's actual top/bottom edges to tell when
+    // it has scrolled *past* the top vs when it's still in view.
+    this.storeObserver = new IntersectionObserver(
+      entries => {
+        for (const e of entries) {
+          // "grid past top" means the block's top is above the viewport
+          // and its bottom is below the viewport top — i.e. still on
+          // screen but scrolled into.
+          this.storeInView = e.isIntersecting;
+          // Re-derive from geometry too, because `isIntersecting` can
+          // be true while the block is still fully above the fold.
+        }
+        this.syncVisibilityFromLayout();
+      },
+      { rootMargin: '0px', threshold: 0 }
+    );
+    this.storeObserver.observe(this.storeBlock.nativeElement);
+
+    // ---- Footer observer ----
+    // Any overlap with the footer forces the bar off.
+    this.footerObserver = new IntersectionObserver(
+      entries => {
+        for (const e of entries) this.footerInView = e.isIntersecting;
+        this.applyFilterNavVisibility();
+      },
+      { rootMargin: '0px', threshold: 0 }
+    );
+    this.footerObserver.observe(this.footerBlock.nativeElement);
+
+    // ---- Synchronous initial read ----
+    // IntersectionObserver callbacks are async, so we can't rely on
+    // them to set the correct initial state. Read real geometry now.
+    this.syncVisibilityFromLayout();
+  }
+
+  /**
+   * Reads real geometry and applies the visibility rule immediately.
+   * Called on mount, on every throttled scroll/resize frame, and after
+   * the car list grows so the bar responds without waiting for the
+   * next IntersectionObserver tick.
+   */
+  private syncVisibilityFromLayout(): void {
+    if (!this.storeBlock || !this.footerBlock) return;
+
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const s = this.storeBlock.nativeElement.getBoundingClientRect();
+    const f = this.footerBlock.nativeElement.getBoundingClientRect();
+
+    // Grid counts as "the current scroll context" only once its top
+    // has gone above the viewport top AND it still has content below.
+    this.storeInView = s.top < 0 && s.bottom > 0;
+
+    // Footer is "on screen" if any part of it overlaps the viewport.
+    this.footerInView = f.bottom > 0 && f.top < vh;
+
+    this.applyFilterNavVisibility();
+  }
+
+  /** Single decision point — no other place writes `filterNavVisible`. */
+  private applyFilterNavVisibility(): void {
+    const next = this.storeInView && !this.footerInView;
+    if (next === this.filterNavVisible) return;
+    this.filterNavVisible = next;
+    // Close any open dropdown if the bar disappears.
+    if (!next) this.activeFilterDropdown = null;
+  }
+
+  /** Throttled scroll/resize handler — cheap, ~12 fps. */
+  private onScrollSync = (): void => {
+    const now = performance.now();
+    if (now - this.lastScrollSync < 80) return;
+    this.lastScrollSync = now;
+    this.syncVisibilityFromLayout();
+  };
+
+  // ------------------------------------------------------------------
+  // Lifecycle
+  // ------------------------------------------------------------------
   ngAfterViewInit(): void {
     this.supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
+    // Set up visibility observers + initial synchronous read.
+    this.setupFilterNavVisibility();
+
+    // Backup: keep visibility in sync while scrolling. Observers can be
+    // laggy on first paint and while the grid resizes after API load.
+    window.addEventListener('scroll', this.onScrollSync, { passive: true });
+    window.addEventListener('resize', this.onScrollSync, { passive: true });
+
+    // Initial card entrance animation.
     this.ctx = gsap.context(() => {
       if (!this.smoothContent.nativeElement.querySelector('.car-card')) return;
       gsap.from('.car-card', {
@@ -330,6 +493,7 @@ export class Store implements AfterViewInit, OnDestroy {
       });
     }, this.smoothContent.nativeElement);
 
+    // Dropdown dismiss + scroll listener (existing behavior).
     document.addEventListener('click', this.onDocumentClick, true);
     window.addEventListener('scroll', this.onScroll, { passive: true });
     document.addEventListener('wheel', this.onScroll, { passive: true });
@@ -340,34 +504,39 @@ export class Store implements AfterViewInit, OnDestroy {
     this.destroyed = true;
     this.carsSub?.unsubscribe();
     this.ctx?.revert();
+    this.storeObserver?.disconnect();
+    this.footerObserver?.disconnect();
+    window.removeEventListener('scroll', this.onScrollSync);
+    window.removeEventListener('resize', this.onScrollSync);
     document.removeEventListener('click', this.onDocumentClick, true);
     window.removeEventListener('scroll', this.onScroll);
     document.removeEventListener('wheel', this.onScroll);
     document.removeEventListener('touchmove', this.onScroll);
   }
 
+  // ------------------------------------------------------------------
+  // Dropdown dismiss
+  // ------------------------------------------------------------------
   private onDocumentClick = (event: MouseEvent): void => {
     if (this.activeFilterDropdown === null) return;
-
     const target = event.target as HTMLElement | null;
     if (!target) return;
-
     if (target.closest('.filter-dropdown-portal')) return;
     if (target.closest('.filter-item.dropdown')) return;
     if (target.closest('.filter-item.center')) return;
-
     this.closeFilterDropdown();
   };
 
   private onScroll = (event: Event): void => {
     if (this.activeFilterDropdown === null) return;
-
     const target = event.target as HTMLElement | null;
     if (target && target.closest('.filter-dropdown-portal')) return;
-
     this.closeFilterDropdown();
   };
 
+  // ------------------------------------------------------------------
+  // Navigation
+  // ------------------------------------------------------------------
   goToSpecs(car?: StoreCar, event?: Event): void {
     event?.stopPropagation();
     this.router.navigate(['/specs'], car ? { queryParams: { id: car.id } } : {});
@@ -378,15 +547,11 @@ export class Store implements AfterViewInit, OnDestroy {
   }
 
   goToImport(): void {
-    this.router.navigate(['/imported-trade-in'], {
-      queryParams: { tab: 'import' }
-    });
+    this.router.navigate(['/imported-trade-in'], { queryParams: { tab: 'import' } });
   }
 
   goToTradeIn(): void {
-    this.router.navigate(['/imported-trade-in'], {
-      queryParams: { tab: 'trade-in' }
-    });
+    this.router.navigate(['/imported-trade-in'], { queryParams: { tab: 'trade-in' } });
   }
 
   gotoFinance(): void {

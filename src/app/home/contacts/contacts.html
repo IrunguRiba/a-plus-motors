@@ -1,0 +1,133 @@
+<app-nav
+  [searchWindowOpened]="searchWindowOpened"
+  [isMenuOpen]="isMenuOpen"
+  [logoImg]="logoImg"
+  (openSearchEvent)="openSearch()"
+  (closeSearchEvent)="closeSearch($event)"
+  (toggleMenuEvent)="toggleMenu()">
+</app-nav>
+
+<div class="contact-container">
+
+  <section class="stage">
+    <div class="head-media" aria-hidden="true">
+      @for (slide of videoSlides; track slide.id) {
+        @if (slide.video.kind === 'file') {
+          <video
+            class="footer-video"
+            [src]="slide.video.src"
+            [muted]="true"
+            [loop]="videoPool.length === 1"
+            autoplay playsinline
+            preload="auto"
+            disablepictureinpicture
+            (loadeddata)="onVideoLoaded($any($event.target))"
+            (playing)="onVideoPlaying($any($event.target))"
+            (ended)="onVideoEnded()"
+            (error)="onVideoError(slide)"></video>
+        } @else {
+          <iframe
+            class="footer-video footer-embed"
+            [src]="slide.video.src | safeVideoUrl"
+            title=""
+            tabindex="-1"
+            frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            referrerpolicy="strict-origin-when-cross-origin"
+            (load)="onVideoPlaying($any($event.target))"></iframe>
+        }
+      }
+      <div class="head-shade"></div>
+    </div>
+
+    <div class="head-text">
+      <h1>Welcome to A Plus Motors Ltd.</h1>
+      <span class="rule"></span>
+      <p>We are delighted to serve you.</p>
+    </div>
+  </section>
+
+  <section class="contact-info">
+    <div class="info-col">
+      <h2>Sales & Showroom</h2>
+      @for (b of branches; track b.city) {
+        <div class="info-row">
+          <span class="city">{{ b.city }}</span>
+          <div class="details">
+            <a class="mail" [href]="'mailto:' + b.email">{{ b.email }}</a>
+            <a class="phone" [href]="'tel:' + b.tel">{{ b.phone }}</a>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="info-col">
+      @for (d of departments; track d.title) {
+        <div class="dept">
+          <h2>{{ d.title }}</h2>
+          <a class="mail" [href]="'mailto:' + d.email">{{ d.email }}</a>
+          <a class="phone" [href]="'tel:' + d.tel">{{ d.phone }}</a>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="contact-form-wrap">
+    <h2 class="form-title">Contact Form</h2>
+
+    <form class="contact-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label class="field" [class.invalid]="error('firstName')">
+        <span class="lbl">First Name <em class="tag">[required]</em>@if (error('firstName'); as msg) {<em class="msg">{{ msg }}</em>}</span>
+        <input type="text" formControlName="firstName" autocomplete="given-name" />
+      </label>
+
+      <label class="field" [class.invalid]="error('lastName')">
+        <span class="lbl">Last Name <em class="tag">[required]</em>@if (error('lastName'); as msg) {<em class="msg">{{ msg }}</em>}</span>
+        <input type="text" formControlName="lastName" autocomplete="family-name" />
+      </label>
+
+      <label class="field" [class.invalid]="error('email')">
+        <span class="lbl">Email <em class="tag">[required]</em>@if (error('email'); as msg) {<em class="msg">{{ msg }}</em>}</span>
+        <input type="email" formControlName="email" autocomplete="email" />
+      </label>
+
+      <label class="field" [class.invalid]="error('phone')">
+        <span class="lbl">Phone <em class="tag">[required]</em>@if (error('phone'); as msg) {<em class="msg">{{ msg }}</em>}</span>
+        <input type="tel" formControlName="phone" placeholder="+254 700 000 000" autocomplete="tel" />
+      </label>
+
+      <label class="field" [class.invalid]="error('category')">
+        <span class="lbl">Category <em class="tag">[required]</em>@if (error('category'); as msg) {<em class="msg">{{ msg }}</em>}</span>
+        <select formControlName="category">
+          <option value="" disabled>- Select -</option>
+          @for (c of categories; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span class="lbl">Message <em class="tag">[optional]</em></span>
+        <textarea rows="6" formControlName="message"></textarea>
+      </label>
+
+      <label class="check" [class.invalid]="error('accept')">
+        <input type="checkbox" formControlName="accept" />
+        <span class="lbl">Accept <em class="tag">[required]</em>@if (error('accept'); as msg) {<em class="msg">{{ msg }}</em>}</span>
+        <a class="policy" href="/privacy-policy">Privacy Policy</a>
+      </label>
+
+      <button type="submit" class="send">
+        <span class="flip">
+          <span class="face front">{{ sendLabel }}</span>
+          <span class="face back">{{ sendLabel }}</span>
+        </span>
+      </button>
+
+      @if (sent) {
+        <p class="sent">Thank you. Your message has been received.</p>
+      }
+    </form>
+  </section>
+</div>
+<app-footer></app-footer>

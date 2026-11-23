@@ -1,167 +1,224 @@
-import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { gsap } from 'gsap';
+import { Subscription } from 'rxjs';
+import { Nav } from '../nav/nav';
 import { Footer } from '../footer/footer';
+import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
+import { ApiServices } from '../../services/api-services';
+import {
+  ReviewVideo,
+  resolveReviewVideo,
+  primeMutedVideo,
+  markReady,
+  prefersReducedMotion,
+} from '../portfolio/specs/review-video';
 
+interface HeadSlide {
+  id: number;
+  video: ReviewVideo;
+}
 
+interface Section {
+  id: string;
+  title: string;
+  paragraphs: string[];
+}
+
+interface Faq {
+  q: string;
+  a: string;
+}
 
 @Component({
   selector: 'app-about-us',
-  standalone: true,
-  imports: [CommonModule, Footer],
+  imports: [Nav, Footer, SafeVideoUrlPipe],
   templateUrl: './about-us.html',
   styleUrl: './about-us.css',
 })
-export class AboutUs implements AfterViewInit, OnDestroy {
-  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
+export class AboutUs implements OnInit, OnDestroy {
+  private static readonly EMBED_MS = 25000;
 
-  activeIndex: number = 0;
-  
-  @ViewChild('contentArea', { static: false }) contentArea!: ElementRef;
-  @ViewChild('marqueeTrack', { static: false }) marqueeTrack!: ElementRef;
+  private router = inject(Router);
+  private api = inject(ApiServices);
 
-  private marqueeTween: gsap.core.Tween | null = null;
+  logoImg = 'fav3.png';
+  isMenuOpen = false;
+  searchWindowOpened = false;
 
-  // Data arrays...
-  pages = [
+  /* Hero video: same pool/queue logic as the contact page */
+  videoPool: ReviewVideo[] = [];
+  videoSlides: HeadSlide[] = [];
+
+  private videoQueue: ReviewVideo[] = [];
+  private videoSeq = 0;
+  private videoTimer: ReturnType<typeof setTimeout> | null = null;
+  private videoSub?: Subscription;
+
+  openFaq: number | null = 0;
+
+  readonly sections: Section[] = [
     {
       id: 'trusted-experience',
-      navText: 'I. Trusted Experience',
-      title: 'I. Trusted Experience',
-      content: "We humbly started early in 2005 as A-Plus Commercial Agency and later incorporated as A-Plus Motors Limited in mid 2006. Under the stewardship of Mr. James Mwangi Muturi. We have in excess of four hundred and fifty clean new and second hand vehicles for sale. We are proud to have the country's best and most talented staff who are motivated by customer satisfaction.",
-      reviews: [
-        { quote: '"Absolute five-star experience from start to finish."', body: 'The paperwork was handled efficiently, and I drove off the lot in my new vehicle the same afternoon with a full tank of gas.', author: '— David K.', purchase: 'Purchased: 2026 Toyota RAV4', date: 'Reviewed 2 weeks ago' },
-        { quote: '"Outstanding selection and service!"', body: 'Found exactly what I needed after visiting several places. Incredible inventory of clean vehicles.', author: '— Amina R.', purchase: 'Purchased: 2024 Subaru Forester', date: 'Reviewed 1 month ago' },
-        { quote: '"Honest staff and transparent pricing."', body: 'No hidden fees or unexpected surprises. The team went above and beyond to make me feel comfortable.', author: '— Brian M.', purchase: 'Purchased: 2025 Mazda CX-5', date: 'Reviewed 3 weeks ago' },
-        { quote: '"Professional team from day one."', body: 'Mr. James and his crew know what they are doing. Smooth process throughout.', author: '— Grace W.', purchase: 'Purchased: 2023 Toyota Vanguard', date: 'Reviewed 2 months ago' },
-        { quote: '"Best dealership in the region."', body: 'Unmatched customer service and prompt delivery. Will definitely return for my next vehicle.', author: '— John O.', purchase: 'Purchased: 2024 Toyota Hilux', date: 'Reviewed a month ago' }
-      ]
+      title: 'Trusted Experience',
+      paragraphs: [
+        'We humbly started early in 2005 as A-Plus Commercial Agency and later incorporated as A-Plus Motors Limited in mid 2006. Under the stewardship of Mr. James Mwangi Muturi. We have in excess of four hundred and fifty clean new and second hand vehicles for sale. We are proud to have the country\u2019s best and most talented staff who are motivated by customer satisfaction.',
+      ],
     },
     {
       id: 'full-package',
-      navText: 'II. Full Package Service',
-      title: 'II. Full Package Service',
-      content: 'We offer end-to-end solutions including importing, clearing, registration, and custom branding for corporate fleets. Our comprehensive service ensures you drive off the lot with everything you need.',
-      reviews: [
-        { quote: '"Seamless import and registration process!"', body: 'They handled everything from customs clearance to corporate branding seamlessly. Great communication.', author: '— Sarah M.', purchase: 'Purchased: Fleet Delivery', date: 'Reviewed 3 weeks ago' },
-        { quote: '"Took care of all the paperwork effortlessly."', body: 'I hate dealing with registration and clearing bureaucracy, but they took care of everything.', author: '— Kevin N.', purchase: 'Purchased: Nissan X-Trail', date: 'Reviewed 2 weeks ago' },
-        { quote: '"Custom branding looked amazing."', body: 'Branded our entire company fleet precisely according to our specifications right before handover.', author: '— Linda K.', purchase: 'Purchased: Fleet Sourcing', date: 'Reviewed 1 month ago' },
-        { quote: '"End-to-end efficiency at its best."', body: 'From port to plate numbers, they managed the entire pipeline without a single hitch.', author: '— Peter J.', purchase: 'Purchased: Toyota Land Cruiser', date: 'Reviewed 2 months ago' },
-        { quote: '"Zero stress logistics."', body: 'Clear updates at every single checkpoint of the importation lifecycle.', author: '— Cynthia A.', purchase: 'Purchased: Mitsubishi Pajero', date: 'Reviewed 3 weeks ago' }
-      ]
+      title: 'Full Package Service',
+      paragraphs: [
+        'We offer end-to-end solutions including importing, clearing, registration, and custom branding for corporate fleets. Our comprehensive service ensures you drive off the lot with everything you need.',
+      ],
     },
     {
       id: 'after-sale',
-      navText: 'III. After Sale Service',
-      title: 'III. After Sale Service',
-      content: 'Our relationship does not end when you drive off the lot. We offer comprehensive after-sale support including maintenance scheduling, genuine spare parts, and warranty claims to ensure your vehicle stays in top condition.',
-      reviews: [
-        { quote: '"Incredible ongoing support after purchase."', body: 'Had a minor service check scheduled and they were extremely professional, punctual, and transparent.', author: '— Kevin O.', purchase: 'Purchased: Maintenance Client', date: 'Reviewed 1 month ago' },
-        { quote: '"Genuine spare parts availability."', body: 'It is hard to find a dealer that stays committed after you drive away, but these guys are exceptional.', author: '— Rachel T.', purchase: 'Purchased: 2022 Toyota Harrier', date: 'Reviewed 3 weeks ago' },
-        { quote: '"Warranty claim handled swiftly."', body: 'Experienced a small snag and the workshop team sorted it out under warranty with zero pushback.', author: '— Daniel M.', purchase: 'Purchased: Subaru Outback', date: 'Reviewed 2 weeks ago' },
-        { quote: '"Dedicated maintenance scheduling."', body: 'They track your mileage and send reminders for routine tune-ups. Top-tier service culture.', author: '— Faith N.', purchase: 'Purchased: Toyota Crown', date: 'Reviewed a month ago' },
-        { quote: '"Peace of mind guaranteed."', body: 'Knowing they have a dedicated workshop for post-purchase care gives me ultimate confidence.', author: '— Eric S.', purchase: 'Purchased: Mazda Demio', date: 'Reviewed 2 months ago' }
-      ]
+      title: 'After Sale Service',
+      paragraphs: [
+        'Our relationship does not end when you drive off the lot. We offer comprehensive after-sale support including maintenance scheduling, genuine spare parts, and warranty claims to ensure your vehicle stays in top condition.',
+      ],
     },
-    {
-      id: 'reviews',
-      navText: 'IV. Client Reviews',
-      title: 'IV. Client Reviews',
-      content: 'Read what our satisfied clients across the country have to say about their experience purchasing their vehicles from A-Plus Motors. We take pride in our reputation and customer satisfaction.',
-      reviews: [
-        { quote: '"Absolute five-star experience from start to finish."', body: 'The paperwork was handled efficiently, and I drove off the lot in my new vehicle the same afternoon.', author: '— David K.', purchase: 'Purchased: 2026 Toyota RAV4', date: 'Reviewed 2 weeks ago' },
-        { quote: '"An absolute joy buying from them."', body: 'Friendly consultants, clean vehicles, and an overall brilliant showroom ambiance.', author: '— Susan B.', purchase: 'Purchased: 2025 Lexus RX350', date: 'Reviewed 1 week ago' },
-        { quote: '"Exceeded all expectations."', body: 'The car looked even better in person than in the photos. Pristine condition.', author: '— Mark L.', purchase: 'Purchased: 2023 Mercedes Benz C200', date: 'Reviewed 3 weeks ago' },
-        { quote: '"Trustworthy team."', body: 'Sent money from abroad and they delivered the vehicle right to my doorstep upcountry clean.', author: '— George K.', purchase: 'Purchased: 2024 Toyota Fortuner', date: 'Reviewed a month ago' },
-        { quote: '"Highly recommended to everyone."', body: 'If you want zero headaches buying a car in this country, come straight to A-Plus Motors.', author: '— Carol M.', purchase: 'Purchased: 2024 VW Tiguan', date: 'Reviewed 2 months ago' }
-      ]
-    },
-    {
-      id: 'faq',
-      navText: 'V. FAQs',
-      title: 'V. FAQs',
-      content: 'Here you will find answers to the most common questions our clients ask regarding vehicle sourcing, financing options, and delivery timelines. If you have a specific question, feel free to contact us.',
-      reviews: [
-        { quote: '"Cleared up all my financing questions."', body: 'The team made understanding vehicle sourcing and financing options completely clear before I committed.', author: '— Brenda W.', purchase: 'Purchased: 2025 Subaru Forester', date: 'Reviewed 2 months ago' },
-        { quote: '"Very helpful explanation on timelines."', body: 'They broke down the exact timeline for shipping and customs which helped me plan my budget.', author: '— Tom H.', purchase: 'Purchased: Import Client', date: 'Reviewed 1 month ago' },
-        { quote: '"Transparent terms and conditions."', body: 'Every single question regarding bank financing partnerships was answered thoroughly.', author: '— Nancy P.', purchase: 'Purchased: Asset Finance Client', date: 'Reviewed 3 weeks ago' },
-        { quote: '"Patient with all my inquiries."', body: 'I asked dozens of questions about logbook transfers and they patiently walked me through.', author: '— Victor E.', purchase: 'Purchased: 2023 Toyota Auris', date: 'Reviewed 2 weeks ago' },
-        { quote: '"Extremely comprehensive support."', body: 'The FAQs and live assistance clarified everything about trade-ins and valuation policies.', author: '— Juliet W.', purchase: 'Purchased: Trade-in Client', date: 'Reviewed a month ago' }
-      ]
-    }
   ];
 
-  ngAfterViewInit(): void {
-    this.animateContentIn();
-    this.initGsapMarquee();
-  }
+  readonly faqs: Faq[] = [
+    {
+      q: 'Where are you located and when are you open?',
+      a: 'We are based in Nairobi, Kenya, and open Monday to Saturday, 8am to 6pm.',
+    },
+    {
+      q: 'Do you sell both new and second hand vehicles?',
+      a: 'Yes. We have in excess of four hundred and fifty clean new and second hand vehicles for sale.',
+    },
+    {
+      q: 'Can I finance a vehicle?',
+      a: 'Yes. Our financing page lets you compare loan options and estimate your monthly payments before you commit.',
+    },
+    {
+      q: 'Can you import a car for me?',
+      a: 'Yes. We offer end-to-end solutions including importing, clearing and registration.',
+    },
+    {
+      q: 'Do you accept trade-ins?',
+      a: 'Yes. You can trade in your current car for a valuation. See the Trade-in page for details.',
+    },
+    {
+      q: 'Do you offer after-sale support?',
+      a: 'Yes. We offer maintenance scheduling, genuine spare parts and warranty claims.',
+    },
+    {
+      q: 'Can you brand vehicles for my company fleet?',
+      a: 'Yes. Custom branding for corporate fleets is part of our full package service.',
+    },
+    {
+      q: 'How do I get in touch?',
+      a: 'Use the Contact page, call or WhatsApp us, or send an email.',
+    },
+  ];
 
-  setActivePage(index: number) {
-    if (this.activeIndex === index) return;
-    
-    // Animate out current content
-    gsap.to(this.contentArea.nativeElement, {
-      opacity: 0,
-      y: 15,
-      duration: 0.25,
-      onComplete: () => {
-        this.activeIndex = index;
-        this.cdr.detectChanges();
-        this.animateContentIn();
-        this.initGsapMarquee();
-      }
+  ngOnInit(): void {
+    if (prefersReducedMotion()) return;
+
+    this.videoSub = this.api.getWebCars().subscribe({
+      next: (cars) => {
+        const seen = new Set<string>();
+        const pool: ReviewVideo[] = [];
+        for (const c of cars ?? []) {
+          const v = resolveReviewVideo(c.reviewVideoUrl);
+          if (!v || seen.has(v.src)) continue;
+          seen.add(v.src);
+          pool.push(v);
+        }
+        this.videoPool = pool;
+        this.videoQueue = [];
+        this.nextVideo();
+      },
+      error: () => {},
     });
   }
-
-  animateContentIn() {
-    if (!this.contentArea) return;
-    gsap.fromTo(
-      this.contentArea.nativeElement,
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-    );
-  }
-
-  initGsapMarquee() {
-    if (!this.marqueeTrack) return;
-    
-    // Kill existing tween if any
-    if (this.marqueeTween) {
-      this.marqueeTween.kill();
-    }
-
-    // GSAP infinite smooth marquee loop replacing CSS animation
-    const track = this.marqueeTrack.nativeElement;
-    const totalWidth = track.scrollWidth / 2;
-
-    this.marqueeTween = gsap.to(track, {
-      x: `-=${totalWidth}`,
-      duration: 26,
-      ease: 'none',
-      repeat: -1,
-      modifiers: {
-        x: gsap.utils.unitize(x => parseFloat(x) % totalWidth)
-      }
-    });
-  }
-
-  pauseMarquee() {
-    if (this.marqueeTween) this.marqueeTween.timeScale(0.2); 
-  }
-
-  resumeMarquee() {
-    if (this.marqueeTween) this.marqueeTween.timeScale(1);
-  }
-
-  goHome(): void { this.router.navigate(['']); }
-  goToStore() { this.router.navigate(['/store']); }
-  goToFinance() { this.router.navigate(['/financing']); }
-  goToBlogs() { this.router.navigate(['/blogs']); }
 
   ngOnDestroy(): void {
-    if (this.marqueeTween) {
-      this.marqueeTween.kill();
+    this.videoSub?.unsubscribe();
+    if (this.videoTimer) clearTimeout(this.videoTimer);
+  }
+
+  /* Nav handlers */
+  openSearch(): void {
+    this.searchWindowOpened = true;
+  }
+
+  closeSearch(event: Event): void {
+    event.stopPropagation();
+    this.searchWindowOpened = false;
+  }
+
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  /* Video rotation */
+  nextVideo(): void {
+    if (this.videoTimer) {
+      clearTimeout(this.videoTimer);
+      this.videoTimer = null;
     }
+
+    if (!this.videoPool.length) {
+      this.videoSlides = [];
+      return;
+    }
+
+    if (!this.videoQueue.length) {
+      this.videoQueue = this.shuffle([...this.videoPool]);
+      const current = this.videoSlides[0]?.video.src;
+      if (this.videoQueue.length > 1 && this.videoQueue[0].src === current) {
+        this.videoQueue.push(this.videoQueue.shift()!);
+      }
+    }
+
+    const video = this.videoQueue.shift()!;
+    this.videoSlides = [{ id: ++this.videoSeq, video }];
+
+    if (video.kind === 'embed' && this.videoPool.length > 1) {
+      this.videoTimer = setTimeout(() => this.nextVideo(), AboutUs.EMBED_MS);
+    }
+  }
+
+  onVideoLoaded(el: HTMLVideoElement): void {
+    primeMutedVideo(el);
+  }
+
+  onVideoPlaying(el: HTMLElement): void {
+    markReady(el);
+  }
+
+  onVideoEnded(): void {
+    this.nextVideo();
+  }
+
+  onVideoError(slide: HeadSlide): void {
+    this.videoPool = this.videoPool.filter((v) => v.src !== slide.video.src);
+    this.videoQueue = this.videoQueue.filter((v) => v.src !== slide.video.src);
+    this.nextVideo();
+  }
+
+  private shuffle<T>(arr: T[]): T[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  /* Page helpers */
+  toggleFaq(i: number): void {
+    this.openFaq = this.openFaq === i ? null : i;
+  }
+
+  scrollTo(id: string): void {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  goToContact(): void {
+    this.router.navigate(['/contact']);
   }
 }

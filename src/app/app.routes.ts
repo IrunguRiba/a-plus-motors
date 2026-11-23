@@ -11,6 +11,7 @@ import { Nav } from './home/nav/nav';
 import { TradeIn } from './home/trade-in-imported/trade-in/trade-in';
 import { Imported } from './home/trade-in-imported/imported/imported';
 import { TradeInImported } from './home/trade-in-imported/trade-in-imported';
+import { Contacts } from './home/contacts/contacts';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -19,6 +20,7 @@ export const routes: Routes = [
   { path: 'about-us', component: AboutUs },
   { path: 'blogs', component: Blog },
   { path: 'store', component: Store },
+  {path: 'contact', component:Contacts},
   { path: 'financing', component: Financing },
 { path: 'specs', component: Specs },
 {

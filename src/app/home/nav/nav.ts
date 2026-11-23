@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnDestroy, Output, ViewChild, inject } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnDestroy, Output, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Search } from '../search/search';
@@ -7,6 +7,7 @@ import { Typewriter, prefersReducedMotion } from '../../typewriting';
 interface MenuTarget {
   path?: string;
   query?: Record<string, string>;
+  fragment?: string;
 }
 
 interface MenuLink extends MenuTarget {
@@ -35,7 +36,7 @@ interface MenuItem {
   templateUrl: './nav.html',
   styleUrl: './nav.css',
 })
-export class Nav implements AfterViewInit, OnDestroy {
+export class Nav implements AfterViewInit, AfterViewChecked, OnDestroy {
   email = 'gmail.png';
   ig = 'ig.png';
   twitter = 'twitter.png';
@@ -100,6 +101,7 @@ export class Nav implements AfterViewInit, OnDestroy {
       label: 'Home',
       title: 'Home',
       links: [
+        { label: 'Home Page', path: '/home' },
         { label: 'Featured Cars', path: '/store' },
         { label: 'New Arrivals', path: '/store' },
         { label: 'Latest Offers', path: '/store' },
@@ -107,6 +109,7 @@ export class Nav implements AfterViewInit, OnDestroy {
       ],
       feature: this.feature('Find Your Perfect Ride', 'Explore our wide range of vehicles, from fresh arrivals to carefully inspected pre-owned cars, all in one place.Explore our wide range of vehicles, from fresh arrivals to carefully inspected pre-owned cars, all in one place.'),
     },
+    
     {
       key: 'about',
       label: 'About Us',
@@ -119,6 +122,7 @@ export class Nav implements AfterViewInit, OnDestroy {
       ],
       feature: this.feature('Our Values', 'Quality, trust and performance guide everything we do, from the cars we select to the way we look after every customer long after the sale.'),
     },
+    
     {
       key: 'financing',
       label: 'Financing',
@@ -144,6 +148,18 @@ export class Nav implements AfterViewInit, OnDestroy {
       feature: this.feature('Import or Trade In With Ease', 'Bring in your dream car from abroad or trade in your current one for a fair valuation, with every step handled for you.'),
     },
     {
+      key: 'contact',
+      label: 'Contact us',
+      title: 'Contact Us',
+      links: [
+        { label: 'Our Offices', path: '/contact', fragment: 'offices' },
+        { label: 'Departments', path: '/contact', fragment: 'departments' },
+        { label: 'Send a Message', path: '/contact', fragment: 'message' },
+        { label: 'Book a Viewing', path: '/contact', fragment: 'message', query: { subject: 'viewing' } },
+      ],
+      feature: this.feature('We Are Here To Help', 'Call, WhatsApp or drop us a message. Our team will get back to you quickly, whether you are buying, financing, importing or trading in.', '/contact'),
+    },
+    {
       key: 'subsidiaries',
       label: 'Subsidiaries',
       title: 'Our Subsidiaries',
@@ -155,9 +171,10 @@ export class Nav implements AfterViewInit, OnDestroy {
       ],
       feature: this.feature('Building a Bigger Future', 'Our group brings together motors, finance, insurance and auto parts under one roof, so every part of owning a car is handled by a partner you trust.'),
     },
+    
   ];
 
-  private feature(title: string, text: string): MenuFeature {
+  private feature(title: string, text: string, path = '/blogs'): MenuFeature {
     const words = text.trim().split(/\s+/);
     const long = words.length > this.featureWordLimit;
     return {
@@ -165,7 +182,7 @@ export class Nav implements AfterViewInit, OnDestroy {
       text: long ? words.slice(0, this.featureWordLimit).join(' ').replace(/[,.;:]+$/, '') + '...' : text,
       image: this.car1,
       long,
-      path: '/blogs',
+      path,
     };
   }
 
@@ -227,7 +244,10 @@ export class Nav implements AfterViewInit, OnDestroy {
 
   go(target: MenuTarget): void {
     if (!target.path) return;
-    this.router.navigate([target.path], target.query ? { queryParams: target.query } : {});
+    this.router.navigate([target.path], {
+      ...(target.query ? { queryParams: target.query } : {}),
+      ...(target.fragment ? { fragment: target.fragment } : {}),
+    });
     if (this.isMenuOpen) {
       this.toggleMenuEvent.emit();
     }
