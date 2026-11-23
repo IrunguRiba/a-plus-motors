@@ -29,6 +29,7 @@ import {
   canHover,
   prefersReducedMotion,
 } from './review-video';
+import { Nav } from '../../nav/nav';
 
 type CarView = 'exterior' | 'interior';
 interface SpecRow {
@@ -72,7 +73,7 @@ const DOUBLE_TAP_PX = 30;
 @Component({
   selector: 'app-specs',
   templateUrl: './specs.html',
-  imports: [CommonModule, FormsModule, SafeVideoUrlPipe, Footer],
+  imports: [CommonModule, FormsModule, SafeVideoUrlPipe, Footer, Nav],
   styleUrls: ['./specs.css'],
   host: { style: 'overflow: clip' },
 })
@@ -105,6 +106,28 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   private get reducedMotion(): boolean {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /* ============================================================
+     MAIN NAV STATE (bound to <app-nav>)
+     ============================================================ */
+
+  searchWindowOpened = false;
+  isMenuOpen = false;
+  /** Leading slash so the path resolves against the app root on every route. */
+  logoImg = '/fav3.png';
+
+  openSearch(): void {
+    this.searchWindowOpened = true;
+  }
+
+  closeSearch(event?: Event): void {
+    event?.stopPropagation();
+    this.searchWindowOpened = false;
+  }
+
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
   }
 
   /* ============================================================
@@ -856,7 +879,6 @@ export class Specs implements AfterViewInit, OnDestroy {
      INTEREST MODAL
      ============================================================ */
 
-  logoImg = 'fav3.png';
   phoneImg = 'call.png';
   whatsappImg = 'whatsapp.png';
   youtubeImg = 'youtube.png';
@@ -1240,7 +1262,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.ctx ??= gsap.context(() => {}, root);
     this.ctx.add(() => {
       gsap.fromTo(
-        '.top-nav, .specs-box, .car-section, .gallery-col, .similar-section .car-card',
+        '.specs-box, .car-section, .gallery-col, .similar-section .car-card',
         { opacity: 0, x: MOTION.enterX, scale: MOTION.enterScale },
         {
           opacity: 1,

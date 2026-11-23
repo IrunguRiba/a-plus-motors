@@ -3,6 +3,24 @@
    specs.css
    ========================================================== */
 
+:host {
+  /* Mirror the app-nav metrics (nav.css). Keep these in sync if nav.css changes. */
+  --nav-top: 12px;        /* .nav-container --top */
+  --nav-bar-h: 93px;      /* .nav-container --bar-h */
+  --nav-gutter: 12px;     /* .nav-container --gutter */
+
+  /* Total offset from viewport top to the bottom of <app-nav>. */
+  --stack-height: calc(var(--nav-top) + var(--nav-bar-h));
+
+  display: block;
+}
+
+/* The page canvas sits below the fixed nav, never underneath it. */
+:host {
+  padding-top: var(--stack-height);
+  box-sizing: border-box;
+}
+
 .specs-container,
 .interest-modal,
 .lightbox {
@@ -111,22 +129,21 @@
 }
 
 /* ---------- Hero ---------- */
+/* No extra top padding: :host already offsets the page by --stack-height,
+   so the hero begins exactly at the bottom of the fixed <app-nav>.
+   A hairline top border + 1px gap keeps the nav visually separated. */
 .hero-page {
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh - var(--stack-height));
+  height: calc(100dvh - var(--stack-height));
   display: flex;
   flex-direction: column;
-  /* Reserve space for the now-fixed nav so the hero content is never hidden under it.
-     Matches the nav's intrinsic height (16px top/bottom padding + ~11px font line-height ≈ 43px).
-     If you change the nav's vertical padding, update this to match. */
-  padding-top: 44px;
+  border-top: var(--border-thin);
+  margin-top: 1px;
 }
 
-/* --- TOP NAV --- */
-/* Pinned to the viewport. `position: fixed` is used instead of `sticky` because
-   - `.specs-container` has `overflow: hidden`, which breaks sticky on descendants, and
-   - GSAP ScrollSmoother wraps the content in a transformed element, which also breaks sticky.
-   Fixed positioning is unaffected by both. */
+/* --- TOP NAV (legacy; the new <app-nav> is fixed by its own component) --- */
+/* Kept only so any stray markup using .top-nav still lays out correctly.
+   The imported <app-nav> renders as a fixed element and is not affected. */
 .top-nav {
   position: fixed;
   top: 0;
@@ -138,7 +155,6 @@
   background: rgba(250, 250, 250, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  /* Respect iOS safe areas when pinned to the top */
   padding-top: env(safe-area-inset-top, 0px);
 }
 
@@ -193,7 +209,9 @@
 }
 .view-tab {
   flex: 1;
-  padding: 16px 10px;
+  /* Slimmer than before so the External/Internal row is shorter,
+     giving more room below (in .specs-car) without touching that block. */
+  padding: 10px 10px;
   border: 0;
   border-right: var(--border-nav);
   background: transparent;
@@ -371,7 +389,8 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 16px 24px;
+
+  padding: 16px 10px;
   border: var(--border-thin);
   background: transparent;
   font-size: 11px;
@@ -1949,12 +1968,12 @@ a.v-btn {
     filter: blur(40px) saturate(1.15);
   }
 
+  /* On mobile the hero grows with its content; the host padding still
+     keeps it below the fixed nav, so no extra reservation is needed. */
   .hero-page {
     height: auto;
-    min-height: 100vh;
-    min-height: 100dvh;
-    /* Same reservation as desktop so the fixed nav never overlaps the photo stage */
-    padding-top: 44px;
+    min-height: calc(100vh - var(--stack-height));
+    min-height: calc(100dvh - var(--stack-height));
   }
   .main-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -2027,7 +2046,13 @@ a.v-btn {
 
 /* ---------- Phones ---------- */
 @media (max-width: 720px) {
-  /* Keep the nav pinned; allow horizontal scroll inside it */
+  /* Match the nav's phone breakpoint so the reservation stays correct. */
+  :host {
+    --nav-top: 8px;
+    --nav-bar-h: 84px;
+  }
+
+  /* Keep the nav pinned; allow horizontal scroll inside it (legacy rule) */
   .top-nav {
     overflow-x: auto;
     scrollbar-width: none;
@@ -2040,11 +2065,6 @@ a.v-btn {
     padding: 0 18px;
     font-size: 10px;
     letter-spacing: 0.16em;
-  }
-
-  /* The pinned nav is a little taller on phones (44px tap targets), so reserve more */
-  .hero-page {
-    padding-top: 44px;
   }
 
   .car-stage {
@@ -2141,7 +2161,7 @@ a.v-btn {
   }
   .similar-title {
     letter-spacing: 0.12em;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
   .similar-cards-row {
     grid-template-columns: 1fr;
@@ -2251,6 +2271,10 @@ a.v-btn {
 }
 
 @media (max-width: 380px) {
+  :host {
+    --nav-bar-h: 78px;
+  }
+
   .zoom-btn {
     min-width: 38px;
     padding: 0 5px;
@@ -2271,7 +2295,7 @@ a.v-btn {
 @media (max-width: 980px) and (orientation: landscape) and (max-height: 520px) {
   .car-stage {
     aspect-ratio: auto;
-    height: calc(100dvh - 100px);
+    height: calc(100dvh - var(--stack-height) - 10px);
     min-height: 240px;
   }
   .lb-head {
@@ -2350,11 +2374,11 @@ a.v-btn {
    Discover Similar Vehicles title (same look as DISCOVER on the home page)
    ========================================================== */
 .similar-title {
-  margin: 0 0 28px;
+  margin: 0 0 18px;
   text-align: center;
   font-family: 'Sora', 'Manrope', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: clamp(26px, 3.4vw, 40px);
-  line-height: 1.1;
+  font-size: clamp(13px, 1.2vw, 20px);
+  line-height: 1;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2399,7 +2423,7 @@ a.v-btn {
   display: block;
   background: #000;
   z-index: 2;
-  pointer-events: none; 
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.25s ease;
 }
@@ -2409,5 +2433,4 @@ a.v-btn {
 }
 .footer{
   width: 100vw;
-
 }

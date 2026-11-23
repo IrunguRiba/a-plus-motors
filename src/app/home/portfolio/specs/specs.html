@@ -2,13 +2,19 @@
 <div class="specs-container">
   <div class="global-car-blur-bg" [style.backgroundImage]="'url(' + activeImage + ')'"></div>
 
+  <!-- ================= MAIN NAV (imported) ================= -->
+  <div #appNavHost class="app-nav-host">
+    <app-nav
+      [searchWindowOpened]="searchWindowOpened"
+      [isMenuOpen]="isMenuOpen"
+      (openSearchEvent)="openSearch()"
+      (closeSearchEvent)="closeSearch($event)"
+      (toggleMenuEvent)="toggleMenu()">
+    </app-nav>
+  </div>
+
   <!-- ================= HERO ================= -->
   <section class="hero-page">
-    <nav class="top-nav">
-      <button class="nav-cell" (click)="goToMainStore()">STORE</button>
-      <button class="nav-cell" (click)="goToContact()">Contact us</button>
-    </nav>
-
     <div class="main-grid">
 
       <!-- LEFT: SPECS -->
@@ -61,9 +67,6 @@
                  (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
                  (wheel)="onStageWheel($event)">
               <div class="zoom-layer" [style.transform]="zoomTransform">
-                <!-- FIX: dropped crossorigin="anonymous" — it blocked the image entirely when the
-                     image host did not send Access-Control-Allow-Origin. trimImage() already
-                     fails gracefully, so trimming is a nice-to-have, not a requirement. -->
                 <img [src]="displayImage" (load)="trimImage($event)"
                      [attr.data-orig]="activeImage"
                      [alt]="carName + ' ' + view" class="car-img" draggable="false" />
@@ -192,9 +195,6 @@
         <article class="car-card" (click)="openSimilar(c, $event)"
                  (mouseenter)="onCardEnter(c)" (mouseleave)="onCardLeave(c)">
           <div class="car-image-wrapper" [class.has-video]="hasPreview(c)">
-            <!-- FIX: bind src directly (same-origin, no crossorigin), so the card image
-                 renders immediately. data-src is kept so the existing lazy observer can
-                 still upgrade/hydrate it if you want, but src makes it always visible. -->
             <img [src]="c.image" [alt]="c.name" decoding="async"
                  (load)="onCardImgLoad($event)" (error)="onCardImgError($event)" />
 
@@ -251,8 +251,7 @@
     </div>
 
     <footer class="site-footer">
-
-     <app-footer class="footer"></app-footer>
+      <app-footer class="footer"></app-footer>
     </footer>
   </section>
 
@@ -273,7 +272,6 @@
            (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
            (wheel)="onStageWheel($event)">
         <div class="zoom-layer" [style.transform]="zoomTransform">
-          <!-- FIX: dropped crossorigin="anonymous" here too -->
           <img [src]="displayImage" (load)="trimImage($event)"
                [attr.data-orig]="activeImage"
                [alt]="carName + ' ' + view" class="car-img" draggable="false" />
