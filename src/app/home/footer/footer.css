@@ -1,750 +1,833 @@
+:host {
+  display: block;
+}
+
+.footer-container {
+  --fade-h: clamp(170px, 10vw, 280px);
+
+  --white: #FFFFFF;
+  --white-soft: rgba(255, 255, 255, 0.86);
+  --mid: #787C7C;
+  --gold: #CE7F20;
+  --bronze: var(--gold);
+  --hair: rgba(255, 255, 255, 0.28);
+
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  box-sizing: border-box;
+  background: #080909;
+  color: var(--white);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  clip-path: inset(0);
+}
 
 
-   :host {
-    display: block;
+
+.footer-media {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.footer-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+  display: block;
+  background: transparent;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.footer-video.ready {
+  opacity: 1;
+}
+
+.footer-video.footer-embed {
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  width: max(100vw, 177.78vh);
+  width: max(100vw, 177.78svh);
+  height: max(56.25vw, 100vh);
+  height: max(56.25vw, 100svh);
+  transform: translate(-50%, -50%);
+}
+
+.footer-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 7, 7, 0.82) 0%,
+    rgba(6, 7, 7, 0.76) 50%,
+    rgba(6, 7, 7, 0.86) 100%
+  );
+}
+
+/* ---------- Seam: starts as the exact page colour, melts into the dark ---------- */
+
+.footer-fade {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: var(--fade-h);
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgb(228, 230, 231) 0%,
+    rgba(222, 223, 224, 0.97) 10%,
+    rgba(205, 206, 207, 0.9) 20%,
+    rgba(180, 181, 181, 0.78) 30%,
+    rgba(150, 151, 151, 0.65) 40%,
+    rgba(117, 118, 118, 0.5) 50%,
+    rgba(84, 85, 85, 0.35) 60%,
+    rgba(54, 55, 55, 0.22) 70%,
+    rgba(29, 30, 30, 0.1) 80%,
+    rgba(12, 13, 13, 0.03) 90%,
+    rgba(6, 7, 7, 0) 100%
+  );
+}
+
+/* ---------- Content ---------- */
+
+.footer-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: calc(var(--fade-h) * 0.85) 4% 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 70px;
+}
+
+.section-title {
+  margin: 0;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--white);
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--hair);
+}
+
+/* ---------- Reviews marquee ---------- */
+
+.comments-wrapper {
+  position: relative;
+  margin-top: 40px;
+}
+
+.connecting-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--hair);
+  z-index: 1;
+}
+
+.marquee {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
+}
+
+.marquee-track {
+  display: flex;
+  align-items: stretch;
+  width: max-content;
+  animation: marquee-scroll 70s linear infinite;
+  will-change: transform;
+}
+
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.comment-card {
+  flex: 0 0 400px;
+  width: 400px;
+  margin-right: 30px;
+  background-color: rgba(8, 9, 9, 0.72);
+  -webkit-backdrop-filter: blur(6px) saturate(130%);
+  backdrop-filter: blur(6px) saturate(130%);
+  border: 1px solid var(--hair);
+  padding: 28px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--white);
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.star { color: var(--gold); }
+.star.empty { opacity: 0.3; }
+
+.verified-badge {
+  margin-left: auto;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--white);
+  border: 1px solid var(--hair);
+  padding: 3px 7px;
+  letter-spacing: 0.1em;
+}
+
+.comment-card .quote {
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--white);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.comment-card .body-text {
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--white);
+  margin: 0;
+  flex-grow: 1;
+}
+
+.client-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--hair);
+  font-size: 0.8rem;
+  color: var(--white);
+}
+
+.comment-card .author {
+  font-weight: 500;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+
+.purchase-info,
+.review-date {
+  color: var(--white-soft);
+}
+
+/* ---------- Main grid ---------- */
+
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) 1.7fr;
+  gap: 80px;
+  align-items: start;
+}
+
+/* ---------- Brand column: logo + slogan (mirrors nav) ---------- */
+
+.brand-logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  margin: 0 0 32px;
+  cursor: pointer;
+  width: fit-content;
+  align-self: flex-start;
+  margin-left: -12px;
+}
+
+.brand-logo {
+  display: block;
+  height: clamp(64px, 7vw, 96px);
+  width: auto;
+  max-width: 100%;
+  opacity: 0.72;
+  filter: brightness(0) invert(1);
+  transition: opacity 0.3s ease;
+}
+
+.brand-logo-wrapper:hover .brand-logo {
+  opacity: 1;
+}
+
+/* Slogan — mirrors nav's .slogan */
+.brand-slogan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: 0.66rem;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--white);
+}
+
+.brand-slogan::before,
+.brand-slogan::after {
+  content: "";
+  flex: none;
+  width: 28px;
+  height: 1px;
+}
+
+.brand-slogan::before {
+  background: linear-gradient(90deg, transparent, var(--mid));
+}
+
+.brand-slogan::after {
+  background: linear-gradient(90deg, var(--mid), transparent);
+}
+
+/* ---------- Contact button ---------- */
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 28px;
+  border: 1px solid var(--white);
+  color: var(--white);
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.cta-label {
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cta-arrow {
+  transition: transform 0.3s ease;
+}
+
+.cta:hover,
+.cta:focus-visible {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.cta:hover .cta-arrow {
+  transform: translateX(5px);
+}
+
+/* ---------- Socials (each icon has its own white border) ---------- */
+
+.socials {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: fit-content;
+}
+
+.socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--white);
+  opacity: 0.95;
+  transition: opacity 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+
+.socials a:hover,
+.socials a:focus-visible {
+  opacity: 1;
+  transform: translateY(-2px);
+  border-color: var(--gold);
+}
+
+/* Every icon is rendered white by default … */
+.socials img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) invert(1);
+}
+
+/* … except YouTube, which keeps its own brand colours. */
+.socials a[aria-label="YouTube"] img {
+  filter: none;
+}
+
+/* ---------- Assist paragraph (below socials, smaller font) ---------- */
+
+.assist {
+  margin: 28px 0 0;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(0.8rem, 0.95vw, 1rem);
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.assist-accent {
+  color: var(--gold);
+}
+
+.assist-line {
+  color: var(--white);
+}
+
+/* ---------- Link groups ---------- */
+
+.menu-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 54px 36px;
+}
+
+.col-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 28px;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.col-title .dash {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.link-list a {
+  color: var(--white);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.link-list a span {
+  position: relative;
+  padding-bottom: 3px;
+}
+
+.link-list a span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 0.25s ease;
+}
+
+.link-list a:hover,
+.link-list a:focus-visible {
+  color: var(--gold);
+}
+
+.link-list a:hover span::after,
+.link-list a:focus-visible span::after {
+  width: 100%;
+}
+
+.location-col .loc-address,
+.location-col .loc-contact {
+  margin: 0 0 20px;
+  padding-left: 36px;
+  font-size: 0.88rem;
+  font-weight: 400;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  color: var(--white);
+}
+
+.location-col .loc-contact { margin-bottom: 0; }
+
+.location-col a {
+  color: var(--white);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.location-col a:hover,
+.location-col a:focus-visible {
+  color: var(--gold);
+}
+
+/* ---------- Map (original colours, framed like a social button) ---------- */
+
+.map-wrapper {
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--white);
+  background-color: #E4E6E7;
+  transition: border-color 0.25s ease;
+}
+
+.map-wrapper:hover {
+  border-color: var(--gold);
+}
+
+.map-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- Copyright row (no background, floats) ---------- */
+
+.copyright {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 32px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 0;
+  margin-top: 24px;
+  margin-bottom: 40px;
+  background: transparent;
+  border-top: 1px solid var(--hair);
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  font-size: 0.6rem;
+  font-weight: 200;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.copyright p { margin: 0; }
+
+.copyright .brand-name {
+  position: relative;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.copyright .brand-name::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 1px;
+  background-color: var(--gold);
+  transition: width 0.25s ease;
+}
+
+.copyright .brand-name:hover::after { width: 100%; }
+
+.copyright .sq-dot {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  background-color: var(--white);
+  margin: 0 0.9em;
+  vertical-align: middle;
+}
+
+.privacy-policy {
+  color: var(--white);
+  text-decoration: none;
+  letter-spacing: 0.3em;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.privacy-policy > span {
+  position: relative;
+  padding-bottom: 3px;
+}
+
+.privacy-policy > span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--gold);
+  transition: width 0.3s ease;
+}
+
+.privacy-policy:hover,
+.privacy-policy:focus-visible { color: var(--gold); }
+
+.privacy-policy:hover > span::after { width: 100%; }
+
+/* ---------- Focus outlines ---------- */
+
+.cta:focus-visible,
+.link-list a:focus-visible,
+.location-col a:focus-visible,
+.socials a:focus-visible,
+.privacy-policy:focus-visible {
+  outline: 1px dotted var(--white);
+  outline-offset: 6px;
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-video { transition: none; }
+
+  .marquee {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
-  
-  .footer-container {
-    --fade-h: clamp(170px, 10vw, 280px);
-  
-    --white: #FFFFFF;
-    --white-soft: rgba(255, 255, 255, 0.86);
-    --mid: #787C7C;
-    --gold: #CE7F20;
-    --bronze: var(--gold);
-    --hair: rgba(255, 255, 255, 0.28);
-  
-    position: relative;
-    isolation: isolate;
+
+  .marquee-track { animation: none; }
+
+  .brand-logo { transition: none; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   Mobile goal: a SHORT footer. Tighter gaps, brand block centred
+   with the contact button and socials on one row, link groups in
+   two compact columns, a shorter map and a slimmer copyright row.
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  /* sub-links stay indented to line up with the title text (dash 22px + gap 14px) */
+}
+
+@media (max-width: 900px) {
+  .footer-container { --fade-h: 130px; }
+
+  .footer-inner {
+    gap: 32px;
+    padding-top: calc(var(--fade-h) * 0.6);
+    padding-left: 5%;
+    padding-right: 5%;
+  }
+
+  .connecting-line { display: none; }
+
+  .comment-card {
+    flex-basis: 280px;
+    width: 280px;
+    margin-right: 16px;
+    padding: 18px;
+    gap: 8px;
+  }
+
+  .marquee-track { animation-duration: 55s; }
+
+  .map-wrapper { height: 180px; }
+
+  .copyright {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.5rem;
+    gap: 10px;
+    padding: 14px 0;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-family: "DM Mono", monospace;
+  }
+}
+
+/* Phones: the copyright line stays on ONE line (it scales with the screen width). */
+@media (max-width: 768px) {
+  .copyright {
+    letter-spacing: 0.1em;
+    font-size: clamp(0.38rem, 2.1vw, 0.5rem);
+  }
+
+  .copyright p {
+    white-space: nowrap;
+  }
+
+  .copyright .sq-dot { margin: 0 0.6em; }
+
+  .privacy-policy { letter-spacing: 0.16em; }
+}
+
+@media (max-width: 768px) {
+  .main-grid { gap: 28px; }
+
+  /* Brand block: logo on top, then button + socials side by side, then the line of text. */
+  .brand-col {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 14px 16px;
+  }
+
+  .brand-logo-wrapper {
+    flex: 0 0 100%;
     width: 100%;
-    box-sizing: border-box;
-    background: #080909;
-    color: var(--white);
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    clip-path: inset(0);
+    gap: 5px;
+    margin: 0;
+    align-self: center;
   }
-  
 
-  
-  .footer-media {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    overflow: hidden;
-    pointer-events: none;
-  }
-  
-  .footer-video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    object-fit: cover;
-    display: block;
-    background: transparent;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.9s ease;
-  }
-  
-  .footer-video.ready {
+  /* Same size range as desktop (64–96px), fully opaque so it stands out */
+  .brand-logo {
+    height: clamp(72px, 22vw, 96px);
     opacity: 1;
   }
-  
-  .footer-video.footer-embed {
-    inset: auto;
-    top: 50%;
-    left: 50%;
-    width: max(100vw, 177.78vh);
-    width: max(100vw, 177.78svh);
-    height: max(56.25vw, 100vh);
-    height: max(56.25vw, 100svh);
-    transform: translate(-50%, -50%);
+
+  .brand-slogan {
+    gap: 8px;
+    font-size: clamp(0.5rem, 2.4vw, 0.62rem);
+    letter-spacing: 0.24em;
   }
-  
-  .footer-shade {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      rgba(6, 7, 7, 0.82) 0%,
-      rgba(6, 7, 7, 0.76) 50%,
-      rgba(6, 7, 7, 0.86) 100%
-    );
+  .brand-slogan::before,
+  .brand-slogan::after { width: 22px; }
+
+  .cta {
+    gap: 10px;
+    padding: 9px 16px;
   }
-  
-  /* ---------- Seam: starts as the exact page colour, melts into the dark ---------- */
-  
-  .footer-fade {
-    position: absolute;
-    top: -1px;
-    left: 0;
-    right: 0;
-    height: var(--fade-h);
-    z-index: 1;
-    pointer-events: none;
-    background: linear-gradient(
-      to bottom,
-      rgb(228, 230, 231) 0%,
-      rgba(222, 223, 224, 0.97) 10%,
-      rgba(205, 206, 207, 0.9) 20%,
-      rgba(180, 181, 181, 0.78) 30%,
-      rgba(150, 151, 151, 0.65) 40%,
-      rgba(117, 118, 118, 0.5) 50%,
-      rgba(84, 85, 85, 0.35) 60%,
-      rgba(54, 55, 55, 0.22) 70%,
-      rgba(29, 30, 30, 0.1) 80%,
-      rgba(12, 13, 13, 0.03) 90%,
-      rgba(6, 7, 7, 0) 100%
-    );
-  }
-  
-  /* ---------- Content ---------- */
-  
-  .footer-inner {
-    position: relative;
-    z-index: 2;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: calc(var(--fade-h) * 0.85) 4% 0;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 70px;
-  }
-  
-  .section-title {
+  .cta-label { font-size: 0.72rem; }
+  .cta-arrow { width: 16px; height: 16px; }
+
+  .socials {
     margin: 0;
-    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
-    font-weight: 400;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--white);
-    padding-bottom: 22px;
-    border-bottom: 1px solid var(--hair);
+    gap: 8px;
+    width: auto;
+    justify-content: center;
   }
-  
-  /* ---------- Reviews marquee ---------- */
-  
-  .comments-wrapper {
-    position: relative;
-    margin-top: 40px;
+
+  .socials a {
+    width: 34px;
+    height: 34px;
   }
-  
-  .connecting-line {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background-color: var(--hair);
-    z-index: 1;
+
+  .socials img {
+    width: 16px;
+    height: 16px;
   }
-  
-  .marquee {
-    position: relative;
-    z-index: 2;
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
-  }
-  
-  .marquee-track {
-    display: flex;
-    align-items: stretch;
-    width: max-content;
-    animation: marquee-scroll 70s linear infinite;
-    will-change: transform;
-  }
-  
-  .marquee:hover .marquee-track,
-  .marquee:focus-within .marquee-track {
-    animation-play-state: paused;
-  }
-  
-  @keyframes marquee-scroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-  }
-  
-  .comment-card {
-    flex: 0 0 400px;
-    width: 400px;
-    margin-right: 30px;
-    background-color: rgba(8, 9, 9, 0.72);
-    -webkit-backdrop-filter: blur(6px) saturate(130%);
-    backdrop-filter: blur(6px) saturate(130%);
-    border: 1px solid var(--hair);
-    padding: 28px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    color: var(--white);
-  }
-  
-  .rating {
-    display: flex;
+
+  .assist {
+    flex: 0 0 100%;
+    max-width: none;
+    margin: 2px 0 0;
+    gap: 3px;
     align-items: center;
-    gap: 4px;
-    font-size: 0.9rem;
-    margin-bottom: 4px;
-  }
-  
-  .star { color: var(--gold); }
-  .star.empty { opacity: 0.3; }
-  
-  .verified-badge {
-    margin-left: auto;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    color: var(--white);
-    border: 1px solid var(--hair);
-    padding: 3px 7px;
-    letter-spacing: 0.1em;
-  }
-  
-  .comment-card .quote {
-    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-    font-size: 1.15rem;
-    font-weight: 400;
-    color: var(--white);
-    margin: 0;
+    text-align: center;
+    font-size: 0.68rem;
     line-height: 1.4;
   }
-  
-  .comment-card .body-text {
-    font-size: 0.9rem;
-    font-weight: 300;
-    line-height: 1.65;
-    color: var(--white);
-    margin: 0;
-    flex-grow: 1;
-  }
-  
-  .client-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 8px;
-    padding-top: 12px;
-    border-top: 1px dashed var(--hair);
-    font-size: 0.8rem;
-    color: var(--white);
-  }
-  
-  .comment-card .author {
-    font-weight: 500;
-    color: var(--gold);
-    letter-spacing: 0.04em;
-  }
-  
-  .purchase-info,
-  .review-date {
-    color: var(--white-soft);
-  }
-  
-  /* ---------- Main grid ---------- */
-  
-  .main-grid {
-    display: grid;
-    grid-template-columns: minmax(280px, 0.8fr) 1.7fr;
-    gap: 80px;
-    align-items: start;
-  }
-  
-  /* ---------- Brand column: logo + slogan (mirrors nav) ---------- */
-  
-  .brand-logo-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 0;
-    margin: 0 0 32px;
-    cursor: pointer;
-    width: fit-content;
-    align-self: flex-start;
-    margin-left: -12px;
-  }
-  
-  .brand-logo {
-    display: block;
-    height: clamp(64px, 7vw, 96px);
-    width: auto;
-    max-width: 100%;
-    opacity: 0.72;
-    filter: brightness(0) invert(1);
-    transition: opacity 0.3s ease;
-  }
-  
-  .brand-logo-wrapper:hover .brand-logo {
-    opacity: 1;
-  }
-  
-  /* Slogan — mirrors nav's .slogan */
-  .brand-slogan {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-family: "Playfair Display", "Cormorant Garamond", Georgia, "Times New Roman", serif;
-    font-size: 0.66rem;
-    font-style: italic;
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: var(--white);
-  }
-  
-  .brand-slogan::before,
-  .brand-slogan::after {
-    content: "";
-    flex: none;
-    width: 28px;
-    height: 1px;
-  }
-  
-  .brand-slogan::before {
-    background: linear-gradient(90deg, transparent, var(--mid));
-  }
-  
-  .brand-slogan::after {
-    background: linear-gradient(90deg, var(--mid), transparent);
-  }
-  
-  /* ---------- Contact button ---------- */
-  
-  .cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 28px;
-    border: 1px solid var(--white);
-    color: var(--white);
-    text-decoration: none;
-    cursor: pointer;
-    transition: border-color 0.3s ease, color 0.3s ease;
-  }
-  
-  .cta-label {
-    font-size: 0.9rem;
-    font-weight: 400;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  
-  .cta-arrow {
-    transition: transform 0.3s ease;
-  }
-  
-  .cta:hover,
-  .cta:focus-visible {
-    border-color: var(--gold);
-    color: var(--gold);
-  }
-  
-  .cta:hover .cta-arrow {
-    transform: translateX(5px);
-  }
-  
-  /* ---------- Socials (each icon has its own white border) ---------- */
-  
-  .socials {
-    list-style: none;
-    margin: 32px 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    width: fit-content;
-  }
-  
-  .socials a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border: 1px solid var(--white);
-    opacity: 0.95;
-    transition: opacity 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
-  }
-  
-  .socials a:hover,
-  .socials a:focus-visible {
-    opacity: 1;
-    transform: translateY(-2px);
-    border-color: var(--gold);
-  }
-  
-  /* Every icon is rendered white by default … */
-  .socials img {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    display: block;
-    filter: brightness(0) invert(1);
-  }
-  
-  /* … except YouTube, which keeps its own brand colours. */
-  .socials a[aria-label="YouTube"] img {
-    filter: none;
-  }
-  
-  /* ---------- Assist paragraph (below socials, smaller font) ---------- */
-  
-  .assist {
-    margin: 28px 0 0;
-    max-width: 440px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-    font-size: clamp(0.8rem, 0.95vw, 1rem);
-    line-height: 1.5;
-    font-weight: 400;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--white);
-  }
-  
-  .assist-accent {
-    color: var(--gold);
-  }
-  
-  .assist-line {
-    color: var(--white);
-  }
-  
-  /* ---------- Link groups ---------- */
-  
+
+  /* Link groups: two compact columns, so four blocks fit in two rows. */
   .menu-cols {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 54px 36px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 18px;
   }
-  
+
   .col-title {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin: 0 0 28px;
-    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-    font-size: 1.05rem;
-    font-weight: 400;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--gold);
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
   }
-  
-  .col-title .dash {
-    display: inline-block;
-    flex: 0 0 auto;
-    width: 22px;
-    height: 1px;
-    background: var(--gold);
-  }
-  
-  .link-list {
-    list-style: none;
-    margin: 0;
-    padding: 0 0 0 36px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .link-list a {
-    color: var(--white);
-    text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: color 0.25s ease;
-  }
-  
-  .link-list a span {
-    position: relative;
-    padding-bottom: 3px;
-  }
-  
-  .link-list a span::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 0;
-    height: 1px;
-    background-color: currentColor;
-    transition: width 0.25s ease;
-  }
-  
-  .link-list a:hover,
-  .link-list a:focus-visible {
-    color: var(--gold);
-  }
-  
-  .link-list a:hover span::after,
-  .link-list a:focus-visible span::after {
-    width: 100%;
-  }
-  
+  .col-title .dash { width: 14px; }
+
+  /* Start under the title TEXT, not under the dash: dash 14px + gap 8px = 22px */
+  .link-list,
   .location-col .loc-address,
   .location-col .loc-contact {
-    margin: 0 0 20px;
-    padding-left: 36px;
-    font-size: 0.88rem;
-    font-weight: 400;
-    line-height: 1.8;
-    letter-spacing: 0.04em;
-    color: var(--white);
+    padding-left: 22px;
   }
-  
+
+  .link-list { gap: 10px; }
+  .link-list a {
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+  }
+
+  .location-col .loc-address,
+  .location-col .loc-contact {
+    margin-bottom: 10px;
+    font-size: 0.72rem;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    overflow-wrap: anywhere;
+  }
   .location-col .loc-contact { margin-bottom: 0; }
-  
-  .location-col a {
-    color: var(--white);
-    text-decoration: none;
-    transition: color 0.25s ease;
-  }
-  
-  .location-col a:hover,
-  .location-col a:focus-visible {
-    color: var(--gold);
-  }
-  
-  /* ---------- Map (original colours, framed like a social button) ---------- */
-  
-  .map-wrapper {
-    width: 100%;
-    height: 320px;
-    overflow: hidden;
-    box-sizing: border-box;
-    border: 1px solid var(--white);
-    background-color: #E4E6E7;
-    transition: border-color 0.25s ease;
-  }
-  
-  .map-wrapper:hover {
-    border-color: var(--gold);
-  }
-  
-  .map-wrapper iframe {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  
-  /* ---------- Copyright row (no background, floats) ---------- */
-  
-  .copyright {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px 32px;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 20px 0;
-    margin-top: 24px;
-    margin-bottom: 40px;
-    background: transparent;
-    border-top: 1px solid var(--hair);
-    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-    font-size: 0.6rem;
-    font-weight: 200;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var(--white);
-  }
-  
-  .copyright p { margin: 0; }
-  
-  .copyright .brand-name {
-    position: relative;
-    color: var(--white);
-    cursor: pointer;
-  }
-  
-  .copyright .brand-name::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -3px;
-    width: 0;
-    height: 1px;
-    background-color: var(--gold);
-    transition: width 0.25s ease;
-  }
-  
-  .copyright .brand-name:hover::after { width: 100%; }
-  
-  .copyright .sq-dot {
-    display: inline-block;
-    width: 3px;
-    height: 3px;
-    background-color: var(--white);
-    margin: 0 0.9em;
-    vertical-align: middle;
-  }
-  
-  .privacy-policy {
-    color: var(--white);
-    text-decoration: none;
-    letter-spacing: 0.3em;
-    cursor: pointer;
-    transition: color 0.25s ease;
-  }
-  
-  .privacy-policy > span {
-    position: relative;
-    padding-bottom: 3px;
-  }
-  
-  .privacy-policy > span::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 0;
-    height: 1px;
-    background-color: var(--gold);
-    transition: width 0.3s ease;
-  }
-  
-  .privacy-policy:hover,
-  .privacy-policy:focus-visible { color: var(--gold); }
-  
-  .privacy-policy:hover > span::after { width: 100%; }
-  
-  /* ---------- Focus outlines ---------- */
-  
-  .cta:focus-visible,
-  .link-list a:focus-visible,
-  .location-col a:focus-visible,
-  .socials a:focus-visible,
-  .privacy-policy:focus-visible {
-    outline: 1px dotted var(--white);
-    outline-offset: 6px;
-  }
-  
-  /* ---------- Reduced motion ---------- */
-  
-  @media (prefers-reduced-motion: reduce) {
-    .footer-video { transition: none; }
-  
-    .marquee {
-      overflow-x: auto;
-      -webkit-mask-image: none;
-      mask-image: none;
-    }
-  
-    .marquee-track { animation: none; }
-  
-    .brand-logo { transition: none; }
-  }
-  
-  /* ---------- Responsive ---------- */
-  
-  @media (max-width: 1100px) {
-    .main-grid {
-      grid-template-columns: 1fr;
-      gap: 56px;
-    }
-  
-    .link-list,
-    .location-col .loc-address,
-    .location-col .loc-contact {
-      padding-left: 0;
-    }
-  }
-  
-  @media (max-width: 900px) {
-    .footer-inner {
-      gap: 54px;
-      padding-left: 5%;
-      padding-right: 5%;
-    }
-  
-    .connecting-line { display: none; }
-  
-    .comment-card {
-      flex-basis: 300px;
-      width: 300px;
-      margin-right: 20px;
-      padding: 22px;
-    }
-  
-    .marquee-track { animation-duration: 55s; }
-  
-    .map-wrapper { height: 260px; }
-  
-    .copyright {
-      flex-direction: column;
-      justify-content: center;
-      text-align: center;
-      font-size: 0.5rem;
-      gap: 16px;
-      padding: 18px 0;
-      margin-bottom: 32px;
-      font-family: "DM Mono", monospace;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .brand-logo-wrapper {
-      gap: 5px;
-      margin-bottom: 28px;
-      margin-left: 0;
-      align-self: center;
-    }
-  
-    .brand-logo { height: 42px; }
-  
-    .brand-slogan {
-      gap: 6px;
-      font-size: clamp(0.4rem, 1.9vw, 0.52rem);
-      letter-spacing: 0.2em;
-    }
-    .brand-slogan::before,
-    .brand-slogan::after { width: 14px; }
-  
-    .socials {
-      margin-top: 26px;
-      gap: 10px;
-    }
-  
-    .socials a {
-      width: 36px;
-      height: 36px;
-    }
-  
-    .socials img {
-      width: 18px;
-      height: 18px;
-    }
-  
-    .assist { margin-top: 24px; }
-  }
-  
-  @media (max-width: 700px) {
-    .menu-cols {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  
-  @media (max-width: 460px) {
-    .menu-cols {
-      grid-template-columns: 1fr;
-    }
-  }
+}
+
+@media (max-width: 340px) {
+  .menu-cols { grid-template-columns: 1fr; }
+}

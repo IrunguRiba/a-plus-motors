@@ -67,10 +67,10 @@ interface Review {
 interface BodyFilterItem {
   key: CarBody;
   label: string;
-  /** SVG path (viewBox 0 0 120 50) for the side-view body outline; wheels are drawn in the template. */
-  path: string;
-  /** Window / detail lines drawn inside the body. */
-  windows: string;
+  /** Silhouette image shown as the icon (original file). */
+  image: string;
+  /** Same image with the empty margins cropped off (filled in once it has loaded). */
+  src?: string;
 }
 
 interface DragSample {
@@ -94,6 +94,13 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   readonly recommendedTarget = 6;
   readonly storeMax = 21;
   private static readonly STORE_COLS = 3;
+
+  /**
+   * Folder that holds the silhouette images, with a trailing slash.
+   * '' means the files sit in the site root (Angular's public/ folder).
+   * If they live elsewhere, e.g. in src/assets/silhouettes, use 'assets/silhouettes/'.
+   */
+  private static readonly SIL_BASE = '';
 
   /* ---------- local storage ---------- */
   private static readonly STORAGE_KEY = 'aplus:portfolio:v1';
@@ -126,50 +133,14 @@ export class Portfolio implements AfterViewInit, OnDestroy {
   @ViewChild('beltViewport') beltViewport?: ElementRef<HTMLDivElement>;
   @ViewChild('storeSection') storeSection?: ElementRef<HTMLElement>;
 
-  /* ---------- body-type filter (shown under the DISCOVER title) ---------- */
+  /* ---------- body-type filter (shown under the DISCOVER title) ----------
+     To add another body type (hatchback, coupe, van), drop its image next to
+     the others and add one entry here. */
   readonly bodyFilters: BodyFilterItem[] = [
-    {
-      key: 'suv',
-      label: 'SUV',
-      path: 'M5 38V29Q5 26.5 9 26L22 24L31 13Q33 9 38 9H78Q83 9 86 13L97 24L109 26.5Q115 28 115 32V38',
-      windows: 'M33 23L38 12.5H55V23ZM59 23V12.5H77Q80 12.5 82 15L90 23Z',
-    },
-    {
-      key: 'sedan',
-      label: 'Sedan',
-      path: 'M5 38V31Q5 28.5 9 28L30 24Q36 22.5 40 18.5L47 13.5Q50 11.5 55 11.5H72Q80 11.5 87 18L106 26Q115 28 115 32V38',
-      windows: 'M38 23L45 15H62V23ZM66 23V15H72Q76 15 80 19L86 23Z',
-    },
-    {
-      key: 'hatchback',
-      label: 'Hatchback',
-      path: 'M5 38V30Q5 27.5 9 27L24 24.5L35 15Q38 11.5 44 11.5H72Q78 11.5 81 14.5L99 25L109 27Q115 28.5 115 32V38',
-      windows: 'M32 23.5L38 14.5H55V23.5ZM59 23.5V14.5H72Q75 14.5 77 17L84 23.5Z',
-    },
-    {
-      key: 'wagon',
-      label: 'Wagon',
-      path: 'M5 38V30Q5 27.5 9 27L24 24.5L33 14.5Q35 11 40 11H93Q98 11 100 14L106 26L109 27.5Q115 29 115 32V38',
-      windows: 'M31 23.5L37 14H52V23.5ZM56 23.5V14H72V23.5ZM76 23.5V14H93Q95 14 96 16L100 23.5Z',
-    },
-    {
-      key: 'coupe',
-      label: 'Coupe',
-      path: 'M5 38V33Q5 30 9 29L32 26Q40 25 46 19L54 14Q58 12 63 12H70Q76 12 82 17L96 26L109 28.5Q115 30 115 34V38',
-      windows: 'M46 24.5L53 16.5H68Q72 16.5 75 19L83 24.5Z',
-    },
-    {
-      key: 'truck',
-      label: 'Pickup',
-      path: 'M5 38V28Q5 25.5 9 25L22 23.5L32 12.5Q34 10 38 10H55Q58 10 59 13L61 24H108Q115 24 115 29V38',
-      windows: 'M33 22.5L38 13H55L57 22.5Z',
-    },
-    {
-      key: 'van',
-      label: 'Van',
-      path: 'M5 38V28Q5 25.5 9 25L20 23L32 11Q34 8.5 38 8.5H94Q99 8.5 101 12L108 26.5Q115 28 115 32V38',
-      windows: 'M33 22.5L38 12H52V22.5ZM56 22.5V12H72V22.5ZM76 22.5V12H92Q94 12 95 14L98 22.5Z',
-    },
+    { key: 'suv', label: 'SUV', image: Portfolio.SIL_BASE + 'suv-sil.webp' },
+    { key: 'sedan', label: 'Sedan', image: Portfolio.SIL_BASE + 'sedan-sil.jpg' },
+    { key: 'wagon', label: 'Wagon', image: Portfolio.SIL_BASE + 'wagon-sil.webp' },
+    { key: 'truck', label: 'Pickup', image: Portfolio.SIL_BASE + 'pick-up-sil.png' },
   ];
 
   /** Only body types that actually exist in the store are shown as icons. */
@@ -457,6 +428,67 @@ export class Portfolio implements AfterViewInit, OnDestroy {
 
   trackById = (_: number, car: Car) => car.id;
   trackByRow = (_: number, row: Car[]) => row.map((c) => c.id).join('|');
+  trackByFilter = (_: number, f: BodyFilterItem) => f.key;
+
+  /**
+   * Crops the empty white/transparent margin off a silhouette picture, so every
+   * body type is drawn at the same size no matter how much blank space its file has.
+   * Runs once per image; if the browser blocks pixel reading it keeps the original.
+   */
+  trimSilhouette(f: BodyFilterItem, img: HTMLImageElement): void {
+    if (f.src || !img.naturalWidth || !img.naturalHeight) return;
+
+    try {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0);
+      const { data } = ctx.getImageData(0, 0, w, h);
+
+      // A pixel is "ink" when it is visible and dark enough (not white paper).
+      const isInk = (i: number) =>
+        data[i + 3] > 40 && (data[i] + data[i + 1] + data[i + 2]) / 3 < 190;
+
+      const rowInk = new Uint32Array(h);
+      const colInk = new Uint32Array(w);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          if (isInk((y * w + x) * 4)) {
+            rowInk[y]++;
+            colInk[x]++;
+          }
+        }
+      }
+
+      // Ignore stray specks: a row/column needs a little ink to count.
+      const minRow = Math.max(2, Math.round(w * 0.01));
+      const minCol = Math.max(2, Math.round(h * 0.01));
+      let top = 0, bottom = h - 1, left = 0, right = w - 1;
+      while (top < bottom && rowInk[top] < minRow) top++;
+      while (bottom > top && rowInk[bottom] < minRow) bottom--;
+      while (left < right && colInk[left] < minCol) left++;
+      while (right > left && colInk[right] < minCol) right--;
+
+      const cw = right - left + 1;
+      const ch = bottom - top + 1;
+      if (cw < 20 || ch < 10) return;
+
+      const out = document.createElement('canvas');
+      out.width = cw;
+      out.height = ch;
+      const octx = out.getContext('2d');
+      if (!octx) return;
+      octx.drawImage(canvas, left, top, cw, ch, 0, 0, cw, ch);
+      f.src = out.toDataURL('image/png');
+      this.cdr.markForCheck();
+    } catch {
+      /* canvas blocked — keep the original image */
+    }
+  }
 
   /* ============================================================
      HOVER VIDEO PREVIEW (belt cards + store cards)

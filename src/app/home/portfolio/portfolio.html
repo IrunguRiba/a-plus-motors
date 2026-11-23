@@ -3,30 +3,34 @@
   <div class="recommended">
 
     <!-- ============================================================
-         DISCOVER — centered title + body-type filter
+         DISCOVER — centered title + body-type filter (silhouette images)
          ============================================================ -->
     <div class="discover-hero">
       <h1 class="discover-title">DISCOVER</h1>
 
-      <nav class="body-filter" aria-label="Filter by body type" *ngIf="availableFilters.length">
+      <nav
+        class="body-filter"
+        aria-label="Filter by body type"
+        *ngIf="availableFilters.length"
+        [style.--n]="availableFilters.length"
+      >
         <button
-          *ngFor="let f of availableFilters"
+          *ngFor="let f of availableFilters; trackBy: trackByFilter"
           type="button"
           class="body-filter-btn"
           [class.active]="activeFilter === f.key"
           [attr.aria-pressed]="activeFilter === f.key"
           (click)="selectBody(f.key)"
         >
-          <svg viewBox="0 0 120 50" aria-hidden="true">
-            <path class="body-shell" [attr.d]="f.path" />
-            <path class="body-glass" [attr.d]="f.windows" />
-            <path class="body-base" d="M5 38H19M37 38H83M101 38H115M19 38a9 9 0 0 1 18 0M83 38a9 9 0 0 1 18 0" />
-            <circle cx="28" cy="38" r="7" />
-            <circle cx="92" cy="38" r="7" />
-            <circle class="body-rim" cx="28" cy="38" r="2.5" />
-            <circle class="body-rim" cx="92" cy="38" r="2.5" />
-          </svg>
-          <span>{{ f.label }}</span>
+          <span class="body-filter-img">
+            <img
+              [src]="f.src || f.image"
+              alt=""
+              draggable="false"
+              (load)="trimSilhouette(f, $any($event.target))"
+            />
+          </span>
+          <span class="body-filter-label">{{ f.label }}</span>
         </button>
       </nav>
     </div>
@@ -148,7 +152,6 @@
                       <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M12 15V3M12 3 7.5 7.5M12 3l4.5 4.5M5 12v8h14v-8" />
                       </svg>
-                    
                     </button>
                     <button
                       type="button"
