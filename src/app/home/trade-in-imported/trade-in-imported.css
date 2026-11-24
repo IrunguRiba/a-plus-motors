@@ -1,132 +1,144 @@
-:host {
-  display: block;
+/* ============================================================
+   TRADE-IN / IMPORTED PAGE
+   - <app-nav> is position:fixed (its own component handles layout).
+   - Tabs bar is position:fixed, flush under <app-nav>.
+   - Content is padded by the full stack height so it starts
+     below the tabs.
+   ============================================================ */
 
-  --ink: #0F1010;
-  --muted: #787C7C;
-  --light: #D8DADB;
-  --brown: #7E5B47;
-
-  --border-thin: 1px solid var(--ink);
-  --font-main: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
-  font-family: var(--font-main);
-  color: var(--ink);
-  background: var(--light);
-  -webkit-font-smoothing: antialiased;
-}
-
-:host *,
-:host *::before,
-:host *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* ---------- Top nav: compact, sharp 1px rules (same scale as the store nav) ---------- */
-.nav {
-  display: grid;
-  grid-template-columns: 12.3% 21.1% 20.3% 12.7% 14.4% 19.2%;
-  height: 44px;
-  border-bottom: var(--border-thin);
-}
-
-.cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  padding: 0 12px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border-right: var(--border-thin);
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.5px;
-  line-height: 1;
-  text-transform: uppercase;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.cell:last-child {
-  border-right: 0;
-}
-
-a.cell:hover {
-  background: #fff;
-  color: var(--brown);
-}
-
-/* ---------- Tabs ---------- */
-.tabs {
-  display: grid;
-  grid-template-columns: 46% 1fr;
-  height: 48px;
-  border-bottom: var(--border-thin);
-}
-
-.tab {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  font-size: clamp(11px, 1.1vw, 14px);
-  font-weight: 400;
-  letter-spacing: 0.5px;
-  line-height: 1;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: transparent;
-  border: 1px solid transparent;
-  transition: color 0.2s ease, background 0.2s ease;
-}
-
-.tab:first-child {
-  border-right: var(--border-thin);
-}
-
-.tab sup {
-  align-self: flex-start;
-  margin: 12px 8px 0 0;
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  line-height: 1;
-  color: var(--brown);
-}
-
-.tab:hover {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.55);
-}
-
-/* Active: sharp border, no background (as in the store filters) */
-.tab.active {
-  z-index: 1;
-  margin: -1px;
-  color: var(--ink);
-  background: transparent;
-  border: var(--border-thin);
-}
-
-@media (max-width: 960px) {
-  .nav {
+   :host {
+    --ink: #0F1010;
+    --muted: #787C7C;
+    --light: #D8DADB;
+    --brown: #7E5B47;
+  
+    --border-thin: 1px solid var(--ink);
+    --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+    /* --- Mirror the app-nav metrics (nav.css) --- */
+    --nav-top: 12px;
+    --nav-bar-h: 93px;
+  
+    /* Height of the tabs bar (single row) */
+    --tabs-h: 48px;
+  
+    /* Offset from viewport top to the bottom of the tabs bar */
+    --stack-height: calc(var(--nav-top) + var(--nav-bar-h) + var(--tabs-h) + 1px);
+  
+    display: block;
+    font-family: var(--font-main);
+    color: var(--ink);
+    background: var(--light);
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  :host *,
+  :host *::before,
+  :host *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  .trade-in-imported-container {
+    position: relative;
+  }
+  
+  /* Content starts below the fixed nav + tabs stack */
+  .content {
+    padding-top: var(--stack-height);
+  }
+  
+  /* ---------- Tabs (fixed, flush under app-nav) ---------- */
+  .tabs-wrapper {
+    position: fixed;
+    top: calc(var(--nav-top) + var(--nav-bar-h));
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 900;              /* below app-nav (1000), above page content */
+    background: var(--light);
+    border-top: var(--border-thin);
+    border-bottom: var(--border-thin);
+    margin-top: 1px;
+  }
+  
+  .tabs {
+    display: grid;
+    grid-template-columns: 46% 1fr;
+    height: var(--tabs-h);
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+  
+  .tab {
+    position: relative;
     display: flex;
-    overflow-x: auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    font-size: clamp(11px, 1.1vw, 14px);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid transparent;
+    transition: color 0.2s ease, background 0.2s ease;
   }
-  .cell {
-    flex: 0 0 auto;
-    min-width: 120px;
-    padding: 0 18px;
+  
+  .tab:first-child {
+    border-right: var(--border-thin);
   }
+  
   .tab sup {
-    margin-top: 10px;
+    align-self: flex-start;
+    margin: 12px 8px 0 0;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    color: var(--brown);
   }
-}
+  
+  .tab:hover {
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.55);
+  }
+  
+  /* Active: sharp border, no background (as in the store filters) */
+  .tab.active {
+    z-index: 1;
+    margin: -1px;
+    color: var(--ink);
+    background: transparent;
+    border: var(--border-thin);
+  }
+  
+  /* ============================================================
+     RESPONSIVE — mirror the app-nav breakpoints
+     ============================================================ */
+  
+  @media (max-width: 768px) {
+    :host {
+      --nav-top: 8px;
+      --nav-bar-h: 84px;
+    }
+  }
+  
+  @media (max-width: 380px) {
+    :host {
+      --nav-bar-h: 78px;
+    }
+  }
+  
+  @media (max-width: 960px) {
+    .tab sup {
+      margin-top: 10px;
+    }
+  }

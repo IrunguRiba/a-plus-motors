@@ -1,12 +1,16 @@
+<app-nav
+  [searchWindowOpened]="searchWindowOpened"
+  [isMenuOpen]="isMenuOpen"
+  [logoImg]="logoImg"
+  (openSearchEvent)="openSearch()"
+  (closeSearchEvent)="closeSearch($event)"
+  (toggleMenuEvent)="toggleMenu()">
+</app-nav>
+
 <section class="fn-container">
 
-  <div class="fn-nav-wrapper">
-    <div class="fn-nav-top">
-      <div class="fn-nav-cell fn-nav-title">FINANCING</div>
-      <div class="fn-nav-cell fn-nav-link" tabindex="0" (click)="goToStore()" (keydown.enter)="goToStore()">STORE</div>
-      <div class="fn-nav-cell fn-nav-link" tabindex="0" (click)="goHome()" (keydown.enter)="goHome()">HOME</div>
-    </div>
-
+  <!-- Fixed, flush under <app-nav> -->
+  <div class="fn-tabs-wrapper">
     <div class="fn-tabs" role="tablist" aria-label="Financing view">
       @for (t of tabs; track t.id) {
         <div class="fn-tab" role="tab" tabindex="0"

@@ -19,12 +19,13 @@ import {
   CoverType,
   Insurer,
 } from '../../interfaces/car-interface';
+import { Nav } from '../nav/nav';
 import { Footer } from '../footer/footer';
 
 @Component({
   selector: 'app-financing',
   standalone: true,
-  imports: [CommonModule, FormsModule, Footer],
+  imports: [CommonModule, FormsModule, Nav, Footer],
   templateUrl: './financing.html',
   styleUrl: './financing.css',
 })
@@ -40,6 +41,24 @@ export class Financing implements OnInit, OnDestroy {
   private submitSub?: Subscription;
 
   whatsappNumber = '254707555666';
+
+  // ---------- Imported nav ----------
+  logoImg = 'fav3.png';
+  isMenuOpen = false;
+  searchWindowOpened = false;
+
+  openSearch(): void {
+    this.searchWindowOpened = true;
+  }
+
+  closeSearch(event: Event): void {
+    event.stopPropagation();
+    this.searchWindowOpened = false;
+  }
+
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
 
   private allCars: StoreCar[] = [];
 
