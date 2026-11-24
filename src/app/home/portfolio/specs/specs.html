@@ -1,8 +1,6 @@
-<!-- specs.html -->
 <div class="specs-container">
   <div class="global-car-blur-bg" [style.backgroundImage]="'url(' + activeImage + ')'"></div>
 
-  <!-- ================= MAIN NAV (imported) ================= -->
   <div #appNavHost class="app-nav-host">
     <app-nav
       [searchWindowOpened]="searchWindowOpened"
@@ -12,12 +10,11 @@
       (toggleMenuEvent)="toggleMenu()">
     </app-nav>
   </div>
+  
 
-  <!-- ================= HERO ================= -->
   <section class="hero-page">
     <div class="main-grid">
 
-      <!-- LEFT: SPECS -->
       <aside class="specs-box">
         <div class="view-switch" role="tablist" aria-label="Specs view">
           <button class="view-tab" role="tab" type="button" *ngFor="let v of views"
@@ -56,11 +53,9 @@
         </div>
       </aside>
 
-      <!-- CENTER: viewer (zoom + pan) / review video in the same space -->
       <div class="car-section">
         <div class="car-stage">
 
-          <!-- IMAGE MODE -->
           <ng-container *ngIf="!videoPlaying">
             <div class="image-wrapper" [class.zoomed]="zoom > 100" [class.dragging]="dragging"
                  (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
@@ -83,10 +78,8 @@
             </button>
           </ng-container>
 
-          <!-- VIDEO MODE -->
           <ng-container *ngIf="videoPlaying">
 
-            <!-- (a) Direct file -->
             <ng-container *ngIf="isFileVideo">
               <video #stageVideo class="car-video" [src]="videoSource" autoplay playsinline preload="auto"
                      (click)="toggleVideo(stageVideo)"
@@ -125,7 +118,6 @@
               </div>
             </ng-container>
 
-            <!-- (b) YouTube / Vimeo -->
             <ng-container *ngIf="isIframeVideo">
               <div class="iframe-wrap">
                 <iframe class="car-video" [src]="embedUrl | safeVideoUrl" title="Review video" frameborder="0"
@@ -144,7 +136,6 @@
               </div>
             </ng-container>
 
-            <!-- (c) Unknown URL -->
             <div class="video-loader video-error" *ngIf="!isFileVideo && !isIframeVideo" role="alert">
               <span class="loader-text">Video link is not supported</span>
               <button class="v-retry" type="button" (click)="closeVideo()">Back to photos</button>
@@ -153,13 +144,16 @@
         </div>
 
         <div class="view-controls" *ngIf="!videoPlaying">
-          <button class="ctrl-btn" type="button" (click)="prev()" aria-label="Previous image">←</button>
+          <button class="ctrl-btn" type="button" (click)="prev()" aria-label="Previous image">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg>
+          </button>
           <span class="ctrl-count"><strong>{{ counter }}</strong><em>{{ view }}</em></span>
-          <button class="ctrl-btn" type="button" (click)="next()" aria-label="Next image">→</button>
+          <button class="ctrl-btn" type="button" (click)="next()" aria-label="Next image">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M9 4l8 8-8 8"/></svg>
+          </button>
         </div>
       </div>
 
-      <!-- RIGHT: GALLERY -->
       <aside class="gallery-col" [class.expanded]="stackExpanded">
         <button class="gal-toggle" type="button" (click)="toggleStack()">
           {{ stackExpanded ? 'Collapse' : 'Expand' }}
@@ -176,7 +170,6 @@
     </div>
   </section>
 
-  <!-- ================= SIMILAR CARS ================= -->
   <section class="similar-section">
     <h2 class="similar-title">Discover Similar Vehicles</h2>
 
@@ -255,7 +248,6 @@
     </footer>
   </section>
 
-  <!-- ================= ENLARGED IMAGE VIEWER ================= -->
   <div class="lightbox" #lightRoot [class.is-open]="expanded" role="dialog" aria-modal="true"
        [attr.aria-hidden]="!expanded" aria-label="Enlarged photo viewer">
     <div class="lb-head">
@@ -284,14 +276,17 @@
       </div>
 
       <div class="view-controls">
-        <button class="ctrl-btn" type="button" (click)="prev()" aria-label="Previous image">←</button>
+        <button class="ctrl-btn" type="button" (click)="prev()" aria-label="Previous image">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg>
+        </button>
         <span class="ctrl-count"><strong>{{ counter }}</strong><em>{{ view }}</em></span>
-        <button class="ctrl-btn" type="button" (click)="next()" aria-label="Next image">→</button>
+        <button class="ctrl-btn" type="button" (click)="next()" aria-label="Next image">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M9 4l8 8-8 8"/></svg>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- ================= INTEREST MODAL ================= -->
   <div class="interest-modal" #modalRoot [class.is-open]="modalOpen" role="dialog" aria-modal="true" aria-labelledby="imTitle" (click)="closeModal()">
     <div class="interest-card" (click)="$event.stopPropagation()">
       <button class="im-close" type="button" (click)="closeModal()" aria-label="Close">

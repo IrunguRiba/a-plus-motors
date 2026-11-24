@@ -1,22 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600&display=swap');
-/* ==========================================================
-   specs.css
-   ========================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600&display=swap');
 
 :host {
-  /* Mirror the app-nav metrics (nav.css). Keep these in sync if nav.css changes. */
-  --nav-top: 12px;        /* .nav-container --top */
-  --nav-bar-h: 93px;      /* .nav-container --bar-h */
-  --nav-gutter: 12px;     /* .nav-container --gutter */
+  --nav-top: 12px;
+  --nav-bar-h: 93px;
+  --nav-gutter: 12px;
 
-  /* Total offset from viewport top to the bottom of <app-nav>. */
   --stack-height: calc(var(--nav-top) + var(--nav-bar-h));
 
   display: block;
-}
-
-/* The page canvas sits below the fixed nav, never underneath it. */
-:host {
   padding-top: var(--stack-height);
   box-sizing: border-box;
 }
@@ -29,6 +20,7 @@
 
   --ink: #0F1010;
   --muted: #787C7C;
+  --sub: #3f4445;
   --light: #D8DADB;
   --brown: #010736;
 
@@ -48,10 +40,13 @@
   box-sizing: border-box;
 }
 
+.hero-page,
+.similar-section,
 .interest-modal,
 .lightbox {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
 }
 
 .specs-container *,
@@ -69,7 +64,6 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ---------- Shared transitions ---------- */
 .nav-cell,
 .view-tab,
 .ctrl-btn,
@@ -97,7 +91,6 @@
     transform 0.4s var(--ease);
 }
 
-/* ---------- Container + background ---------- */
 .specs-container {
   position: relative;
   min-height: 100vh;
@@ -128,22 +121,14 @@
   z-index: 1;
 }
 
-/* ---------- Hero ---------- */
-/* No extra top padding: :host already offsets the page by --stack-height,
-   so the hero begins exactly at the bottom of the fixed <app-nav>.
-   A hairline top border + 1px gap keeps the nav visually separated. */
 .hero-page {
   height: calc(100vh - var(--stack-height));
   height: calc(100dvh - var(--stack-height));
   display: flex;
   flex-direction: column;
   border-top: var(--border-thin);
-  margin-top: 1px;
 }
 
-/* --- TOP NAV (legacy; the new <app-nav> is fixed by its own component) --- */
-/* Kept only so any stray markup using .top-nav still lays out correctly.
-   The imported <app-nav> renders as a fixed element and is not affected. */
 .top-nav {
   position: fixed;
   top: 0;
@@ -166,9 +151,9 @@
   background: transparent;
   border: 0;
   border-right: var(--border-nav);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
@@ -181,27 +166,26 @@
   transform: translateX(-4px);
 }
 
-/* ---------- Main grid ---------- */
 .main-grid {
   flex: 1;
   min-height: 0;
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr) 280px;
+  grid-template-rows: minmax(0, 1fr);
   border-bottom: var(--border-thin);
 }
 
-/* ---------- LEFT: specs ---------- */
 .specs-box {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   border-right: var(--border-thin);
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* --- VIEW TABS --- */
 .view-switch {
   display: flex;
   flex: none;
@@ -209,15 +193,13 @@
 }
 .view-tab {
   flex: 1;
-  /* Slimmer than before so the External/Internal row is shorter,
-     giving more room below (in .specs-car) without touching that block. */
-  padding: 10px 10px;
+  padding: 9px 10px;
   border: 0;
   border-right: var(--border-nav);
   background: transparent;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
@@ -226,7 +208,6 @@
   border-right: 0;
 }
 
-/* Active view-tab: solid outline, no background change */
 .view-tab.active {
   background: transparent;
   margin: -1px;
@@ -236,39 +217,38 @@
 
 .specs-car {
   flex: none;
-  padding: 22px 20px 18px;
+  padding: 14px 20px 12px;
   border-bottom: var(--border-thin);
 }
 .specs-eyebrow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.3em;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--sub);
 }
 .condition-tag {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--brown);
   border: 1px solid var(--brown);
   padding: 2px 6px;
 }
 .specs-car-name {
-  margin: 0 0 6px;
+  margin: 0 0 5px;
   font-size: 20px;
-  font-weight: 300;
-  letter-spacing: 0.1em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.2;
 }
 
-/* Thin custom scrollbars */
 .specs-scroll,
 .stack-track,
 .im-scroll {
@@ -298,19 +278,19 @@
   overscroll-behavior: contain;
 }
 .spec-group {
-  padding: 20px 20px 6px;
+  padding: 14px 20px 2px;
   border-bottom: var(--border-thin);
 }
 .spec-group:last-of-type {
   border-bottom: 0;
 }
 .spec-group-title {
-  margin: 0 0 14px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.28em;
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--sub);
 }
 .spec-list {
   list-style: none;
@@ -324,21 +304,22 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  padding: 10px 0;
+  padding: 8px 0;
   border-bottom: var(--border-thin);
-  font-size: 13px;
-  letter-spacing: 0.02em;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 .spec-row:last-child {
   border-bottom: 0;
 }
 .spec-label {
   flex: none;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--sub);
 }
 .spec-value {
   text-align: right;
@@ -349,20 +330,20 @@
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 24px 20px;
+  gap: 10px;
+  padding: 12px 20px 14px;
   border-top: var(--border-thin);
   background: rgba(255, 255, 255, 0.6);
 }
 .specs-footer-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 .specs-footer-price {
-  font-size: 24px;
-  font-weight: 300;
-  letter-spacing: 0.02em;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   line-height: 1;
 }
 
@@ -370,11 +351,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--sub);
 }
 .meta-item i {
   width: 6px;
@@ -389,19 +370,21 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-
   padding: 16px 10px;
   border: var(--border-thin);
   background: transparent;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.24em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
 }
+.interested-btn {
+  min-height: 40px;
+  padding: 10px;
+}
 
-/* ---------- CENTER: viewer (zoom + pan) ---------- */
 .car-section {
   position: relative;
   display: flex;
@@ -469,7 +452,6 @@
   }
 }
 
-/* --- FLOATING ZOOM BAR --- */
 .zoom-bar {
   position: absolute;
   top: 12px;
@@ -492,9 +474,9 @@
   border: 1px solid transparent;
   background: transparent;
   text-align: left;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   cursor: pointer;
   transition:
     border-color 0.35s var(--ease),
@@ -507,7 +489,6 @@
   background: rgba(255, 255, 255, 0.25);
   outline: none;
 }
-/* Active zoom: solid, no background change */
 .zoom-btn.active {
   border: 1px solid var(--ink);
   background: transparent;
@@ -522,9 +503,9 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 8px 24px -10px rgba(0, 0, 0, 0.35);
   color: var(--ink);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
@@ -538,15 +519,15 @@
 .watch-btn {
   position: absolute;
   top: 12px;
-  right: 12px;
+  right: 68px;
   z-index: 3;
+  height: 44px;
 }
 
-/* Enlarge button (bottom-right of the stage) */
 .expand-btn {
   position: absolute;
+  top: 12px;
   right: 12px;
-  bottom: 18px;
   z-index: 3;
   display: grid;
   place-items: center;
@@ -555,7 +536,6 @@
   padding: 0;
 }
 
-/* ---------- Review video ---------- */
 .car-video {
   position: absolute;
   inset: 0;
@@ -596,9 +576,9 @@
   animation: spin 0.9s linear infinite;
 }
 .loader-text {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-rendering: geometricPrecision;
 }
@@ -607,9 +587,9 @@
   border: 1px solid #fff;
   background: transparent;
   color: #fff !important;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   cursor: pointer;
   transition: background-color 0.3s var(--ease);
@@ -659,9 +639,9 @@
   border: 0;
   background: transparent;
   color: #fff !important;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
   transition: background-color 0.3s var(--ease);
@@ -693,9 +673,9 @@ a.v-btn {
 .v-time {
   flex: none;
   min-width: 36px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -735,71 +715,89 @@ a.v-btn {
   border-radius: 0;
 }
 
-/* Photo controls */
 .view-controls {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 18px;
+  bottom: 12px;
   z-index: 3;
   display: flex;
-  justify-content: center;
-  align-items: stretch;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
   pointer-events: none;
 }
 .view-controls > * {
   pointer-events: auto;
 }
 .ctrl-btn {
-  width: 52px;
-  height: 48px;
-  border: var(--border-thin);
-  background: rgba(255, 255, 255, 0.85);
-  font-size: 18px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(66, 64, 64, 0.85);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--ink);
   cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition:
+    border-color 0.35s var(--ease),
+    background-color 0.35s var(--ease),
+    color 0.35s var(--ease),
+    transform 0.35s var(--ease);
+}
+.ctrl-btn svg {
+  display: block;
+  shape-rendering: geometricPrecision;
+  stroke: currentColor;
+ 
+}
+.ctrl-btn:hover {
+  color: var(--brown);
 }
 .ctrl-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
 }
 .ctrl-count {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  min-width: 190px;
-  padding: 0 22px;
-  border-top: var(--border-thin);
-  border-bottom: var(--border-thin);
-  background: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
-  letter-spacing: 0.18em;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.95), 0 0 2px rgba(255, 255, 255, 0.9);
 }
 .ctrl-count strong {
-  font-weight: 600;
+  font-weight: 700;
 }
 .ctrl-count em {
   font-style: normal;
-  font-weight: 500;
-  color: var(--muted);
+  font-weight: 600;
+  color: var(--ink);
 }
 
-/* "Financing on request" reads slightly quieter than "Financing available" */
 .meta-item--soft {
-  color: var(--muted);
+  color: var(--sub);
 }
 .meta-item--soft i {
   background: var(--muted);
 }
 
 .im-badge--soft {
-  color: var(--muted);
+  color: var(--sub);
 }
 .im-badge--soft i {
   background: var(--muted);
 }
 
-/* ---------- RIGHT: gallery ---------- */
 .gallery-col {
   display: flex;
   flex-direction: column;
@@ -813,13 +811,13 @@ a.v-btn {
 .gal-toggle {
   flex: none;
   width: 100%;
-  padding: 16px;
+  padding: 14px;
   border: 0;
   border-bottom: var(--border-thin);
   background: transparent;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -833,7 +831,6 @@ a.v-btn {
   padding: 20px 20px 32px;
 }
 
-/* --- GALLERY THUMBS --- */
 .stack-thumb {
   position: relative;
   z-index: 1;
@@ -870,7 +867,6 @@ a.v-btn {
   border-color: var(--brown);
   border-style: solid;
 }
-/* Active thumb: solid, no background change */
 .stack-thumb.active {
   z-index: 4;
   transform: translateX(-10px);
@@ -882,9 +878,6 @@ a.v-btn {
   outline-offset: 3px;
 }
 
-/* ==========================================================
-   Similar section
-   ========================================================== */
 .similar-section {
   padding: clamp(24px, 4vw, 48px) clamp(10px, 2vw, 30px) 0;
   border-top: var(--border-thin);
@@ -901,15 +894,15 @@ a.v-btn {
 .similar-head h2 {
   margin: 0;
   font-size: clamp(24px, 3.6vw, 42px);
-  font-weight: 300;
-  letter-spacing: 0.1em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.1;
   color: var(--ink);
 }
 .similar-head h2 em {
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .sim-criteria {
@@ -929,9 +922,9 @@ a.v-btn {
 }
 .sim-label {
   flex: none;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.24em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--ink);
@@ -953,9 +946,9 @@ a.v-btn {
   padding: 7px 12px;
   border: var(--border-thin);
   background: rgba(255, 255, 255, 0.55);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--ink);
@@ -1005,7 +998,6 @@ a.v-btn {
   will-change: transform;
 }
 
-/* Cards */
 .similar-cards-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1034,7 +1026,6 @@ a.v-btn {
   transform: translateY(-4px);
 }
 
-/* Lazy image */
 .car-image-wrapper {
   position: relative;
   width: 100%;
@@ -1107,22 +1098,22 @@ a.v-btn {
   min-width: 0;
 }
 .car-year {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.26em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   color: var(--ink);
 }
 .car-name {
   font-size: 16px;
-  font-weight: 300;
-  letter-spacing: 0.06em;
+  font-weight: 400;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   line-height: 1.25;
   color: var(--ink);
   overflow-wrap: anywhere;
 }
 .car-name b {
-  font-weight: 600;
+  font-weight: 700;
 }
 .car-pricing {
   display: flex;
@@ -1132,33 +1123,35 @@ a.v-btn {
 }
 .car-price {
   font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   white-space: nowrap;
   color: var(--ink);
 }
 .car-meta {
   margin: 12px 4px 10px;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--sub);
 }
 
 .car-why {
   margin: 0 4px 18px;
   padding: 8px 0 8px 12px;
   border-left: 1px solid var(--brown);
-  font-size: 12px;
+  font-size: 12.5px;
+  font-weight: 500;
   line-height: 1.55;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   color: var(--ink);
 }
 .car-why b {
   display: block;
   margin-bottom: 2px;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.24em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--brown);
 }
@@ -1179,7 +1172,7 @@ a.v-btn {
   background: none;
   border: 0;
   cursor: pointer;
-  color: var(--muted);
+  color: var(--sub);
   min-width: 64px;
 }
 
@@ -1204,8 +1197,9 @@ a.v-btn {
   justify-content: center;
   width: 100%;
   min-height: 14px;
-  font-size: 11px;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   text-align: center;
 }
@@ -1220,7 +1214,6 @@ a.v-btn {
   transform: scale(1.12);
 }
 
-/* Inquire button */
 .inquire-box-btn {
   margin-left: auto;
   padding: 8px 24px;
@@ -1229,7 +1222,8 @@ a.v-btn {
   white-space: nowrap;
   border: var(--border-thin);
   font-size: 12px;
-  letter-spacing: 0.14em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .inquire-box-btn:hover {
@@ -1247,7 +1241,6 @@ a.v-btn {
   padding: 12px 36px;
 }
 
-/* Footer */
 .site-footer {
   display: flex;
   flex-direction: column;
@@ -1292,7 +1285,6 @@ a.v-btn {
   line-height: 1;
   position: relative;
 }
-/* Underline under the footer link label */
 .footer-actions .footer-arrow-label::after {
   content: '';
   position: absolute;
@@ -1314,15 +1306,12 @@ a.v-btn {
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px 28px;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--sub);
 }
 
-/* ==========================================================
-   Enlarged image viewer (double click / double tap)
-   It lives on <body>, above the page and below the interest modal.
-   ========================================================== */
 .lightbox {
   position: fixed;
   inset: 0;
@@ -1358,9 +1347,9 @@ a.v-btn {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 .lb-close {
@@ -1373,9 +1362,9 @@ a.v-btn {
   border: 1px solid rgba(255, 255, 255, 0.6);
   background: transparent;
   color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -1395,22 +1384,27 @@ a.v-btn {
 .lightbox .car-img {
   filter: none;
 }
-/* Controls over the dark viewer keep dark text on light glass */
 .lightbox .zoom-bar {
   background: rgba(255, 255, 255, 0.88);
 }
-.lightbox .zoom-btn,
-.lightbox .ctrl-btn,
-.lightbox .ctrl-count {
+.lightbox .zoom-btn {
   color: var(--ink);
 }
+.lightbox .ctrl-btn,
+.lightbox .ctrl-count,
+.lightbox .ctrl-count em {
+  color: #fff;
+  filter: none;
+  text-shadow: none;
+}
+.lightbox .ctrl-btn:hover {
+  color: #fff;
+  opacity: 0.75;
+}
 .lightbox .view-controls {
-  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 }
 
-/* ==========================================================
-   Interest modal
-   ========================================================== */
 .interest-modal {
   position: fixed;
   inset: 0;
@@ -1485,7 +1479,7 @@ a.v-btn {
   font-size: 20px;
   font-variation-settings:
     'FILL' 0,
-    'wght' 300,
+    'wght' 400,
     'GRAD' 0,
     'opsz' 24;
 }
@@ -1512,14 +1506,14 @@ a.v-btn {
   justify-content: center;
   gap: 8px;
   font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-style: italic;
   font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--muted);
+  color: var(--sub);
 }
 .logo-tagline::before,
 .logo-tagline::after {
@@ -1575,24 +1569,24 @@ a.v-btn {
 .im-eyebrow {
   display: block;
   margin-bottom: 5px;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.3em;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--sub);
 }
 .im-car-name {
   margin: 0 0 4px;
   font-size: 19px;
-  font-weight: 300;
-  letter-spacing: 0.12em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   line-height: 1.2;
 }
 .im-car-price {
   font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }
 .im-badges {
   display: flex;
@@ -1604,11 +1598,11 @@ a.v-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--sub);
 }
 .im-badge i {
   width: 6px;
@@ -1622,9 +1616,9 @@ a.v-btn {
   padding: 8px 12px;
   border: var(--border-thin);
   background: transparent;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
@@ -1647,11 +1641,11 @@ a.v-btn {
   flex: 1;
 }
 .im-field label {
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.24em;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink);
 }
 .im-field input,
 .im-field select {
@@ -1662,7 +1656,8 @@ a.v-btn {
   background: rgba(255, 255, 255, 0.7);
   font-family: inherit;
   font-size: 14px;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   color: var(--ink);
   outline: none;
   appearance: none;
@@ -1689,7 +1684,9 @@ a.v-btn {
   padding-right: 34px;
 }
 .im-field input::placeholder {
-  color: var(--muted);
+  color: var(--sub);
+  opacity: 1;
+  font-weight: 400;
 }
 .im-field input:focus,
 .im-field select:focus {
@@ -1697,8 +1694,9 @@ a.v-btn {
   background-color: #fff;
 }
 .im-field small {
-  font-size: 11px;
-  letter-spacing: 0.04em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: #a4262c;
 }
 .im-field.invalid input {
@@ -1752,9 +1750,9 @@ a.v-btn {
   outline-offset: 3px;
 }
 .im-check-text {
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -1821,10 +1819,10 @@ a.v-btn {
 .im-details a,
 .im-details span {
   max-width: 100%;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--sub);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
@@ -1847,9 +1845,9 @@ a.v-btn {
   border: 0;
   border-right: var(--border-thin);
   background: transparent;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   text-align: center;
   cursor: pointer;
@@ -1869,14 +1867,14 @@ a.v-btn {
 }
 .tagline-text {
   margin: 0;
-  padding-left: 0.42em;
-  font-size: 9px;
-  font-weight: 600;
+  padding-left: 0.3em;
+  font-size: 10px;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.42em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--muted);
+  color: var(--sub);
 }
 .tagline-rule {
   flex: 1;
@@ -1930,46 +1928,41 @@ a.v-btn {
 .im-success h3 {
   margin: 6px 0 0;
   font-size: 17px;
-  font-weight: 300;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .im-success p {
   margin: 0 0 8px;
   font-size: 13px;
+  font-weight: 500;
   line-height: 1.75;
-  color: var(--muted);
+  color: var(--sub);
 }
 .im-ghost {
   width: 100%;
   padding: 13px;
   border: var(--border-thin);
   background: transparent;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.26em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   cursor: pointer;
 }
 
-/* ==========================================================
-   Responsive
-   ========================================================== */
 @media (max-width: 1180px) {
   .main-grid {
     grid-template-columns: 320px minmax(0, 1fr) 240px;
   }
 }
 
-/* ---------- Tablet + mobile: photos first, then gallery strip, then specs ---------- */
 @media (max-width: 980px) {
   .global-car-blur-bg {
     inset: -40px;
     filter: blur(40px) saturate(1.15);
   }
 
-  /* On mobile the hero grows with its content; the host padding still
-     keeps it below the fixed nav, so no extra reservation is needed. */
   .hero-page {
     height: auto;
     min-height: calc(100vh - var(--stack-height));
@@ -1980,7 +1973,6 @@ a.v-btn {
     grid-template-rows: none;
   }
 
-  /* Order: photo viewer, thumbnails, then the specs and the Interested button */
   .car-section {
     order: 1;
   }
@@ -1991,6 +1983,7 @@ a.v-btn {
   }
   .specs-box {
     order: 3;
+    overflow: visible;
     border-right: 0;
     border-top: var(--border-thin);
     border-bottom: 0;
@@ -2007,7 +2000,6 @@ a.v-btn {
     aspect-ratio: 16 / 10;
   }
 
-  /* The vertical stack becomes a swipeable strip, so the Expand toggle is not needed */
   .gal-toggle {
     display: none;
   }
@@ -2044,15 +2036,12 @@ a.v-btn {
   }
 }
 
-/* ---------- Phones ---------- */
 @media (max-width: 720px) {
-  /* Match the nav's phone breakpoint so the reservation stays correct. */
   :host {
     --nav-top: 8px;
     --nav-bar-h: 84px;
   }
 
-  /* Keep the nav pinned; allow horizontal scroll inside it (legacy rule) */
   .top-nav {
     overflow-x: auto;
     scrollbar-width: none;
@@ -2063,8 +2052,8 @@ a.v-btn {
   .nav-cell {
     min-height: 44px;
     padding: 0 18px;
-    font-size: 10px;
-    letter-spacing: 0.16em;
+    font-size: 11px;
+    letter-spacing: 0.14em;
   }
 
   .car-stage {
@@ -2072,7 +2061,6 @@ a.v-btn {
     aspect-ratio: 4 / 3;
   }
 
-  /* Zoom bar lies flat across the top-left instead of a tall column */
   .zoom-bar {
     top: 8px;
     left: 8px;
@@ -2084,20 +2072,20 @@ a.v-btn {
     min-height: 40px;
     padding: 0 8px;
     text-align: center;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
   }
   .stage-btn {
     padding: 8px 10px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
   }
   .watch-btn {
     top: 8px;
-    right: 8px;
-    min-height: 40px;
+    right: 58px;
+    height: 42px;
   }
   .expand-btn {
+    top: 8px;
     right: 8px;
-    bottom: 10px;
     width: 42px;
     height: 42px;
     padding: 0;
@@ -2110,49 +2098,45 @@ a.v-btn {
   .v-btn {
     min-width: 34px;
     padding: 0 8px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
   }
   .v-time {
     min-width: 30px;
   }
 
   .view-controls {
-    bottom: 10px;
+    bottom: 8px;
+    padding: 0 8px;
   }
   .ctrl-btn {
-    width: 46px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
   }
   .ctrl-count {
-    min-width: 0;
-    padding: 0 14px;
     gap: 8px;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-  }
-  .ctrl-count em {
-    display: none;
+    font-size: 12px;
+    letter-spacing: 0.1em;
   }
 
   .view-tab {
-    min-height: 46px;
+    min-height: 44px;
   }
 
   .specs-car {
-    padding: 18px 16px 14px;
+    padding: 16px 16px 12px;
   }
   .specs-car-name {
     font-size: 18px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
   }
   .spec-group {
-    padding: 16px 16px 4px;
+    padding: 14px 16px 2px;
   }
   .specs-footer {
-    padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
   }
   .interested-btn {
-    min-height: 50px;
+    min-height: 44px;
   }
 
   .similar-section {
@@ -2169,7 +2153,7 @@ a.v-btn {
   }
 
   .lb-title {
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
   }
   .lightbox .zoom-bar {
     top: 8px;
@@ -2208,22 +2192,21 @@ a.v-btn {
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   }
   .view-tab {
-    padding: 12px 8px;
-    font-size: 9.5px;
-    letter-spacing: 0.18em;
+    padding: 11px 8px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
   }
   .specs-car {
-    padding: 16px 16px 12px;
+    padding: 14px 16px 12px;
   }
   .spec-group {
-    padding: 14px 16px 4px;
+    padding: 12px 16px 2px;
   }
   .specs-footer {
     padding-left: 16px;
     padding-right: 16px;
   }
 
-  /* Card actions: Like / Bookmark / Share in a row, Inquire full width underneath */
   .car-actions {
     flex-wrap: wrap;
     gap: 12px 10px;
@@ -2241,7 +2224,6 @@ a.v-btn {
     text-align: center;
   }
 
-  /* Footer links in two columns */
   .footer-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2251,8 +2233,8 @@ a.v-btn {
     justify-content: center;
     min-height: 46px;
     padding: 8px 8px;
-    font-size: 10.5px;
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    letter-spacing: 0.06em;
     white-space: normal;
     text-align: center;
   }
@@ -2278,12 +2260,12 @@ a.v-btn {
   .zoom-btn {
     min-width: 38px;
     padding: 0 5px;
-    font-size: 9px;
+    font-size: 10px;
   }
   .watch-btn {
     padding: 8px;
-    font-size: 9px;
-    letter-spacing: 0.08em;
+    font-size: 10px;
+    letter-spacing: 0.06em;
   }
   .stack-track .stack-thumb,
   .stack-track .stack-thumb + .stack-thumb {
@@ -2291,7 +2273,6 @@ a.v-btn {
   }
 }
 
-/* Short landscape phones: keep the viewer tall enough to be useful */
 @media (max-width: 980px) and (orientation: landscape) and (max-height: 520px) {
   .car-stage {
     aspect-ratio: auto;
@@ -2307,7 +2288,6 @@ a.v-btn {
   }
 }
 
-/* Touch devices have no hover: drop the hover lift/zoom effects */
 @media (hover: none) {
   .car-card:hover {
     transform: none;
@@ -2346,7 +2326,6 @@ a.v-btn {
   }
 }
 
-/* ============ iframe video wrapper ============ */
 .iframe-wrap {
   position: absolute;
   inset: 0;
@@ -2365,14 +2344,10 @@ a.v-btn {
   display: block;
 }
 
-/* keep the close/fullscreen bar above the iframe */
 .video-controls--iframe {
   z-index: 5;
 }
 
-/* ==========================================================
-   Discover Similar Vehicles title (same look as DISCOVER on the home page)
-   ========================================================== */
 .similar-title {
   margin: 0 0 18px;
   text-align: center;
@@ -2380,17 +2355,11 @@ a.v-btn {
   font-size: clamp(13px, 1.2vw, 20px);
   line-height: 1;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #000;
 }
 
-/* ==========================================================
-   Hover review video on the similar cards (same as the portfolio)
-   The image shows as usual; on hover the review video plays over it.
-   It stays invisible until it is really playing (.ready), so if playback
-   is blocked the image simply stays visible.
-   ========================================================== */
 .car-image-wrapper.has-video {
   cursor: pointer;
 }

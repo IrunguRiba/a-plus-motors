@@ -99,3 +99,7 @@ body.modal-open .nav-background {
   background: #E1DCC9;
   background-clip: padding-box;
 }
+body:has(.specs-container) .item-1-label,
+body:has(.store-container) .item-1-label {
+  display: none !important;
+}
