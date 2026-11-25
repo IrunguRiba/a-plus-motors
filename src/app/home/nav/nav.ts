@@ -1,6 +1,8 @@
 import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnDestroy, Output, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
 import { Search } from '../search/search';
 import { Typewriter, prefersReducedMotion } from '../../typewriting';
 
@@ -65,6 +67,25 @@ export class Nav implements AfterViewInit, AfterViewChecked, OnDestroy {
 
   private router = inject(Router);
   private zone = inject(NgZone);
+
+  constructor() {
+    // FIX: close the search window after any completed navigation. Navigating to the
+    // same route (e.g. /specs?id=A -> /specs?id=B) reuses the parent page, so its
+    // search state is never reset by destruction. The parent owns the state through
+    // [searchWindowOpened], so we ask it to close via the output.
+    // (The menu is already closed by go() when a menu link is used, so it is not
+    // toggled here to avoid re-opening it by a double toggle.)
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        if (this.searchWindowOpened) {
+          this.closeSearchEvent.emit(new Event('navigation'));
+        }
+      });
+  }
 
   /** Closed-state search box: types example searches on a loop. */
   @ViewChild('searchTag') searchTag?: ElementRef<HTMLElement>;

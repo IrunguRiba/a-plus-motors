@@ -84,9 +84,14 @@ export class Specs implements AfterViewInit, OnDestroy {
     private api: ApiServices,
   ) {
     this.jumpToTop();
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed())
-      .subscribe((params) => this.loadCar(params.get('id')));
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      // FIX: /specs?id=... is the same route, so Angular reuses this component when a
+      // searched / similar car is picked. Nothing destroyed the nav state, so the
+      // search window and menu stayed open over the new car. Reset them on every
+      // car change.
+      this.closeNavOverlays();
+      this.loadCar(params.get('id'));
+    });
   }
 
   private location = inject(Location);
@@ -128,6 +133,20 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  /**
+   * Closes the search window and the menu. Used when the car changes without the
+   * component being recreated. If the search/menu locked page scroll, release it
+   * (unless our own modal or lightbox is open and still needs it).
+   */
+  private closeNavOverlays(): void {
+    const wasOpen = this.searchWindowOpened || this.isMenuOpen;
+    this.searchWindowOpened = false;
+    this.isMenuOpen = false;
+    if (wasOpen && !this.modalOpen && !this.expanded) {
+      this.lockScroll(false);
+    }
   }
 
   /* ============================================================
