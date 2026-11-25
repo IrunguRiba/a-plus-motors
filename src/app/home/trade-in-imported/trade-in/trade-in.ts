@@ -1,8 +1,17 @@
-import { Component, HostListener, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  ChangeDetectorRef,
+  ViewChild,
+  inject,
+} from '@angular/core';
+import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ApiServices } from '../../../services/api-services';
+import { setVideoExpanded, releaseMedia } from '../../portfolio/specs/chome-vid-control';
 import {
   ConditionOption,
   BookingDay,
@@ -46,11 +55,15 @@ const round10k = (n: number): number => Math.round(n / 10000) * 10000;
 
 @Component({
   selector: 'app-trade-in',
-  imports: [FormsModule, DecimalPipe, Footer],
+  imports: [FormsModule, DecimalPipe, NgTemplateOutlet, Footer],
   templateUrl: './trade-in.html',
   styleUrl: './trade-in.css',
 })
 export class TradeIn implements OnDestroy {
+  
+  speaker = 'speaker.png';
+  speakerMuted = 'speaker-muted.png';
+
   private api = inject(ApiServices);
   private cdr = inject(ChangeDetectorRef);
   private submitSub?: Subscription;
@@ -82,16 +95,23 @@ export class TradeIn implements OnDestroy {
     { k: 'Paperwork', v: 'Logbook transfer handled by us', tag: '' },
   ];
 
+  /** True while the big viewer (expanded) is open. */
   videoOpen = false;
   videoSrc = 'assets/trade-in.mp4';
   videoThumb = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop';
   activeSrc = this.videoSrc;
   activeThumb = this.videoThumb;
 
+  /** Only the main hero video ever plays in place. */
+  inlineId: string | null = null;
+
   vLoading = false;
   vError = false;
   vPaused = false;
+  /** True when muted, or when the volume slider is at 0. */
   vMuted = false;
+  /** 0 to 100. Kept between videos. */
+  vVolume = 100;
   vProgress = 0;
   vCur = '0:00';
   vDur = '0:00';
@@ -224,14 +244,21 @@ export class TradeIn implements OnDestroy {
         const ctx = canvas.getContext('2d');
         URL.revokeObjectURL(url);
         if (!ctx) {
+          img.onload = img.onerror = null;
           reject(new Error('canvas unavailable'));
           return;
         }
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        const out = canvas.toDataURL('image/jpeg', quality);
+        // Release the bitmap and the image right away.
+        canvas.width = canvas.height = 0;
+        img.onload = img.onerror = null;
+        img.removeAttribute('src');
+        resolve(out);
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
+        img.onload = img.onerror = null;
         reject(new Error('could not read image'));
       };
       img.src = url;
@@ -242,25 +269,168 @@ export class TradeIn implements OnDestroy {
     document.getElementById('value')?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  openVideo(src: string = this.videoSrc, thumb: string = this.videoThumb): void {
+  // ==========================================================
+  // Video: main hero plays in place; every step opens expanded.
+  // ==========================================================
+
+  /** The one <video> that is on screen (in place, or in the big viewer). */
+  @ViewChild('pv') private pvRef?: ElementRef<HTMLVideoElement>;
+
+  /** Time and pause state handed over when a video moves between in place and expanded. */
+  private resume: { t: number; paused: boolean } | null = null;
+  private lastVolume = 1;
+
+  /** Playlist order: main video, then steps 01 to 04. */
+  private get playlist(): { id: string; video: string; thumb: string }[] {
+    return [
+      { id: 'main', video: this.videoSrc, thumb: this.videoThumb },
+      ...this.steps.map(s => ({ id: 's' + s.n, video: s.video, thumb: s.thumb })),
+    ];
+  }
+  get videoIndex(): number {
+    return Math.max(0, this.playlist.findIndex(p => p.video === this.activeSrc));
+  }
+  get hasPrev(): boolean { return this.videoIndex > 0; }
+  get hasNext(): boolean { return this.videoIndex < this.playlist.length - 1; }
+
+  private beginLoad(): void {
+    this.vPaused = false;
+    this.vProgress = 0;
+    this.vCur = '0:00';
+    this.vDur = '0:00';
+    this.vLoading = true;
+    this.vError = false;
+  }
+
+  private releaseCurrent(): void {
+    releaseMedia(this.pvRef?.nativeElement);
+  }
+
+  /** Plays the main hero video right where its thumbnail sits. */
+  playInline(id: string, src: string, thumb: string): void {
+    this.releaseCurrent();
     this.activeSrc = src;
     this.activeThumb = thumb;
-    if (!this.videoOpen) this.vMuted = false;
-    this.vPaused = false; this.vProgress = 0; this.vCur = '0:00'; this.vDur = '0:00';
+    this.resume = null;
+    this.beginLoad();
+    this.inlineId = id;
+  }
+
+  /** Stops the in-place main video and puts the thumbnail back. */
+  stopVideo(): void {
+    this.releaseCurrent();
+    this.inlineId = null;
+    this.resume = null;
+    this.vLoading = false;
+    this.vError = false;
+    this.vPaused = false;
+    this.vProgress = 0;
+    this.vCur = '0:00';
+    this.vDur = '0:00';
+  }
+
+  /** Expands the currently playing main video to the big viewer. */
+  expandVideo(v?: HTMLVideoElement): void {
+    const el = v ?? this.pvRef?.nativeElement;
+    this.resume = el ? { t: el.currentTime, paused: el.paused } : null;
+    this.releaseCurrent();
     this.vLoading = true;
     this.vError = false;
     this.videoOpen = true;
     document.body.style.overflow = 'hidden';
+    setVideoExpanded(true);
   }
 
+  /**
+   * Opens a specific step video in the big viewer, independent of whatever
+   * was playing before. Clicking any step card calls this with its own src.
+   */
+  expandStepVideo(video: string, thumb: string): void {
+    this.releaseCurrent();
+    this.activeSrc = video;
+    this.activeThumb = thumb;
+    this.inlineId = null;
+    this.resume = null;
+    this.beginLoad();
+    this.videoOpen = true;
+    document.body.style.overflow = 'hidden';
+    setVideoExpanded(true);
+  }
+
+  /** Collapses the big viewer. Nothing plays inline afterwards. */
+  closeVideo(): void {
+    if (!this.videoOpen) return;
+    this.releaseCurrent();
+    this.videoOpen = false;
+    this.inlineId = null;
+    this.resume = null;
+    this.vLoading = false;
+    this.vError = false;
+    this.vPaused = false;
+    this.vProgress = 0;
+    this.vCur = '0:00';
+    this.vDur = '0:00';
+    document.body.style.overflow = '';
+    setVideoExpanded(false);
+  }
+
+  nextVideo(): void { this.go(1); }
+  prevVideo(): void { this.go(-1); }
+
+  /**
+   * Next/Prev always moves inside the big viewer. If it wasn't open yet
+   * (e.g. the main hero was playing in place), it opens now. No step card
+   * ever plays inline from navigation.
+   */
+  private go(step: number): void {
+    const n = this.playlist[this.videoIndex + step];
+    if (!n) return;
+    this.releaseCurrent();
+    this.activeSrc = n.video;
+    this.activeThumb = n.thumb;
+    this.resume = null;
+    this.inlineId = null;
+    this.beginLoad();
+
+    if (!this.videoOpen) {
+      this.videoOpen = true;
+      document.body.style.overflow = 'hidden';
+      setVideoExpanded(true);
+    }
+  }
+
+  // ---------- Video controls ----------
   onVideoStart(): void { this.vLoading = true; this.vError = false; }
+
+  /** Metadata is in: put the saved sound on it and carry over the time when it moved. */
+  onVideoMeta(v: HTMLVideoElement): void {
+    this.applyAudio(v);
+    const r = this.resume;
+    if (r) {
+      this.resume = null;
+      if (r.t > 0 && isFinite(v.duration)) {
+        v.currentTime = Math.min(r.t, Math.max(0, v.duration - 0.1));
+      }
+      if (r.paused) {
+        v.autoplay = false;
+        v.pause();
+      }
+    }
+    this.onVideoTime(v);
+  }
+
   onVideoReady(v: HTMLVideoElement): void {
     this.vLoading = false;
     this.vError = false;
     this.vPaused = v.paused;
     this.onVideoTime(v);
   }
-  onVideoError(): void { this.vLoading = false; this.vError = true; }
+  onVideoError(v?: HTMLVideoElement): void {
+    // A video we just released has no src: that is not an error.
+    if (v && !v.getAttribute('src')) return;
+    this.vLoading = false;
+    this.vError = true;
+  }
   retryVideo(v: HTMLVideoElement): void {
     this.vError = false;
     this.vLoading = true;
@@ -276,14 +446,54 @@ export class TradeIn implements OnDestroy {
     this.vDur = this.fmt(v.duration);
     this.vProgress = v.duration ? Math.round((v.currentTime / v.duration) * 1000) : 0;
   }
-  toggleVideo(v: HTMLVideoElement): void { v.paused ? v.play() : v.pause(); }
+  toggleVideo(v: HTMLVideoElement): void {
+    if (v.paused) v.play().catch(() => {});
+    else v.pause();
+  }
   seekVideo(v: HTMLVideoElement, e: Event): void {
     const val = +(e.target as HTMLInputElement).value;
     if (v.duration) v.currentTime = (v.duration * val) / 1000;
   }
-  toggleMute(v: HTMLVideoElement): void { v.muted = !v.muted; this.vMuted = v.muted; }
-  fullscreenVideo(v: HTMLVideoElement): void { v.requestFullscreen?.().catch(() => {}); }
 
+  // ---------- Sound: speaker icon mutes, slider sets the volume ----------
+  private applyAudio(v: HTMLVideoElement): void {
+    v.dataset['audio'] = '1';
+    v.volume = Math.min(1, Math.max(0, this.vVolume / 100));
+    v.muted = this.vMuted;
+  }
+
+  /** Speaker click: mute, or unmute (back to the last volume if it was dragged to 0). */
+  toggleMute(v: HTMLVideoElement): void {
+    if (v.muted || v.volume === 0) {
+      if (v.volume === 0) v.volume = this.lastVolume || 1;
+      v.muted = false;
+    } else {
+      v.muted = true;
+    }
+  }
+  setVolume(v: HTMLVideoElement, e: Event): void {
+    const val = Math.min(100, Math.max(0, +(e.target as HTMLInputElement).value));
+    v.volume = val / 100;
+    v.muted = val === 0;
+  }
+  /** Keeps the icon and slider in step with the real element. */
+  onVolumeChange(v: HTMLVideoElement): void {
+    if (v.dataset['audio'] !== '1') return;
+    this.vMuted = v.muted || v.volume === 0;
+    this.vVolume = Math.round(v.volume * 100);
+    if (v.volume > 0) this.lastVolume = v.volume;
+  }
+
+  fullscreenVideo(v: HTMLVideoElement): void {
+    if (v.requestFullscreen) {
+      v.requestFullscreen().catch(() => {});
+    } else {
+      // iPhone Safari
+      (v as any).webkitEnterFullscreen?.();
+    }
+  }
+
+  // ---------- Hover previews (muted, looping) ----------
   previewPlay(v: HTMLVideoElement): void {
     v.muted = true;
     v.play().catch(() => {});
@@ -295,42 +505,16 @@ export class TradeIn implements OnDestroy {
     v.style.opacity = '0';
   }
 
-  private get playlist(): { video: string; thumb: string }[] {
-    return [
-      { video: this.videoSrc, thumb: this.videoThumb },
-      ...this.steps.map(s => ({ video: s.video, thumb: s.thumb })),
-    ];
-  }
-  get videoIndex(): number {
-    return Math.max(0, this.playlist.findIndex(p => p.video === this.activeSrc));
-  }
-  get hasPrev(): boolean { return this.videoIndex > 0; }
-  get hasNext(): boolean { return this.videoIndex < this.playlist.length - 1; }
-
-  nextVideo(): void {
-    if (!this.hasNext) return;
-    const n = this.playlist[this.videoIndex + 1];
-    this.openVideo(n.video, n.thumb);
-  }
-  prevVideo(): void {
-    if (!this.hasPrev) return;
-    const p = this.playlist[this.videoIndex - 1];
-    this.openVideo(p.video, p.thumb);
-  }
-  closeVideo(): void {
-    this.videoOpen = false;
-    this.vLoading = false;
-    this.vError = false;
-    document.body.style.overflow = '';
-  }
-
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    // Esc collapses the big viewer.
     if (this.videoOpen) this.closeVideo();
   }
 
   ngOnDestroy(): void {
     this.submitSub?.unsubscribe();
+    this.releaseCurrent();
+    setVideoExpanded(false);
     document.body.style.overflow = '';
   }
 

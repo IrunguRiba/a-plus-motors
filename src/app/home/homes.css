@@ -50,10 +50,10 @@
   --mix: var(--hero-mix, 0);
   --hero-fg: color-mix(in srgb, var(--ink) calc(var(--mix) * 100%), #F4F5F5);
 
-  /* Rings very thin: opacity halved so they read as hairlines */
-  --hero-line-0: color-mix(in srgb, rgba(15, 16, 16, 0.5) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.5));
-  --hero-line-1: color-mix(in srgb, rgba(15, 16, 16, 0.4) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.4));
-  --hero-line-2: color-mix(in srgb, rgba(126, 91, 71, 0.45) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.45));
+  /* Super-thin crisp hairlines */
+  --hero-line-0: color-mix(in srgb, rgba(15, 16, 16, 0.36) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.34));
+  --hero-line-1: color-mix(in srgb, rgba(15, 16, 16, 0.28) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.26));
+  --hero-line-2: color-mix(in srgb, rgba(126, 91, 71, 0.32) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.3));
 
   display: grid;
   grid-template-columns: 0.6fr auto 0.2fr;
@@ -278,10 +278,12 @@
 
 .experience-container {
   --ring: 280px;
+  --ring-stroke: 0.5px;
   display: grid;
   place-items: center;
   width: var(--ring);
   height: var(--ring);
+  shape-rendering: geometricPrecision;
 }
 
 .experience-container > div {
@@ -293,34 +295,35 @@
 .circle-1,
 .circle-2 {
   border-radius: 50%;
+  box-sizing: border-box;
 }
 
-/* 0.5px = thinnest crisp line on retina; 1px fallback on low-DPI */
 .circle-0,
 .circle-1,
 .circle-2::before {
   --sine: cubic-bezier(0.45, 0, 0.55, 1);
-  border-width: 0.5px;
 }
 
 .circle-0 {
   height: var(--ring);
   width: var(--ring);
-  border: 0.5px solid var(--hero-line-0);
+  border: var(--ring-stroke) solid var(--hero-line-0);
   --amp: calc(var(--ring) * 0.08);
   animation: driftX 9s var(--sine) infinite alternate, driftY 12s var(--sine) infinite alternate;
   will-change: transform, translate;
   backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .circle-1 {
   height: var(--ring);
   width: var(--ring);
-  border: 0.5px solid var(--hero-line-1);
+  border: var(--ring-stroke) solid var(--hero-line-1);
   --amp: calc(var(--ring) * 0.07);
   animation: driftX 7s var(--sine) -2.5s infinite alternate-reverse, driftY 10s var(--sine) -3.5s infinite alternate;
   will-change: transform, translate;
   backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .circle-2 {
@@ -338,12 +341,13 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 0.5px solid var(--hero-line-2);
+  border: var(--ring-stroke) solid var(--hero-line-2);
   --amp: calc(var(--ring) * 0.075);
   animation: driftX 10s var(--sine) -4.5s infinite alternate, driftY 8s var(--sine) -1.5s infinite alternate-reverse;
   will-change: transform, translate;
   pointer-events: none;
   backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .circle-2 p {
@@ -364,8 +368,8 @@
 }
 
 @keyframes driftY {
-  from { transform: translateY(calc(var(--amp) * -1)); }
-  to   { transform: translateY(var(--amp)); }
+  from { transform: translateZ(0) translateY(calc(var(--amp) * -1)); }
+  to   { transform: translateZ(0) translateY(var(--amp)); }
 }
 
 /* ============================================================
@@ -919,6 +923,7 @@ span {
     overflow: hidden;
     margin-right: 4px;
     background: none;
+    color: #A7ABAB;
     border-right: 1px solid #A7ABAB;
     border-bottom: 1px solid #A7ABAB;
     transform: rotate(45deg);
@@ -1076,18 +1081,20 @@ span {
   }
 }
 
-/* Low-DPI fallback: 1px is the thinnest crisp line there.
-   On retina (≥2dppx), 0.5px renders as exactly one physical pixel. */
-@media (min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 2) {
-  .circle-0,
-  .circle-1,
-  .circle-2::before {
-    border-width: 0.5px;
+/* Low-DPI fallback */
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+  .experience-container {
+    --ring-stroke: 0.5px;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-video {
-    transition: none;
+@media not all and ((-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi)) {
+  .experience-container {
+    --ring-stroke: 1px;
+  }
+  .hero-container {
+    --hero-line-0: color-mix(in srgb, rgba(15, 16, 16, 0.22) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.2));
+    --hero-line-1: color-mix(in srgb, rgba(15, 16, 16, 0.16) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.15));
+    --hero-line-2: color-mix(in srgb, rgba(126, 91, 71, 0.2) calc(var(--mix) * 100%), rgba(244, 245, 245, 0.18));
   }
 }

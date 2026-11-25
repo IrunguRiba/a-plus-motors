@@ -72,7 +72,7 @@
               <button class="zoom-btn" type="button" *ngFor="let z of zoomLevels"
                       [class.active]="zoom === z" [attr.aria-pressed]="zoom === z" (click)="setZoom(z)">{{ z }}%</button>
             </div>
-            <button class="stage-btn watch-btn" type="button" *ngIf="hasReview" (click)="openVideo($event)">▶ Review video</button>
+            <button class="stage-btn watch-btn" type="button" *ngIf="hasReview" (click)="openVideo($event)">▶ Review video{{ hasMultipleVideos ? 's' : '' }}</button>
             <button class="stage-btn expand-btn" type="button" (click)="openLightbox()" aria-label="Enlarge image" title="Enlarge (double click)">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
             </button>
@@ -84,8 +84,9 @@
               <video #stageVideo class="car-video" [src]="videoSource" autoplay playsinline preload="auto"
                      (click)="toggleVideo(stageVideo)"
                      (loadeddata)="onVideoReady(stageVideo)" (canplay)="onVideoReady(stageVideo)" (playing)="onVideoReady(stageVideo)"
-                     (waiting)="vLoading = true" (error)="onVideoError()"
-                     (timeupdate)="onVideoTime(stageVideo)" (loadedmetadata)="onVideoTime(stageVideo)"
+                     (waiting)="vLoading = true" (error)="onVideoError(stageVideo)"
+                     (timeupdate)="onVideoTime(stageVideo)" (loadedmetadata)="onVideoMeta(stageVideo)"
+                     (volumechange)="onVolumeChange(stageVideo)"
                      (play)="vPaused = false" (pause)="vPaused = true" (ended)="vPaused = true"></video>
 
               <div class="video-loader" *ngIf="vLoading && !vError" role="status" aria-live="polite">
@@ -99,6 +100,10 @@
               </div>
 
               <div class="video-controls">
+                <button class="v-btn v-prev" type="button" *ngIf="hasPrevVideo" (click)="prevVideo()" aria-label="Previous video">
+                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg>
+                  <span>Prev</span>
+                </button>
                 <button class="v-btn" type="button" (click)="toggleVideo(stageVideo)" [attr.aria-label]="vPaused ? 'Play' : 'Pause'">
                   <svg *ngIf="vPaused" class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                   <svg *ngIf="!vPaused" class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
@@ -106,9 +111,23 @@
                 <span class="v-time">{{ vCur }}</span>
                 <input class="v-seek" type="range" min="0" max="1000" [value]="vProgress" (input)="seekVideo(stageVideo, $event)" aria-label="Seek" />
                 <span class="v-time">{{ vDur }}</span>
-                <button class="v-btn" type="button" (click)="toggleMute(stageVideo)">{{ vMuted ? 'Muted' : 'Sound' }}</button>
-                <button class="v-btn" type="button" (click)="fullscreenVideo(stageVideo)" aria-label="Fullscreen">
-                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+
+                <div class="v-vol">
+                  <button class="v-btn v-speaker" type="button" (click)="toggleMute(stageVideo)"
+                          [attr.aria-label]="vMuted ? 'Unmute' : 'Mute'" [attr.aria-pressed]="vMuted">
+                    <img class="speaker-icon" [src]="vMuted ? speakerMuted : speaker" alt="" aria-hidden="true" />
+                  </button>
+                  <input class="v-volume" type="range" min="0" max="100" [value]="vMuted ? 0 : vVolume"
+                         (input)="setVolume(stageVideo, $event)" aria-label="Volume" />
+                </div>
+
+                <button class="v-btn" type="button" (click)="toggleExpand(stageVideo)" [attr.aria-label]="videoExpanded ? 'Exit full screen' : 'Full screen'">
+                  <svg *ngIf="!videoExpanded" class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                  <svg *ngIf="videoExpanded" class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+                </button>
+                <button class="v-btn v-next" type="button" *ngIf="hasNextVideo" (click)="nextVideo()" aria-label="Next video">
+                  <span>Next</span>
+                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8"/></svg>
                 </button>
                 <a class="v-btn" [href]="'https://www.youtube.com/results?search_query=' + carName + '+review'" target="_blank" rel="noopener">YouTube</a>
                 <button class="v-btn" type="button" (click)="closeVideo()" aria-label="Close video">
@@ -126,8 +145,17 @@
               </div>
 
               <div class="video-controls video-controls--iframe">
-                <button class="v-btn" type="button" (click)="fullscreenIframe()" aria-label="Fullscreen">
-                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                <button class="v-btn v-prev" type="button" *ngIf="hasPrevVideo" (click)="prevVideo()" aria-label="Previous video">
+                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg>
+                  <span>Prev</span>
+                </button>
+                <button class="v-btn v-next" type="button" *ngIf="hasNextVideo" (click)="nextVideo()" aria-label="Next video">
+                  <span>Next</span>
+                  <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8"/></svg>
+                </button>
+                <button class="v-btn" type="button" (click)="toggleExpand()" [attr.aria-label]="videoExpanded ? 'Exit full screen' : 'Full screen'">
+                  <svg *ngIf="!videoExpanded" class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                  <svg *ngIf="videoExpanded" class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
                 </button>
                 <button class="v-btn" type="button" (click)="closeVideo()" aria-label="Close video">
                   <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>

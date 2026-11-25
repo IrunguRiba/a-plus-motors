@@ -5,15 +5,14 @@ import {
   ElementRef,
   ViewChild,
   ChangeDetectorRef,
-  HostListener,
-  inject,
 } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { gsap } from 'gsap';
 import { ApiServices, PrivacyRequestPayload } from '../../services/api-services';
+import { Footer } from '../footer/footer';
+import { Nav } from '../nav/nav';
 
 type PrivacyView = 'data' | 'complaint';
 
@@ -26,43 +25,59 @@ interface PrivacyPage {
   steps: string[];
 }
 
+interface Faq {
+  q: string;
+  a: string;
+}
+
 @Component({
   selector: 'app-privacy',
-  imports: [CommonModule, FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule, Footer, Nav],
   templateUrl: './privacy.html',
   styleUrl: './privacy.css',
 })
 export class PrivacyPolicy implements AfterViewInit, OnDestroy {
   constructor(
-    private router: Router,
     private cdr: ChangeDetectorRef,
     private api: ApiServices,
   ) {}
 
-  private location = inject(Location);
   private submitSub?: Subscription;
 
+  /** Logo passed into <app-nav>. Adjust to your real asset path. */
   logoImg = 'fav3.png';
 
+  /** Nav passthrough state — keeps <app-nav> bindings happy. */
+  searchWindowOpened = false;
+  isMenuOpen = false;
+
+  /** Current view of the page. */
   view: PrivacyView = 'data';
+
+  /** Currently visible tab within the "data" view. */
   activeIndex = 0;
+
+  /** Complaint form model. */
   clientName = '';
   userEmail = '';
   vehicleDetails = '';
   complaintCategory = '';
   complaintMessage = '';
+
+  /** Complaint form state. */
   attempted = false;
   submitted = false;
-  /** True while the complaint request is in flight (disable the submit button with this). */
   submitting = false;
-  /** Shown in the form when the request fails. Empty when there is no error. */
   submitError = '';
-  /** Reference code returned by the backend, if any (show it on the thank-you screen). */
   referenceCode = '';
   whatsappNumber = '254707555666';
 
-  @ViewChild('contentArea', { static: false }) contentArea!: ElementRef<HTMLElement>;
-  @ViewChild('scroller', { static: false }) scroller!: ElementRef<HTMLElement>;
+  /** FAQ accordion state (single-open). */
+  openFaq: number | null = null;
+
+  @ViewChild('contentArea', { static: false }) contentArea?: ElementRef<HTMLElement>;
+  @ViewChild('scroller', { static: false }) scroller?: ElementRef<HTMLElement>;
 
   categories = [
     { value: 'data-privacy', label: 'Data protection & privacy breach' },
@@ -149,6 +164,29 @@ export class PrivacyPolicy implements AfterViewInit, OnDestroy {
     },
   ];
 
+  faqs: Faq[] = [
+    {
+      q: 'Do you share my data with third parties?',
+      a: 'Only with service providers who help us operate (e.g. IT, logistics, payment processing) under confidentiality agreements, and with authorities where legally required. We never sell your data.',
+    },
+    {
+      q: 'How long do you keep my information?',
+      a: 'For as long as needed for the purpose it was collected, or as required by law — for example, vehicle and tax records are kept for the statutory period.',
+    },
+    {
+      q: 'How do I request deletion of my data?',
+      a: 'Email our Data Protection Officer at compliance@aplusmotors.co.ke with your request. We will verify your identity and respond within the timeframe set by the Data Protection Act, 2019.',
+    },
+    {
+      q: 'Is my payment information secure?',
+      a: 'Yes. Payments are processed through PCI-DSS compliant providers. We do not store full card numbers on our systems.',
+    },
+    {
+      q: 'How do I lodge a complaint about data handling?',
+      a: 'Use the complaint form above, or contact our Compliance Desk directly. If unresolved, you may escalate to the Office of the Data Protection Commissioner (ODPC) in Kenya.',
+    },
+  ];
+
   // ---------- Validation ----------
   get nameValid(): boolean {
     return this.clientName.trim().length >= 2;
@@ -168,14 +206,14 @@ export class PrivacyPolicy implements AfterViewInit, OnDestroy {
 
   // ---------- Lifecycle ----------
   ngAfterViewInit(): void {
-    document.body.style.overflow = 'hidden';
+    const host = this.contentArea?.nativeElement;
+    if (!host) return;
     gsap.fromTo(
-      this.contentArea.nativeElement,
-      { opacity: 0, y: 18, scale: 0.98 },
+      host,
+      { opacity: 0, y: 18 },
       {
         opacity: 1,
         y: 0,
-        scale: 1,
         duration: 0.7,
         ease: 'power3.out',
         clearProps: 'transform,opacity',
@@ -185,22 +223,35 @@ export class PrivacyPolicy implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.submitSub?.unsubscribe();
-    document.body.style.overflow = '';
-    gsap.killTweensOf(this.contentArea?.nativeElement);
+    const host = this.contentArea?.nativeElement;
+    if (host) gsap.killTweensOf(host);
+  }
+
+  // ---------- Nav passthrough ----------
+  openSearch(): void {
+    this.searchWindowOpened = true;
+  }
+
+  closeSearch(_event: Event): void {
+    this.searchWindowOpened = false;
+  }
+
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
   }
 
   // ---------- Views ----------
   setView(v: PrivacyView): void {
     if (v === this.view) return;
-    if (v === 'complaint' && this.submitted) this.resetForm(); // fresh form after a sent complaint
+    if (v === 'complaint' && this.submitted) this.resetForm();
     this.view = v;
     this.cdr.detectChanges();
-    this.scroller?.nativeElement.scrollTo({ top: 0 });
+    this.scroller?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   setActivePage(index: number): void {
     if (this.activeIndex === index) return;
-    const body = this.contentArea.nativeElement.querySelector('.pv-body');
+    const body = this.contentArea?.nativeElement.querySelector('.pv-body');
     if (!body) {
       this.activeIndex = index;
       return;
@@ -221,12 +272,18 @@ export class PrivacyPolicy implements AfterViewInit, OnDestroy {
     });
   }
 
-  // ---------- Form ----------
+  // ---------- FAQ ----------
+  toggleFaq(i: number): void {
+    this.openFaq = this.openFaq === i ? null : i;
+  }
 
-  /**
-   * Sends the complaint to POST /api/requests/privacy.
-   * The form only flips to its "thank you" state once the backend confirms.
-   */
+  // ---------- Jump links ----------
+  scrollTo(id: string): void {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ---------- Complaint form ----------
   submitComplaint(): void {
     this.attempted = true;
     if (!this.formValid || this.submitting) return;
@@ -249,7 +306,6 @@ export class PrivacyPolicy implements AfterViewInit, OnDestroy {
         this.submitted = true;
         this.referenceCode = res?.code ?? res?.id ?? '';
         this.cdr.detectChanges();
-        this.scroller?.nativeElement.scrollTo({ top: 0 });
       },
       error: (err) => {
         this.submitting = false;
@@ -291,25 +347,5 @@ export class PrivacyPolicy implements AfterViewInit, OnDestroy {
     this.submitting = false;
     this.submitError = '';
     this.referenceCode = '';
-  }
-
-  // ---------- Close ----------
-  @HostListener('document:keydown.escape')
-  onEscape(): void {
-    this.close();
-  }
-
-  close(): void {
-    gsap.to(this.contentArea.nativeElement, {
-      opacity: 0,
-      y: 14,
-      scale: 0.98,
-      duration: 0.3,
-      ease: 'power2.inOut',
-      onComplete: () => {
-        if (window.history.length > 1) this.location.back();
-        else this.router.navigate(['']);
-      },
-    });
   }
 }

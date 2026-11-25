@@ -1,5 +1,3 @@
-
-
 <section class="hero">
   <div class="hero-main" [style.--hero-bg]="'url(&quot;' + videoThumb + '&quot;)'">
 
@@ -9,15 +7,18 @@
         @for (s of steps; track s.n; let i = $index) {
           <article class="step">
             <div class="step-top">
-              <button class="step-box" type="button" [attr.aria-label]="'Play ' + s.t + ' video'" (click)="openVideo(s.video, s.thumb)"
-                      (mouseenter)="previewPlay(hv)" (mouseleave)="previewStop(hv)"
-                      (focus)="previewPlay(hv)" (blur)="previewStop(hv)">
-                <span class="step-media">
+              <div class="step-box" [id]="'vid-' + s.n">
+                <div class="step-media">
                   <img [src]="s.thumb" [alt]="s.t" />
                   <video class="hover-video" #hv [src]="s.video" [muted]="true" loop playsinline preload="none" aria-hidden="true" tabindex="-1" (playing)="previewShow(hv)"></video>
-                  <span class="play" aria-hidden="true"></span>
-                </span>
-              </button>
+                  <button class="media-hit" type="button" [attr.aria-label]="'Play ' + s.t + ' video'"
+                          (click)="expandStepVideo(s.video, s.thumb)"
+                          (mouseenter)="previewPlay(hv)" (mouseleave)="previewStop(hv)"
+                          (focus)="previewPlay(hv)" (blur)="previewStop(hv)">
+                    <span class="play" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
             </div>
             <h3>{{ s.t }}</h3>
             <div class="step-more">
@@ -61,20 +62,28 @@
       <p class="info-note">Cars up to 8 years old, shipped to Mombasa and delivered to Nairobi. Tap a country to start your request.</p>
     </div>
 
-    <button class="video-thumb" type="button" aria-label="Play video" (click)="openVideo()"
-            (mouseenter)="previewPlay(mv)" (mouseleave)="previewStop(mv)"
-            (focus)="previewPlay(mv)" (blur)="previewStop(mv)">
-      <span class="video-frame">
-        <span class="video-media">
+    <div class="video-thumb" id="vid-main">
+      <div class="video-frame">
+        <div class="video-media" [class.playing]="inlineId === 'main' && !videoOpen">
           <img [src]="videoThumb" alt="Featured import" />
-          <video class="hover-video" #mv [src]="videoSrc" [muted]="true" loop playsinline preload="none" aria-hidden="true" tabindex="-1" (playing)="previewShow(mv)"></video>
-          <span class="play" aria-hidden="true"></span>
-        </span>
-      </span>
-    </button>
+          @if (inlineId === 'main' && !videoOpen) {
+            <ng-container *ngTemplateOutlet="player; context: { m: 'main' }"></ng-container>
+          } @else {
+            <video class="hover-video" #mv [src]="videoSrc" [muted]="true" loop playsinline preload="none" aria-hidden="true" tabindex="-1" (playing)="previewShow(mv)"></video>
+            <button class="media-hit" type="button" aria-label="Play video"
+                    (click)="playInline('main', videoSrc, videoThumb)"
+                    (mouseenter)="previewPlay(mv)" (mouseleave)="previewStop(mv)"
+                    (focus)="previewPlay(mv)" (blur)="previewStop(mv)">
+              <span class="play" aria-hidden="true"></span>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
+<!-- Big viewer: only when the person expands a video. Close collapses it back in place. -->
 @if (videoOpen) {
   <div class="lightbox" (click)="closeVideo()">
     <div class="lightbox-box" (click)="$event.stopPropagation()">
@@ -88,48 +97,84 @@
         <button class="lightbox-close" type="button" (click)="closeVideo()">Close</button>
       </div>
       <div class="lightbox-stage">
-        <video #lbVideo [src]="activeSrc" [poster]="activeThumb" autoplay playsinline preload="auto"
-               (click)="toggleVideo(lbVideo)"
-               (loadstart)="onVideoStart()"
-               (loadeddata)="onVideoReady(lbVideo)" (canplay)="onVideoReady(lbVideo)" (playing)="onVideoReady(lbVideo)"
-               (waiting)="vLoading = true" (error)="onVideoError()"
-               (timeupdate)="onVideoTime(lbVideo)" (loadedmetadata)="onVideoTime(lbVideo)"
-               (play)="vPaused = false" (pause)="vPaused = true" (ended)="vPaused = true"></video>
-
-        @if (vLoading && !vError) {
-          <div class="video-loader" role="status" aria-live="polite">
-            <span class="loader-ring"></span>
-            <span class="loader-text">Loading video</span>
-          </div>
-        }
-
-        @if (vError) {
-          <div class="video-loader video-error" role="alert">
-            <span class="loader-text">Video unavailable</span>
-            <button class="v-retry" type="button" (click)="retryVideo(lbVideo)">Retry</button>
-          </div>
-        }
-
-        <div class="video-controls">
-          <button class="v-btn" type="button" (click)="toggleVideo(lbVideo)" [attr.aria-label]="vPaused ? 'Play' : 'Pause'">
-            @if (vPaused) {
-              <svg class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-            } @else {
-              <svg class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
-            }
-          </button>
-          <span class="v-time">{{ vCur }}</span>
-          <input class="v-seek" type="range" min="0" max="1000" [value]="vProgress" (input)="seekVideo(lbVideo, $event)" aria-label="Seek" />
-          <span class="v-time">{{ vDur }}</span>
-          <button class="v-btn" type="button" (click)="toggleMute(lbVideo)">{{ vMuted ? 'Muted' : 'Sound' }}</button>
-          <button class="v-btn" type="button" (click)="fullscreenVideo(lbVideo)" aria-label="Fullscreen">
-            <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
-          </button>
-        </div>
+        <ng-container *ngTemplateOutlet="player; context: { m: 'lightbox' }"></ng-container>
       </div>
     </div>
   </div>
 }
+
+<!-- The player: video + loader + controls. m = 'main' | 'step' | 'lightbox' -->
+<ng-template #player let-m="m">
+  <video #pv class="pv-video" [src]="activeSrc" [poster]="activeThumb" autoplay playsinline preload="auto"
+         (click)="toggleVideo(pv)"
+         (loadstart)="onVideoStart()"
+         (loadedmetadata)="onVideoMeta(pv)"
+         (loadeddata)="onVideoReady(pv)" (canplay)="onVideoReady(pv)" (playing)="onVideoReady(pv)"
+         (waiting)="vLoading = true" (error)="onVideoError(pv)"
+         (timeupdate)="onVideoTime(pv)"
+         (volumechange)="onVolumeChange(pv)"
+         (play)="vPaused = false" (pause)="vPaused = true" (ended)="vPaused = true"></video>
+
+  @if (vLoading && !vError) {
+    <div class="video-loader" role="status" aria-live="polite">
+      <span class="loader-ring"></span>
+      <span class="loader-text">Loading video</span>
+    </div>
+  }
+
+  @if (vError) {
+    <div class="video-loader video-error" role="alert">
+      <span class="loader-text">Video unavailable</span>
+      <button class="v-retry" type="button" (click)="retryVideo(pv)">Retry</button>
+    </div>
+  }
+
+  <div class="video-controls" [class.compact]="m === 'step'">
+    @if (m !== 'lightbox' && hasPrev) {
+      <button class="v-btn v-prev" type="button" (click)="prevVideo()" aria-label="Previous video">
+        <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg>
+      </button>
+    }
+    <button class="v-btn" type="button" (click)="toggleVideo(pv)" [attr.aria-label]="vPaused ? 'Play' : 'Pause'">
+      @if (vPaused) {
+        <svg class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      } @else {
+        <svg class="i-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+      }
+    </button>
+    <span class="v-time">{{ vCur }}</span>
+    <input class="v-seek" type="range" min="0" max="1000" [value]="vProgress" (input)="seekVideo(pv, $event)" aria-label="Seek" />
+    <span class="v-time">{{ vDur }}</span>
+
+    <!-- Speaker: click mutes / unmutes. Slider sets the volume. -->
+    <div class="v-vol">
+      <button class="v-btn v-speaker" type="button" (click)="toggleMute(pv)"
+              [attr.aria-label]="vMuted ? 'Unmute' : 'Mute'" [attr.aria-pressed]="vMuted">
+        <img class="speaker-icon" [src]="vMuted ? speakerMuted : speaker" alt="" aria-hidden="true" />
+      </button>
+      <input class="v-volume" type="range" min="0" max="100" [value]="vMuted ? 0 : vVolume"
+             (input)="setVolume(pv, $event)" aria-label="Volume" />
+    </div>
+
+    @if (m === 'lightbox') {
+      <button class="v-btn" type="button" (click)="fullscreenVideo(pv)" aria-label="Fullscreen">
+        <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    } @else {
+      <button class="v-btn" type="button" (click)="expandVideo(pv)" aria-label="Expand video">
+        <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+      @if (hasNext) {
+        <button class="v-btn v-next" type="button" (click)="nextVideo()" aria-label="Next video">
+          <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8"/></svg>
+        </button>
+      }
+      <button class="v-btn" type="button" (click)="stopVideo()" aria-label="Close video">
+        <svg class="i-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    }
+  </div>
+</ng-template>
 
 <section class="quote" id="request">
   <form class="form" #f="ngForm" [class.tried]="tried" (ngSubmit)="attempt(f.valid)">
@@ -208,18 +253,18 @@
     </label>
 
     <div class="submit">
-      <button class="btn hover-flip" type="submit">
+      <button class="btn hover-flip" type="submit" [disabled]="submitting">
         <span class="flip">
           <span class="face front">
-            <span>{{ submitted ? 'Request sent' : 'Request a quote' }}</span>
+            <span>{{ submitting ? 'Sending…' : (submitted ? 'Request sent' : 'Request a quote') }}</span>
           </span>
           <span class="face back">
-            <span>{{ submitted ? 'Request sent' : 'Request a quote' }}</span>
+            <span>{{ submitting ? 'Sending…' : (submitted ? 'Request sent' : 'Request a quote') }}</span>
           </span>
         </span>
       </button>
-      <p aria-live="polite" [class.err]="tried && !f.valid">
-        {{ submitted ? 'Thank you. We will reply shortly.' : (tried && !f.valid ? 'Please add your name and phone number so we can reply.' : 'No payment now. We only use your details to reply about this request.') }}
+      <p aria-live="polite" [class.err]="(tried && !f.valid) || !!submitError">
+        {{ submitError ? submitError : (submitted ? 'Thank you. We will reply shortly.' : (tried && !f.valid ? 'Please add your name and phone number so we can reply.' : 'No payment now. We only use your details to reply about this request.')) }}
       </p>
     </div>
   </form>

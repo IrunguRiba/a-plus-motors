@@ -25,8 +25,7 @@ export const routes: Routes = [
 { path: 'specs', component: Specs },
 {
   path: 'privacy',
-  component: PrivacyPolicy,
-  outlet: 'privacy',  
+  component: PrivacyPolicy, 
 },
   {
     path: 'imported-trade-in',

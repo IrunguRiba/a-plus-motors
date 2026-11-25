@@ -7,6 +7,7 @@ import {
   OnDestroy,
   ViewChild,
   HostListener,
+  NgZone,
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,6 +19,7 @@ import { Subscription } from 'rxjs';
 import { gsap } from 'gsap';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { ApiServices, InquiryRequestPayload, ksh } from '../../../services/api-services';
+import { setVideoExpanded, releaseMedia } from '../../portfolio/specs/chome-vid-control';
 import { ApiCar } from '../../../interfaces/car-interface';
 import { SafeVideoUrlPipe } from './safe-url.pipe';
 import { Footer } from '../../footer/footer';
@@ -70,6 +72,9 @@ const MOTION = {
 const DOUBLE_TAP_MS = 320;
 const DOUBLE_TAP_PX = 30;
 
+/** How many trimmed (cropped) photos are kept in memory at once. */
+const TRIM_CACHE_MAX = 10;
+
 @Component({
   selector: 'app-specs',
   templateUrl: './specs.html',
@@ -85,17 +90,20 @@ export class Specs implements AfterViewInit, OnDestroy {
   ) {
     this.jumpToTop();
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
-      // FIX: /specs?id=... is the same route, so Angular reuses this component when a
-      // searched / similar car is picked. Nothing destroyed the nav state, so the
-      // search window and menu stayed open over the new car. Reset them on every
-      // car change.
+      // /specs?id=... is the same route, so Angular reuses this component when a
+      // searched / similar car is picked. Reset the nav state on every car change.
       this.closeNavOverlays();
       this.loadCar(params.get('id'));
     });
   }
 
+  /** Speaker icons (same images as the trade-in and imported pages). */
+  speaker = 'speaker.png';
+  speakerMuted = 'speaker-muted.png';
+
   private location = inject(Location);
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private zone = inject(NgZone);
 
   @ViewChild('modalRoot') modalRoot!: ElementRef<HTMLElement>;
   @ViewChild('lightRoot') lightRoot!: ElementRef<HTMLElement>;
@@ -103,6 +111,18 @@ export class Specs implements AfterViewInit, OnDestroy {
   private viewReady = false;
   private loadSub?: Subscription;
   private submitSub?: Subscription;
+
+  /* --- Timers: every timeout goes through later() so ngOnDestroy can clear them --- */
+  private timers = new Set<ReturnType<typeof setTimeout>>();
+  private raf = 0;
+
+  private later(fn: () => void, ms = 0): void {
+    const id = setTimeout(() => {
+      this.timers.delete(id);
+      fn();
+    }, ms);
+    this.timers.add(id);
+  }
 
   private jumpToTop(): void {
     ScrollSmoother.get()?.scrollTo(0, false);
@@ -185,8 +205,6 @@ export class Specs implements AfterViewInit, OnDestroy {
   exteriorImages: string[] = [];
   interiorImages: string[] = [];
 
-  reviewVid = '';
-
   pickCriteria = [
     'Same brand or class',
     'Similar body style',
@@ -240,6 +258,11 @@ export class Specs implements AfterViewInit, OnDestroy {
     if (this.expanded) this.closeLightbox();
 
     this.car = c;
+
+    // A new car: drop the cropped copies of the previous car's photos.
+    this.trimmed.clear();
+    this.tried.clear();
+
     this.seriesName = `${c.make} ${c.model}`;
     this.carName = `${c.year} ${c.make} ${c.model}`;
     this.carPrice = ksh(c.price);
@@ -248,7 +271,15 @@ export class Specs implements AfterViewInit, OnDestroy {
     const photos = Array.from(new Set((c.photos ?? []).filter(Boolean)));
     this.exteriorImages = photos;
     this.interiorImages = photos;
-    this.reviewVid = (c.reviewVideoUrl ?? '').trim();
+
+    // Review videos: the main one, plus any extra ones the API sends as reviewVideoUrls[].
+    const extra = (c as unknown as { reviewVideoUrls?: unknown }).reviewVideoUrls;
+    const raw: unknown[] = [c.reviewVideoUrl, ...(Array.isArray(extra) ? extra : [])];
+    this.videoList = raw
+      .map((u) => String(u ?? '').trim())
+      .filter((u, i, a) => !!u && a.indexOf(u) === i && Specs.isPlayable(u));
+    this.videoIndex = 0;
+
     this.preloadImage(photos[0]);
 
     this.exteriorSpecs = this.buildExterior(c);
@@ -258,20 +289,17 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.view = 'exterior';
     this.activeIndex = 0;
     this.stackExpanded = false;
-    this.videoPlaying = false;
+    this.closeVideo();
     this.zoom = 100;
     this.resetPan();
+    this.stopPreview();
     this.hoveredId = null;
 
-    // FIX: Always (re)wire lazy images once the new similar-car cards have rendered.
-    // The old code only did this inside `if (this.viewReady)` with a single
-    // setTimeout(0) — which fires before Angular flushes the @for cards, so every
-    // similar-car <img> kept its data-src and never got a `src` (blank cards).
     this.scheduleCardImages();
 
     if (this.viewReady) {
       this.jumpToTop();
-      setTimeout(() => {
+      this.later(() => {
         this.playEnter();
         // Gallery strip starts at the first photo.
         this.revealActiveThumb();
@@ -280,19 +308,18 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * FIX: Run observeCardImages() after the DOM actually contains the newly-rendered
-   * cards. requestAnimationFrame fires after change detection; the extra setTimeout
-   * handles the case where Angular renders the cards a tick later. A 250ms retry is
-   * the safety net for slow/async renders.
+   * Runs observeCardImages() after the DOM actually contains the newly-rendered
+   * cards. requestAnimationFrame fires after change detection; the extra timeouts
+   * handle a tick-later render. All of them are cleared in ngOnDestroy.
    */
   private scheduleCardImages(): void {
     const run = () => this.observeCardImages();
-    if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => setTimeout(run, 0));
-    } else {
-      setTimeout(run, 0);
-    }
-    setTimeout(run, 250);
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.raf = requestAnimationFrame(() => {
+      this.raf = 0;
+      this.later(run, 0);
+    });
+    this.later(run, 250);
   }
 
   /** Starts loading the first photo right away so the viewer never opens on a blank stage. */
@@ -507,13 +534,15 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.clampPan();
     if (this.tried.has(src) || !img.naturalWidth) return;
     this.tried.add(src);
+    let probe: HTMLCanvasElement | undefined;
+    let out: HTMLCanvasElement | undefined;
     try {
       const W = img.naturalWidth,
         H = img.naturalHeight;
       const k = Math.min(1, 600 / Math.max(W, H));
       const sw = Math.max(1, Math.round(W * k)),
         sh = Math.max(1, Math.round(H * k));
-      const probe = document.createElement('canvas');
+      probe = document.createElement('canvas');
       probe.width = sw;
       probe.height = sh;
       const pctx = probe.getContext('2d')!;
@@ -539,13 +568,23 @@ export class Specs implements AfterViewInit, OnDestroy {
       const cy = Math.max(0, Math.floor((y0 / sh - pad) * H));
       const cw = Math.min(W - cx, Math.ceil(((x1 + 1) / sw - x0 / sw + pad * 2) * W));
       const ch = Math.min(H - cy, Math.ceil(((y1 + 1) / sh - y0 / sh + pad * 2) * H));
-      const out = document.createElement('canvas');
+      out = document.createElement('canvas');
       out.width = cw;
       out.height = ch;
       out.getContext('2d')!.drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch);
       this.trimmed.set(src, out.toDataURL('image/png'));
+      // Keep only the most recent crops: each one is a full-size data URL.
+      while (this.trimmed.size > TRIM_CACHE_MAX) {
+        const oldest = this.trimmed.keys().next().value;
+        if (oldest === undefined) break;
+        this.trimmed.delete(oldest);
+      }
     } catch {
       /* cross-origin: keep original */
+    } finally {
+      // Release the canvas bitmaps right away.
+      if (probe) probe.width = probe.height = 0;
+      if (out) out.width = out.height = 0;
     }
   }
 
@@ -559,7 +598,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     this.view = v;
     this.activeIndex = 0;
     this.stackExpanded = false;
-    this.videoPlaying = false;
+    this.closeVideo();
     this.resetPan();
     this.revealActiveThumb();
   }
@@ -584,14 +623,14 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
 
   private afterNav(): void {
-    this.videoPlaying = false;
+    this.closeVideo();
     this.zoom = 100;
     this.resetPan();
     this.revealActiveThumb();
   }
 
   private revealActiveThumb(): void {
-    setTimeout(() => {
+    this.later(() => {
       const track = this.host.nativeElement.querySelector<HTMLElement>('.stack-track');
       const el = track?.querySelector<HTMLElement>('.stack-thumb.active');
       if (!track || !el) return;
@@ -751,48 +790,79 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   /* ============================================================
      REVIEW VIDEO
+     The video plays in the exact spot of the photo. It only goes
+     full screen when the person expands it, and every nav is hidden
+     while it is expanded.
      ============================================================ */
 
+  @ViewChild('stageVideo') private stageVideoRef?: ElementRef<HTMLVideoElement>;
+
   videoPlaying = false;
+  /** True while the stage is full screen (expanded). */
+  videoExpanded = false;
   vLoading = false;
   vError = false;
   vPaused = false;
+  /** True when muted, or when the volume slider is at 0. */
   vMuted = false;
+  /** 0 to 100. Kept between videos. */
+  vVolume = 100;
   vProgress = 0;
   vCur = '0:00';
   vDur = '0:00';
+
+  /** Playable review videos of the current car (the main one first). */
+  videoList: string[] = [];
+  videoIndex = 0;
+
+  private autoPlayTried = false;
+  private lastVolume = 1;
+  private stageIo?: IntersectionObserver;
 
   /* --- URL helpers ------------------------------------------------- */
 
   private static readonly FILE_RE = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
 
-  /** Returns a direct-file URL (for <video>) or null. */
-  private get fileUrl(): string | null {
-    return this.reviewVid && Specs.FILE_RE.test(this.reviewVid) ? this.reviewVid : null;
-  }
-
-  /**
-   * Returns an embed URL for <iframe> (YouTube / Vimeo / Streamable) or null.
-   */
-  get embedUrl(): string | null {
-    const u = this.reviewVid;
-    if (!u || this.fileUrl) return null;
+  /** Returns an embed URL for <iframe> (YouTube / Vimeo / Streamable) or null. */
+  private static embedOf(u: string): string | null {
+    if (!u) return null;
 
     // YouTube: watch, short, or already-embed
     const yt = u.match(
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube-nocookie\.com\/embed\/)([\w-]{11})/,
     );
-    if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0`;
+    if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0&autoplay=1&playsinline=1`;
 
     // Vimeo
     const vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-    if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+    if (vm) return `https://player.vimeo.com/video/${vm[1]}?autoplay=1&playsinline=1`;
 
-    // Streamable — accepts /e/xyz, /xyz, and full page URLs
+    // Streamable: accepts /e/xyz, /xyz, and full page URLs
     const sm = u.match(/streamable\.com\/(?:e\/)?([a-z0-9]+)/i);
-    if (sm) return `https://streamable.com/e/${sm[1]}`;
+    if (sm) return `https://streamable.com/e/${sm[1]}?autoplay=1`;
 
     return null;
+  }
+
+  private static isPlayable(u: string): boolean {
+    return Specs.FILE_RE.test(u) || Specs.embedOf(u) !== null;
+  }
+
+  /** The video that is currently selected. */
+  get reviewVid(): string {
+    return this.videoList[this.videoIndex] ?? '';
+  }
+
+  /** Returns a direct-file URL (for <video>) or null. */
+  private get fileUrl(): string | null {
+    const u = this.reviewVid;
+    return u && Specs.FILE_RE.test(u) ? u : null;
+  }
+
+  get embedUrl(): string | null {
+    const u = this.reviewVid;
+    if (!u || this.fileUrl) return null;
+    return Specs.embedOf(u);
   }
 
   get isIframeVideo(): boolean {
@@ -806,34 +876,64 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
 
   get hasReview(): boolean {
-    return this.isFileVideo || this.isIframeVideo;
+    return this.videoList.length > 0;
+  }
+  get hasMultipleVideos(): boolean {
+    return this.videoList.length > 1;
+  }
+  get hasPrevVideo(): boolean {
+    return this.videoIndex > 0;
+  }
+  get hasNextVideo(): boolean {
+    return this.videoIndex < this.videoList.length - 1;
   }
 
   /* --- Playback control ------------------------------------------- */
 
+  private resetPlayer(): void {
+    this.vPaused = false;
+    this.vProgress = 0;
+    this.vCur = '0:00';
+    this.vDur = '0:00';
+    this.vError = false;
+    this.vLoading = false;
+    this.autoPlayTried = false;
+  }
+
+  /** Plays the review video right where the photo is (no automatic full screen). */
   openVideo(event: Event): void {
     event.stopPropagation();
     if (!this.hasReview) return;
-    this.vPaused = false;
-    this.vMuted = false;
-    this.vProgress = 0;
-    this.vCur = '0:00';
-    this.vDur = '0:00';
-    this.vError = false;
+    this.resetPlayer();
     // Only the native <video> needs a loader; the iframe shows its own.
     this.vLoading = this.isFileVideo;
     this.videoPlaying = true;
+    this.watchStage();
   }
 
   closeVideo(): void {
+    this.unwatchStage();
+    this.exitStageFullscreen();
+    releaseMedia(this.stageVideoRef?.nativeElement);
+    if (this.videoExpanded) this.applyExpanded(false);
     this.videoPlaying = false;
-    this.vLoading = false;
-    this.vError = false;
-    this.vPaused = false;
-    this.vMuted = false;
-    this.vProgress = 0;
-    this.vCur = '0:00';
-    this.vDur = '0:00';
+    this.resetPlayer();
+  }
+
+  /** Switches to another review video of the same car, still in place. */
+  private selectVideo(step: number): void {
+    const i = this.videoIndex + step;
+    if (i < 0 || i >= this.videoList.length) return;
+    releaseMedia(this.stageVideoRef?.nativeElement);
+    this.videoIndex = i;
+    this.resetPlayer();
+    this.vLoading = this.isFileVideo;
+  }
+  prevVideo(): void {
+    this.selectVideo(-1);
+  }
+  nextVideo(): void {
+    this.selectVideo(1);
   }
 
   onVideoReady(v: HTMLVideoElement): void {
@@ -841,12 +941,26 @@ export class Specs implements AfterViewInit, OnDestroy {
     if (!this.isFileVideo) return;
     this.vLoading = false;
     this.vError = false;
+    if (v.paused && !this.autoPlayTried) {
+      this.autoPlayTried = true;
+      v.play().catch(() => {
+        v.muted = true;
+        v.play().catch(() => {});
+      });
+    }
     this.vPaused = v.paused;
     this.onVideoTime(v);
   }
 
-  onVideoError(): void {
+  onVideoMeta(v: HTMLVideoElement): void {
+    this.applyAudio(v);
+    this.onVideoTime(v);
+  }
+
+  onVideoError(v?: HTMLVideoElement): void {
     if (!this.isFileVideo) return;
+    // A video we just released has no src: that is not an error.
+    if (v && !v.getAttribute('src')) return;
     this.vLoading = false;
     this.vError = true;
   }
@@ -855,6 +969,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     if (!this.isFileVideo) return;
     this.vError = false;
     this.vLoading = true;
+    this.autoPlayTried = false;
     v.load();
     v.play().catch(() => {
       /* autoplay blocked */
@@ -874,24 +989,150 @@ export class Specs implements AfterViewInit, OnDestroy {
   }
 
   toggleVideo(v: HTMLVideoElement): void {
-    v.paused ? v.play() : v.pause();
+    if (v.paused) v.play().catch(() => {});
+    else v.pause();
   }
   seekVideo(v: HTMLVideoElement, e: Event): void {
     const val = +(e.target as HTMLInputElement).value;
     if (v.duration) v.currentTime = (v.duration * val) / 1000;
   }
-  toggleMute(v: HTMLVideoElement): void {
-    v.muted = !v.muted;
-    this.vMuted = v.muted;
-  }
-  fullscreenVideo(v: HTMLVideoElement): void {
-    v.requestFullscreen?.().catch(() => {});
+
+  /* --- Sound: speaker icon mutes, slider sets the volume -------------- */
+
+  /** Puts the saved volume / mute choice on a video that has just loaded. */
+  private applyAudio(v: HTMLVideoElement): void {
+    v.dataset['audio'] = '1';
+    v.volume = Math.min(1, Math.max(0, this.vVolume / 100));
+    v.muted = this.vMuted;
   }
 
-  /** Fullscreen for iframe path — try the wrapping element. */
-  fullscreenIframe(): void {
-    const wrap = this.host.nativeElement.querySelector<HTMLElement>('.iframe-wrap');
-    wrap?.requestFullscreen?.().catch(() => {});
+  /** Speaker click: mute, or unmute (back to the last volume if it was dragged to 0). */
+  toggleMute(v: HTMLVideoElement): void {
+    if (v.muted || v.volume === 0) {
+      if (v.volume === 0) v.volume = this.lastVolume || 1;
+      v.muted = false;
+    } else {
+      v.muted = true;
+    }
+  }
+
+  setVolume(v: HTMLVideoElement, e: Event): void {
+    const val = Math.min(100, Math.max(0, +(e.target as HTMLInputElement).value));
+    v.volume = val / 100;
+    v.muted = val === 0;
+  }
+
+  /** Keeps the icon and slider in step with the real element (also when the browser changes it). */
+  onVolumeChange(v: HTMLVideoElement): void {
+    if (v.dataset['audio'] !== '1') return;
+    this.vMuted = v.muted || v.volume === 0;
+    this.vVolume = Math.round(v.volume * 100);
+    if (v.volume > 0) this.lastVolume = v.volume;
+  }
+
+  /* --- Expand (full screen) ---------------------------------------- */
+
+  private get stageEl(): HTMLElement | null {
+    return this.host.nativeElement.querySelector<HTMLElement>('.car-stage');
+  }
+
+  private get fsElement(): Element | null {
+    const d = document as any;
+    return d.fullscreenElement ?? d.webkitFullscreenElement ?? null;
+  }
+
+  /** Expands the whole stage so the custom controls (incl. Close) stay available. */
+  private enterStageFullscreen(): boolean {
+    const el = this.stageEl as any;
+    const req = el?.requestFullscreen ?? el?.webkitRequestFullscreen;
+    if (!req) return false;
+    try {
+      Promise.resolve(req.call(el)).catch(() => {});
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private exitStageFullscreen(): void {
+    const fs = this.fsElement;
+    if (!fs || fs !== this.stageEl) return;
+    const d = document as any;
+    try {
+      Promise.resolve((d.exitFullscreen ?? d.webkitExitFullscreen).call(d)).catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private applyExpanded(on: boolean): void {
+    this.videoExpanded = on;
+    // Every nav is hidden while the video is expanded.
+    setVideoExpanded(on);
+  }
+
+  /** Expand / collapse button. */
+  toggleExpand(v?: HTMLVideoElement): void {
+    if (this.videoExpanded || (this.fsElement && this.fsElement === this.stageEl)) {
+      this.exitStageFullscreen();
+      this.applyExpanded(false);
+      return;
+    }
+    // iPhone Safari cannot fullscreen a div: fall back to the native video player.
+    if (!this.enterStageFullscreen()) (v as any)?.webkitEnterFullscreen?.();
+  }
+
+  /** Keeps videoExpanded in step when the browser leaves full screen itself (Esc, swipe). */
+  private onFsChange = (): void => {
+    const on = !!this.fsElement && this.fsElement === this.stageEl;
+    if (on === this.videoExpanded) return;
+    this.zone.run(() => this.applyExpanded(on));
+  };
+
+  /** Pauses the review video once the stage has scrolled out of view (iframes are closed). */
+  private watchStage(): void {
+    this.unwatchStage();
+    const el = this.stageEl;
+    if (!el || !('IntersectionObserver' in window)) return;
+    this.stageIo = new IntersectionObserver(
+      (entries) => {
+        const last = entries[entries.length - 1];
+        if (last.isIntersecting || this.fsElement) return;
+        this.zone.run(() => {
+          const v = this.stageVideoRef?.nativeElement;
+          if (v && this.isFileVideo) v.pause();
+          else this.closeVideo();
+        });
+      },
+      { threshold: 0 },
+    );
+    this.stageIo.observe(el);
+  }
+
+  private unwatchStage(): void {
+    this.stageIo?.disconnect();
+    this.stageIo = undefined;
+  }
+
+  /** Stops a hovered similar-card preview once its card scrolls out of view. */
+  private onWinScroll = (): void => {
+    if (!this.hoveredId) return;
+    const card = this.host.nativeElement
+      .querySelector('.hover-preview')
+      ?.closest('.car-card') as HTMLElement | null;
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) {
+      this.zone.run(() => {
+        this.stopPreview();
+        this.hoveredId = null;
+      });
+    }
+  };
+
+  /** Frees the hover-preview video that is currently playing, if any. */
+  private stopPreview(): void {
+    releaseMedia(this.host.nativeElement.querySelector('video.hover-preview'));
   }
 
   /* ============================================================
@@ -982,7 +1223,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     }
     this.modalOpen = true;
     this.lockScroll(true);
-    setTimeout(
+    this.later(
       () => this.modalRoot?.nativeElement.querySelector<HTMLInputElement>('input')?.focus(),
       450,
     );
@@ -1053,7 +1294,7 @@ export class Specs implements AfterViewInit, OnDestroy {
       }
       await navigator.clipboard.writeText(message);
       this.shareLabel = 'Link copied';
-      setTimeout(() => (this.shareLabel = 'Share car link'), 2000);
+      this.later(() => (this.shareLabel = 'Share car link'), 2000);
     } catch {
       /* dismissed or blocked */
     }
@@ -1123,7 +1364,7 @@ export class Specs implements AfterViewInit, OnDestroy {
       }
       await navigator.clipboard.writeText(message);
       this.copiedId = car.id;
-      setTimeout(() => (this.copiedId = null), 2000);
+      this.later(() => (this.copiedId = null), 2000);
     } catch {
       /* dismissed or blocked */
     }
@@ -1147,6 +1388,7 @@ export class Specs implements AfterViewInit, OnDestroy {
   onEscape(): void {
     if (this.modalOpen) this.closeModal();
     else if (this.expanded) this.closeLightbox();
+    else if (this.videoExpanded) this.toggleExpand();
     else if (this.videoPlaying) this.closeVideo();
   }
 
@@ -1154,7 +1396,6 @@ export class Specs implements AfterViewInit, OnDestroy {
     document.body.style.overflow = lock ? 'hidden' : '';
     ScrollSmoother.get()?.paused(lock);
   }
-
 
   private imgIo?: IntersectionObserver;
   private imgSafetyTimer?: ReturnType<typeof setTimeout>;
@@ -1203,7 +1444,7 @@ export class Specs implements AfterViewInit, OnDestroy {
     if (img.dataset['retried'] !== '1') {
       img.dataset['retried'] = '1';
       const base = img.dataset['src'] ?? '';
-      setTimeout(() => {
+      this.later(() => {
         img.src = base + (base.includes('?') ? '&' : '?') + 'r=' + Date.now();
       }, 600);
       return;
@@ -1260,6 +1501,11 @@ export class Specs implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.viewReady = true;
+    this.zone.runOutsideAngular(() => {
+      document.addEventListener('fullscreenchange', this.onFsChange);
+      document.addEventListener('webkitfullscreenchange', this.onFsChange);
+      window.addEventListener('scroll', this.onWinScroll, { passive: true });
+    });
     this.supportsHover = canHover() && !prefersReducedMotion();
     this.jumpToTop();
     document.body.appendChild(this.modalRoot.nativeElement);
@@ -1332,11 +1578,35 @@ export class Specs implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.loadSub?.unsubscribe();
     this.submitSub?.unsubscribe();
+
+    // Video: stop it, free its buffer, leave full screen and show the navs again.
+    this.unwatchStage();
+    this.exitStageFullscreen();
+    releaseMedia(this.stageVideoRef?.nativeElement);
+    this.stopPreview();
+    setVideoExpanded(false);
+
+    document.removeEventListener('fullscreenchange', this.onFsChange);
+    document.removeEventListener('webkitfullscreenchange', this.onFsChange);
+    window.removeEventListener('scroll', this.onWinScroll);
+
+    // Timers, animation frame and observers.
+    this.timers.forEach((id) => clearTimeout(id));
+    this.timers.clear();
+    if (this.raf) cancelAnimationFrame(this.raf);
     this.imgIo?.disconnect();
     if (this.imgSafetyTimer) clearTimeout(this.imgSafetyTimer);
+
+    // Animations.
     this.roadTween?.kill();
     gsap.killTweensOf(this.panels);
     this.ctx?.revert();
+
+    // Cached image copies.
+    this.trimmed.clear();
+    this.tried.clear();
+
+    // Elements that were moved to <body>.
     this.modalRoot?.nativeElement.remove();
     this.lightRoot?.nativeElement.remove();
     this.lockScroll(false);

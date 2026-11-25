@@ -107,8 +107,8 @@ export class Search implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   ];
 
   /**
-   * Phrases the placeholder types out. Shown until the stock loads, then replaced
-   * (in place, because the Typewriter holds this same array) with phrases built from the database.
+- Phrases the placeholder types out. Shown until the stock loads, then replaced
+- (in place, because the Typewriter holds this same array) with phrases built from the database.
    */
   readonly examples: string[] = [
     'Family car, seats 7 comfortably',
@@ -433,7 +433,9 @@ export class Search implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   openSpecs(car: SearchCar): void {
     if (!car?.id) return;
     this.closeSearch();
-    this.router.navigate(['/specs'], { queryParams: { id: car.id } });
+    this.router.navigate(['/specs'], { queryParams: { id: null } }).then(() => {
+      this.router.navigate(['/specs'], { queryParams: { id: car.id } });
+    });
   }
 
   private scheduleTyping(): void {

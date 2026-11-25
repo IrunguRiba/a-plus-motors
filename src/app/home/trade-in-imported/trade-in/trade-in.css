@@ -552,6 +552,15 @@ button:focus-visible {
   stroke-linecap: square;
   stroke-linejoin: miter;
 }
+/* Speaker icon: image-based, rendered as a thin line */
+.v-btn .speaker-icon {
+  display: block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
 .v-time {
   flex: none;
   min-width: 36px;
@@ -592,6 +601,40 @@ button:focus-visible {
 .v-seek::-moz-range-thumb {
   width: 10px;
   height: 10px;
+  background: #fff;
+  border: 0;
+  border-radius: 0;
+}
+/* Volume slider: thin line, square thumb */
+.v-volume {
+  width: 70px;
+  height: 18px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+.v-volume::-webkit-slider-runnable-track {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.55);
+}
+.v-volume::-moz-range-track {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.55);
+}
+.v-volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 8px;
+  height: 8px;
+  margin-top: -3.5px;
+  background: #fff;
+  border: 0;
+  border-radius: 0;
+}
+.v-volume::-moz-range-thumb {
+  width: 8px;
+  height: 8px;
   background: #fff;
   border: 0;
   border-radius: 0;
@@ -1315,6 +1358,9 @@ select.input {
   }
   .v-time {
     min-width: 30px;
+  }
+  .v-volume {
+    width: 48px;
   }
 }
 
