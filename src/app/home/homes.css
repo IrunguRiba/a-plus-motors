@@ -1,4 +1,4 @@
-/* Porsche-style typeface for the intro text (stand-in for Porsche Next) */
+
 @import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&display=swap");
 
 .cookies {
@@ -383,9 +383,7 @@
   to   { transform: translateZ(0) translateY(var(--amp)); }
 }
 
-/* ============================================================
-   SEARCH BAR – STRUCTURE & ICONS
-   ============================================================ */
+
 .search {
   --icon-ink: #A7ABAB;
   --icon-toyota-logo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' shape-rendering='geometricPrecision'%3E%3Cellipse cx='12' cy='12' rx='10.5' ry='7.5'/%3E%3Cellipse cx='12' cy='12.5' rx='3.3' ry='5.6'/%3E%3Cellipse cx='12' cy='9' rx='6.8' ry='3'/%3E%3C/svg%3E");
