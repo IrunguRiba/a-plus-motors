@@ -11,7 +11,7 @@
       <app-nav
         [searchWindowOpened]="searchWindowOpened"
         [isMenuOpen]="isMenuOpen"
-       
+
         (openSearchEvent)="openSearch()"
         (closeSearchEvent)="closeSearch($event)"
         (toggleMenuEvent)="toggleMenu()">
@@ -20,10 +20,9 @@
 
     <!-- ============================================================
          FILTER NAV
-         Fixed, flush under <app-nav>. Hidden by default; the
-         [class.is-visible] binding adds the slide-in state when the
-         user has scrolled into the car grid and the footer is not
-         yet in view. See Store#applyFilterNavVisibility().
+         Fixed, flush under <app-nav>. Always visible by default;
+         hides once 41% of the footer has been revealed into view.
+         See Store#syncVisibilityFromLayout().
          ============================================================ -->
     <div class="main-nav-wrapper" [class.is-visible]="filterNavVisible">
       <div class="nav-filters">
@@ -105,8 +104,7 @@
 
       <!-- ============================================================
            CAR GRID
-           #storeBlock is read by the visibility logic to determine
-           when the user has scrolled into the grid.
+           #storeBlock is the car grid container.
            ============================================================ -->
       <div #storeBlock class="store">
         <div class="cars">

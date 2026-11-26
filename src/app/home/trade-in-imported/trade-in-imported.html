@@ -8,7 +8,7 @@
 </app-nav>
 
 <div class="trade-in-imported-container">
-  <nav class="tabs-wrapper">
+  <nav class="tabs-wrapper" [class.is-visible]="tabsVisible">
     <div class="tabs">
       @for (t of tabs; track t.key) {
         <a class="tab" routerLink="/imported-trade-in" [queryParams]="{ tab: t.key }" [class.active]="active() === t.key"><sup>{{ t.n }}</sup><span>{{ t.label }}</span></a>

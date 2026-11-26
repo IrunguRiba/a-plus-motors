@@ -1,8 +1,9 @@
 /* ============================================================
    TRADE-IN / IMPORTED PAGE
-   - <app-nav> is position:fixed (its own component handles layout).
-   - Tabs bar is position:fixed, flush under <app-nav>.
-   - Content is padded by the full stack height so it starts
+- <app-nav> is position:fixed (its own component handles layout).
+- Tabs bar is position:fixed, flush under <app-nav>, occupying 90%
+     of the nav width and centered.
+- Content is padded by the full stack height so it starts
      below the tabs.
    ============================================================ */
 
@@ -18,9 +19,15 @@
     /* --- Mirror the app-nav metrics (nav.css) --- */
     --nav-top: 12px;
     --nav-bar-h: 93px;
+    --nav-gutter: 12px;
+    --nav-max-w: 960px;
   
     /* Height of the tabs bar (single row) */
     --tabs-h: 48px;
+
+    /* Tabs bar is 90% of the app-nav width */
+    --tabs-scale: 0.9;
+    --tabs-w: calc(min(var(--nav-max-w), 100% - var(--nav-gutter) * 2) * var(--tabs-scale));
   
     /* Offset from viewport top to the bottom of the tabs bar */
     --stack-height: calc(var(--nav-top) + var(--nav-bar-h) + var(--tabs-h) + 1px);
@@ -54,26 +61,40 @@
     padding-top: var(--stack-height);
   }
   
-  /* ---------- Tabs (fixed, flush under app-nav) ---------- */
+  /* ---------- Tabs (fixed, flush under app-nav, 90% width) ---------- */
   .tabs-wrapper {
     position: fixed;
     top: calc(var(--nav-top) + var(--nav-bar-h));
     left: 0;
     right: 0;
-    width: 100%;
+    width: var(--tabs-w);
+    margin-inline: auto;
     z-index: 900;              /* below app-nav (1000), above page content */
     background: var(--light);
-    border-top: var(--border-thin);
-    border-bottom: var(--border-thin);
-    margin-top: 1px;
+    border: var(--border-thin);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 10px 24px rgba(15, 16, 16, 0.10);
+
+    transform: translateY(calc(-100% - 2px));
+    pointer-events: none;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+
+  .tabs-wrapper.is-visible {
+    transform: translateY(0);
+    pointer-events: auto;
   }
   
   .tabs {
     display: grid;
     grid-template-columns: 46% 1fr;
     height: var(--tabs-h);
-    max-width: 1440px;
+    width: 100%;
     margin: 0 auto;
+    border-radius: 0 0 5px 5px;
+    overflow: hidden;
   }
   
   .tab {
@@ -128,6 +149,7 @@
     :host {
       --nav-top: 8px;
       --nav-bar-h: 84px;
+      --nav-gutter: 8px;
     }
   }
   
@@ -140,5 +162,11 @@
   @media (max-width: 960px) {
     .tab sup {
       margin-top: 10px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tabs-wrapper {
+      transition: none;
     }
   }

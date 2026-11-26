@@ -17,11 +17,17 @@
     Arial,
     sans-serif;
 
+  /* Must mirror nav.css (--top, --bar-h, --gutter) */
   --nav-top: 12px;
   --nav-bar-h: 93px;
   --nav-gutter: 12px;
+  --nav-max-w: 960px;
 
   --filter-nav-height: 51px;
+
+  /* Filter "paper" is this fraction of the app-nav width */
+  --filter-scale: 0.9;
+  --filter-w: calc(min(var(--nav-max-w), 100% - var(--nav-gutter) * 2) * var(--filter-scale));
 
   --nav-offset: calc(var(--nav-top) + var(--nav-bar-h));
 
@@ -42,29 +48,36 @@
   position: relative;
 }
 
+/* ------------------------------------------------------------------
+   FILTER NAV — "paper in an envelope"
+   Centered under the app-nav, 90% of its width, BEHIND it
+   (z-index 900 vs the app-nav's 1000). Hidden = translated up by its
+   own height so it is tucked entirely behind the app-nav bar.
+   Visible = slides down out of it. No opacity fade.
+   ------------------------------------------------------------------ */
 .main-nav-wrapper {
   position: fixed;
-  top: calc(var(--nav-top) + var(--nav-bar-h));
+  top: var(--nav-offset);
   left: 0;
   right: 0;
-  width: 100%;
+  width: var(--filter-w);
+  margin-inline: auto;
+  box-sizing: border-box;
   z-index: 900;
   background: #fff;
-  border-top: var(--border-thin);
-  border-bottom: var(--border-thin);
-  margin-top: 1px;
+  border: var(--border-thin);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 10px 24px rgba(15, 16, 16, 0.10);
 
-  opacity: 0;
-  transform: translateY(-8px);
+  /* tucked behind the app-nav (extra 2px hides border/shadow edges) */
+  transform: translateY(calc(-100% - 2px));
   pointer-events: none;
-  transition:
-    opacity 0.28s ease,
-    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 .main-nav-wrapper.is-visible {
-  opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
@@ -72,9 +85,10 @@
 .nav-filters {
   display: grid;
   grid-template-columns: 1fr 1.5fr 1.5fr 1.5fr;
-  max-width: 1440px;
   margin: 0 auto;
   background: #fff;
+  border-radius: 0 0 5px 5px;
+  overflow: hidden;
 }
 
 .filter-item {
@@ -129,29 +143,29 @@
   border-right: var(--border-thin);
 }
 
+/* ------------------------------------------------------------------
+   Dropdowns — same width and same column grid as the filter bar, so
+   each list sits under its own column at every breakpoint.
+   Columns: ALL | FAVORITES | BRAND (3) | YEAR (4)
+   ------------------------------------------------------------------ */
 .filter-dropdown-portal {
   position: fixed;
   top: var(--stack-height);
   left: 0;
-  width: 100%;
+  right: 0;
+  width: var(--filter-w);
+  margin-inline: auto;
   z-index: 5000;
-  pointer-events: auto;
-  display: flex;
-  justify-content: center;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.5fr 1.5fr;
   animation: filterDropdownFadeDown 0.2s ease;
 }
 
-.filter-dropdown-portal:not(.portal-year) {
-  padding-left: 50%;
-  padding-right: 25%;
-}
-
-.filter-dropdown-portal.portal-year {
-  padding-left: 75%;
-  padding-right: 0;
-}
-
 .filter-dropdown-portal .filter-dropdown-list {
+  pointer-events: auto;
+  grid-column: 3;
+  justify-self: center;
   background-color: #ffffff;
   border: 1px solid var(--ink);
   border-radius: 4px;
@@ -163,6 +177,10 @@
   padding: 0.5em;
   scrollbar-width: thin;
   scrollbar-color: rgba(15, 16, 16, 0.2) transparent;
+}
+
+.filter-dropdown-portal.portal-year .filter-dropdown-list {
+  grid-column: 4;
 }
 
 .filter-dropdown-portal .filter-dropdown-list::-webkit-scrollbar {
@@ -209,7 +227,7 @@
 }
 
 .store {
-  padding: calc(var(--nav-offset) + 30px) 30px 0;
+  padding: calc(var(--nav-offset) + var(--filter-nav-height) + 1px) 30px 0;
   overflow-anchor: none;
   transition: padding-top 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -558,6 +576,7 @@
   :host {
     --nav-top: 8px;
     --nav-bar-h: 84px;
+    --nav-gutter: 8px;
     --filter-nav-height: 102px;
   }
   .nav-filters {
@@ -579,23 +598,22 @@
     align-items: flex-end;
     gap: 20px;
   }
+
+  /* Two-column bar: brand sits in column 1 (row 2), year in column 2 */
   .filter-dropdown-portal {
-    padding-left: 0;
-    padding-right: 0;
-    justify-content: flex-start;
-  }
-  .filter-dropdown-portal:not(.portal-year) {
-    padding-left: 0;
-    padding-right: 50%;
-  }
-  .filter-dropdown-portal.portal-year {
-    padding-left: 50%;
-    padding-right: 0;
+    grid-template-columns: 1fr 1fr;
   }
   .filter-dropdown-portal .filter-dropdown-list {
-    min-width: 160px;
+    grid-column: 1;
+    justify-self: stretch;
+    min-width: 0;
+    max-width: none;
     max-height: 200px;
   }
+  .filter-dropdown-portal.portal-year .filter-dropdown-list {
+    grid-column: 2;
+  }
+
   .store {
     padding-left: 15px;
     padding-right: 15px;

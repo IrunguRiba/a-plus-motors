@@ -1,4 +1,13 @@
-import { Component, ChangeDetectorRef, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  ChangeDetectorRef,
+  ElementRef,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ViewChild,
+  inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,7 +38,7 @@ import { Footer } from '../footer/footer';
   templateUrl: './financing.html',
   styleUrl: './financing.css',
 })
-export class Financing implements OnInit, OnDestroy {
+export class Financing implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
@@ -60,6 +69,57 @@ export class Financing implements OnInit, OnDestroy {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
+  private static readonly HIDE_AT_FOOTER_REVEAL = 0.41;
+
+  private static readonly TAB_SCROLL_TOP = 0;
+
+  @ViewChild('footerBlock', { static: true }) footerBlock!: ElementRef<HTMLElement>;
+
+  tabsVisible = true;
+
+  private lastScrollSync = 0;
+
+  private syncTabsVisibility(): void {
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+
+    let footerPastThreshold = false;
+    const footer = this.footerBlock?.nativeElement;
+    if (footer) {
+      const f = footer.getBoundingClientRect();
+      const visibleHeight = Math.min(vh, f.bottom) - Math.max(0, f.top);
+      const requiredReveal = f.height * Financing.HIDE_AT_FOOTER_REVEAL;
+
+      if (f.height > 0 && visibleHeight >= requiredReveal) {
+        footerPastThreshold = true;
+      }
+    }
+
+    const next = !footerPastThreshold;
+    if (next !== this.tabsVisible) {
+      this.tabsVisible = next;
+      this.cdr.markForCheck();
+    }
+  }
+
+  /** Throttled scroll/resize handler (~12 fps). */
+  private onScrollSync = (): void => {
+    const now = performance.now();
+    if (now - this.lastScrollSync < 80) return;
+    this.lastScrollSync = now;
+    this.syncTabsVisibility();
+  };
+
+  /** Smooth scroll used after a tab change; keeps the tabs bar visible. */
+  private scrollAfterTabChange(): void {
+    window.scrollTo({ top: Financing.TAB_SCROLL_TOP, behavior: 'smooth' });
+  }
+
+  ngAfterViewInit(): void {
+    this.syncTabsVisibility();
+    window.addEventListener('scroll', this.onScrollSync, { passive: true });
+    window.addEventListener('resize', this.onScrollSync, { passive: true });
+  }
+
   private allCars: StoreCar[] = [];
 
   ngOnInit(): void {
@@ -82,7 +142,7 @@ export class Financing implements OnInit, OnDestroy {
         this.attempted = false;
         this.activeTab = tab;
         this.cdr.detectChanges();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.scrollAfterTabChange();
       }
     });
   }
@@ -93,6 +153,8 @@ export class Financing implements OnInit, OnDestroy {
     this.calcCarSub?.unsubscribe();
     this.applyCarSub?.unsubscribe();
     this.submitSub?.unsubscribe();
+    window.removeEventListener('scroll', this.onScrollSync);
+    window.removeEventListener('resize', this.onScrollSync);
   }
 
   // ---------- Tabs ----------
@@ -121,7 +183,7 @@ export class Financing implements OnInit, OnDestroy {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.scrollAfterTabChange();
   }
 
   // ---------- Loan options ----------

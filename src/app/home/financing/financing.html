@@ -9,8 +9,8 @@
 
 <section class="fn-container">
 
-  <!-- Fixed, flush under <app-nav> -->
-  <div class="fn-tabs-wrapper">
+  <!-- Fixed, tucked behind <app-nav>; slides out of it on scroll -->
+  <div class="fn-tabs-wrapper" [class.is-visible]="tabsVisible">
     <div class="fn-tabs" role="tablist" aria-label="Financing view">
       @for (t of tabs; track t.id) {
         <div class="fn-tab" role="tab" tabindex="0"
@@ -466,7 +466,7 @@
     </div>
   </div>
 
-  <div class="fn-footer">
+  <div #footerBlock class="fn-footer">
     <app-footer></app-footer>
   </div>
 

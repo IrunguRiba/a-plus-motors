@@ -29,10 +29,9 @@ export class Store implements AfterViewInit, OnDestroy {
   // View refs
   // ------------------------------------------------------------------
   @ViewChild('smoothContent', { static: true }) smoothContent!: ElementRef;
-  /** The `.store` block — used to decide when the car grid is the active
-   *  scroll context. NOT a sentinel; this is the real element. */
+  /** The `.store` block — car grid container. */
   @ViewChild('storeBlock', { static: true }) storeBlock!: ElementRef<HTMLElement>;
-  /** The `.footer-wrapper` — any overlap with it forces the filter bar off. */
+  /** The `.footer-wrapper` — hide filter bar once 41% of it is revealed. */
   @ViewChild('footerBlock', { static: true }) footerBlock!: ElementRef<HTMLElement>;
 
   // ------------------------------------------------------------------
@@ -42,18 +41,13 @@ export class Store implements AfterViewInit, OnDestroy {
   private destroyed = false;
   private carsSub?: Subscription;
 
-  private storeObserver?: IntersectionObserver;
-  private footerObserver?: IntersectionObserver;
-
-  /** Latest "is the car grid on screen" reading. */
-  private storeInView = false;
-  /** Latest "is the footer on screen" reading. */
-  private footerInView = false;
+  /** Fraction of footer height revealed before hiding the filter bar. */
+  private static readonly HIDE_AT_FOOTER_REVEAL = 0.41;
 
   /** Bound to `[class.is-visible]` on `.main-nav-wrapper`. */
-  filterNavVisible = false;
+  filterNavVisible = true;
 
-  /** Throttle timestamp for the scroll-driven fallback sync. */
+  /** Throttle timestamp for the scroll-driven visibility sync. */
   private lastScrollSync = 0;
 
   // ------------------------------------------------------------------
@@ -133,8 +127,7 @@ export class Store implements AfterViewInit, OnDestroy {
         this.years = Array.from(new Set(list.map(c => c.year))).sort((a, b) => +b - +a);
         this.loading = false;
         this.refresh();
-        // The grid just grew — re-evaluate visibility so the bar shows
-        // immediately if the user is already scrolled into the grid.
+        // Re-evaluate visibility after grid layout updates.
         this.syncVisibilityFromLayout();
       },
       error: () => {
@@ -364,96 +357,28 @@ export class Store implements AfterViewInit, OnDestroy {
   // ==================================================================
   // FILTER NAV VISIBILITY
   //
-  // Rule: show the filter bar  <=>  car grid has scrolled past the
-  //                                 top of the viewport
-  //                             AND footer is NOT on screen.
-  //
-  // - Load at top:        grid top >= 0   -> hidden
-  // - Scroll into grid:   grid top < 0, footer out of view -> shown
-  // - Reach the footer:   footer in view  -> hidden
-  // - Scroll past footer: grid bottom <= 0 -> hidden
-  // - Scroll back up:     symmetric
-  //
-  // Both IntersectionObserver (for smooth edge detection while
-  // scrolling) and a throttled geometry read (for instant correct
-  // state on mount and on content-size changes) drive the same
-  // `applyFilterNavVisibility()` decision. They cannot get out of
-  // sync because they use the same rule.
+  // Rule: always display the filter bar by default; hide once 41% of
+  //       the footer has been revealed into the viewport.
   // ==================================================================
 
-  private setupFilterNavVisibility(): void {
-    if (typeof IntersectionObserver === 'undefined') {
-      // Very old browser — just show it.
-      this.filterNavVisible = true;
-      return;
+  private syncVisibilityFromLayout(): void {
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+
+    let footerPastThreshold = false;
+    const footer = this.footerBlock?.nativeElement;
+    if (footer) {
+      const f = footer.getBoundingClientRect();
+      const visibleHeight = Math.min(vh, f.bottom) - Math.max(0, f.top);
+      const requiredReveal = f.height * Store.HIDE_AT_FOOTER_REVEAL;
+
+      if (f.height > 0 && visibleHeight >= requiredReveal) {
+        footerPastThreshold = true;
+      }
     }
 
-    // ---- Store block observer ----
-    // `.store` is the whole car grid area. We don't use a sentinel here
-    // because we need the grid's actual top/bottom edges to tell when
-    // it has scrolled *past* the top vs when it's still in view.
-    this.storeObserver = new IntersectionObserver(
-      entries => {
-        for (const e of entries) {
-          // "grid past top" means the block's top is above the viewport
-          // and its bottom is below the viewport top — i.e. still on
-          // screen but scrolled into.
-          this.storeInView = e.isIntersecting;
-          // Re-derive from geometry too, because `isIntersecting` can
-          // be true while the block is still fully above the fold.
-        }
-        this.syncVisibilityFromLayout();
-      },
-      { rootMargin: '0px', threshold: 0 }
-    );
-    this.storeObserver.observe(this.storeBlock.nativeElement);
-
-    // ---- Footer observer ----
-    // Any overlap with the footer forces the bar off.
-    this.footerObserver = new IntersectionObserver(
-      entries => {
-        for (const e of entries) this.footerInView = e.isIntersecting;
-        this.applyFilterNavVisibility();
-      },
-      { rootMargin: '0px', threshold: 0 }
-    );
-    this.footerObserver.observe(this.footerBlock.nativeElement);
-
-    // ---- Synchronous initial read ----
-    // IntersectionObserver callbacks are async, so we can't rely on
-    // them to set the correct initial state. Read real geometry now.
-    this.syncVisibilityFromLayout();
-  }
-
-  /**
-   * Reads real geometry and applies the visibility rule immediately.
-   * Called on mount, on every throttled scroll/resize frame, and after
-   * the car list grows so the bar responds without waiting for the
-   * next IntersectionObserver tick.
-   */
-  private syncVisibilityFromLayout(): void {
-    if (!this.storeBlock || !this.footerBlock) return;
-
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    const s = this.storeBlock.nativeElement.getBoundingClientRect();
-    const f = this.footerBlock.nativeElement.getBoundingClientRect();
-
-    // Grid counts as "the current scroll context" only once its top
-    // has gone above the viewport top AND it still has content below.
-    this.storeInView = s.top < 0 && s.bottom > 0;
-
-    // Footer is "on screen" if any part of it overlaps the viewport.
-    this.footerInView = f.bottom > 0 && f.top < vh;
-
-    this.applyFilterNavVisibility();
-  }
-
-  /** Single decision point — no other place writes `filterNavVisible`. */
-  private applyFilterNavVisibility(): void {
-    const next = this.storeInView && !this.footerInView;
+    const next = !footerPastThreshold;
     if (next === this.filterNavVisible) return;
     this.filterNavVisible = next;
-    // Close any open dropdown if the bar disappears.
     if (!next) this.activeFilterDropdown = null;
   }
 
@@ -471,11 +396,7 @@ export class Store implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-    // Set up visibility observers + initial synchronous read.
-    this.setupFilterNavVisibility();
-
-    // Backup: keep visibility in sync while scrolling. Observers can be
-    // laggy on first paint and while the grid resizes after API load.
+    this.syncVisibilityFromLayout();
     window.addEventListener('scroll', this.onScrollSync, { passive: true });
     window.addEventListener('resize', this.onScrollSync, { passive: true });
 
@@ -504,8 +425,6 @@ export class Store implements AfterViewInit, OnDestroy {
     this.destroyed = true;
     this.carsSub?.unsubscribe();
     this.ctx?.revert();
-    this.storeObserver?.disconnect();
-    this.footerObserver?.disconnect();
     window.removeEventListener('scroll', this.onScrollSync);
     window.removeEventListener('resize', this.onScrollSync);
     document.removeEventListener('click', this.onDocumentClick, true);

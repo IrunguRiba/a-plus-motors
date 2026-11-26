@@ -1,4 +1,3 @@
-
 :host {
   display: block;
   background: #fff;
@@ -32,10 +31,16 @@
   /* --- Mirror the app-nav metrics (nav.css) --- */
   --nav-top: 12px;
   --nav-bar-h: 93px;
+  --nav-gutter: 12px;
+  --nav-max-w: 960px;
 
   /* Tabs bar */
   --tab-row-h: 48px;
   --tabs-h: var(--tab-row-h);
+
+  /* Tabs "paper" is this fraction of the app-nav width */
+  --tabs-scale: 0.9;
+  --tabs-w: calc(min(var(--nav-max-w), 100% - var(--nav-gutter) * 2) * var(--tabs-scale));
 
   /* Offset from viewport top to the bottom of the tabs bar */
   --stack-height: calc(var(--nav-top) + var(--nav-bar-h) + var(--tabs-h) + 2px);
@@ -67,24 +72,41 @@ a { color: inherit; text-decoration: none; }
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ---------- Tabs (fixed, flush under app-nav) ---------- */
+/* ---------- Tabs — "paper in an envelope" ----------
+   Centered under the app-nav, 90% of its width, BEHIND it
+   (z-index 900 vs the app-nav's 1000). Hidden = translated up by its
+   own height so it is tucked entirely behind the app-nav bar.
+   Visible = slides down out of it. No opacity fade.               */
 .fn-tabs-wrapper {
   position: fixed;
   top: calc(var(--nav-top) + var(--nav-bar-h));
   left: 0;
   right: 0;
-  width: 100%;
+  width: var(--tabs-w);
+  margin-inline: auto;
   z-index: 900;              /* below app-nav (1000), above page content */
   background: #fff;
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
-  margin-top: 1px;
+  border: 1px solid #000;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(15, 16, 16, 0.10);
+
+  /* tucked behind the app-nav (extra 2px hides border/shadow edges) */
+  transform: translateY(calc(-100% - 2px));
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.fn-tabs-wrapper.is-visible {
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .fn-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -1108,6 +1130,7 @@ form > .fn-btn-solid.fn-btn-full,
   .fn-container {
     --nav-top: 8px;
     --nav-bar-h: 84px;
+    --nav-gutter: 8px;
     /* two rows of tabs + the 1px gap between them */
     --tabs-h: calc(var(--tab-row-h) * 2 + 1px);
   }
