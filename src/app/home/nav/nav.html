@@ -3,7 +3,8 @@
   <div class="nav-items-wrapper"
        [class.nav-lifted]="isMenuOpen || scrolled"
        [class.nav-footer]="atFooter"
-       [class.above-search]="searchWindowOpened">
+       [class.above-search]="searchWindowOpened"
+       [class.nav-solid]="!onHome">
 
     <div class="search-box"
          [class.is-open]="searchWindowOpened"

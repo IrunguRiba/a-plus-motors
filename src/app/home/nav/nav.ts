@@ -53,6 +53,9 @@ export class Nav implements AfterViewInit, AfterViewChecked, OnDestroy {
   }
   scrolled = false;
 
+  /** True on the home route. Every other page gets the solid milk-white bar. */
+  onHome = true;
+
   @Input() cookiesClicked = false;
   @Input() searchWindowOpened = false;
   @Input() isChatOpen = false;
@@ -69,22 +72,32 @@ export class Nav implements AfterViewInit, AfterViewChecked, OnDestroy {
   private zone = inject(NgZone);
 
   constructor() {
+    // Work out the initial route in case the nav is created after navigation ended.
+    this.updateHome(this.router.url);
+
     // FIX: close the search window after any completed navigation. Navigating to the
     // same route (e.g. /specs?id=A -> /specs?id=B) reuses the parent page, so its
     // search state is never reset by destruction. The parent owns the state through
     // [searchWindowOpened], so we ask it to close via the output.
     // (The menu is already closed by go() when a menu link is used, so it is not
     // toggled here to avoid re-opening it by a double toggle.)
+    // The same subscription keeps the home flag in sync with the current route.
     this.router.events
       .pipe(
-        filter((e) => e instanceof NavigationEnd),
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe(() => {
+      .subscribe((e) => {
+        this.updateHome(e.urlAfterRedirects);
         if (this.searchWindowOpened) {
           this.closeSearchEvent.emit(new Event('navigation'));
         }
       });
+  }
+
+  private updateHome(url: string): void {
+    const path = url.split(/[?#]/)[0];
+    this.onHome = path === '/' || path === '' || path === '/home';
   }
 
   /** Closed-state search box: types example searches on a loop. */

@@ -1,11 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
 
-/* ==========================================================
-   trade-in.css — sharp ink look (Inter, navy accent, 1px ink
-   borders, square corners, car-silhouette divider).
-   One uniform surface colour: fields, chips and buttons sit on
-   --light (no white); hover = a soft ink tint.
-   ========================================================== */
+
 
 :host {
   display: block;
@@ -857,7 +852,6 @@ button:focus-visible {
   color: var(--ink-soft);
 }
 
-/* Divider: hairline with the car silhouette */
 .divider {
   position: relative;
   height: 1px;

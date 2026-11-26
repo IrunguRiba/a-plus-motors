@@ -4,6 +4,9 @@
   --c-mid: #787C7C;
   --c-brown: #7E5B47;
 
+  /* Porsche-style milk white, used by the solid closed bar outside home */
+  --c-milk: #F4F1EA;
+
   /* Same type pairing as the contact page and footer */
   --serif: "Playfair Display", "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -122,6 +125,31 @@
 }
 
 .menu-open .nav-items-wrapper::before { opacity: 1; }
+
+/* ---------- Solid milk-white bar (closed, every page except home) ----
+   Porsche-style milk white, flat and 2D. No glass, no shadow.
+   Scoped with :not(.menu-open) so the opened menu / search look
+   exactly as before. Also beats the footer state and the scroll
+   shadow so the bar looks identical everywhere.                      */
+.nav-container:not(.menu-open) .nav-items-wrapper.nav-solid,
+.nav-container:not(.menu-open) .nav-items-wrapper.nav-solid.nav-footer,
+.nav-container:not(.menu-open) .nav-items-wrapper.nav-solid.nav-lifted {
+  background: var(--c-milk);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  border: 1px solid var(--c-ink);
+  border-radius: 6px;
+}
+
+.nav-container:not(.menu-open) .nav-items-wrapper.nav-solid::before,
+.nav-container:not(.menu-open) .nav-items-wrapper.nav-solid.nav-footer::before {
+  opacity: 0;
+}
+
+/* the search pill sits on milk, so keep it a quiet tint of the same colour */
+.nav-container:not(.menu-open) .nav-solid .search-box { background: rgba(15, 16, 16, 0.05); }
+.nav-container:not(.menu-open) .nav-solid .search-box:hover { background: rgba(15, 16, 16, 0.09); }
 
 .nav-items-wrapper.above-search { z-index: 10001; }
 .item-1-label.above-search { z-index: 10001 !important; }

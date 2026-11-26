@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600&display=swap');
 
 .recommended {
-  --ink: #0F1010;
-  --ink-soft: #3B3E3E;
-  --mid: #787C7C;
-  --light: #D8DADB;
-  --brown: #2E2910;
+  --ink: #0f1010;
+  --ink-soft: #3b3e3e;
+  --mid: #787c7c;
+  --light: #d8dadb;
+  --brown: #2e2910;
   --brown-dark: #010736;
-  --surface: #E4E6E7;
-  --sunk: #CBCECF;
+  --surface: #e4e6e7;
+  --sunk: #cbcecf;
   --hair: rgba(15, 16, 16, 0.22);
-  --ok: #4A943E;
-  --bronze: #C9A06B;
+  --ok: #4a943e;
+  --bronze: #c9a06b;
 
   position: relative;
   width: 100%;
@@ -43,7 +43,7 @@
 
 .discover-title {
   margin: 0;
-  font-family: "Sora", "Manrope", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   font-size: clamp(15.6px, 2.04vw, 24px);
   line-height: 1.1;
   font-weight: 600;
@@ -117,7 +117,8 @@
 }
 
 .body-filter-label {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 17px;
   line-height: 16px;
   font-weight: 500;
@@ -126,7 +127,7 @@
 }
 
 .body-filter-btn::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 50%;
   bottom: 0;
@@ -138,31 +139,41 @@
 }
 
 @media (hover: hover) {
-  .body-filter-btn:hover { color: #000; }
-  .body-filter-btn:hover .body-filter-img img { opacity: 1; }
-  .body-filter-btn:hover::after { transform: translateX(-50%) scaleX(1); }
+  .body-filter-btn:hover {
+    color: #000;
+  }
+  .body-filter-btn:hover .body-filter-img img {
+    opacity: 1;
+  }
+  .body-filter-btn:hover::after {
+    transform: translateX(-50%) scaleX(1);
+  }
 }
 
-.body-filter-btn.active { color: #000; }
-.body-filter-btn.active .body-filter-img img { opacity: 1; }
-.body-filter-btn.active::after { transform: translateX(-50%) scaleX(1); }
+.body-filter-btn.active {
+  color: #000;
+}
+.body-filter-btn.active .body-filter-img img {
+  opacity: 1;
+}
+.body-filter-btn.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
 
 .body-filter-btn:focus-visible {
   outline: 1px dotted var(--ink);
   outline-offset: 3px;
 }
-
-/* ---------- BELT TITLE ---------- */
 .belt-title {
-  margin: 36px 0 0;
-  padding: 0 28px;
-  font-family: "Sora", "Manrope", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: clamp(15px, 1.6vw, 19px);
-  line-height: 1.2;
-  font-weight: 600;
+  margin: 26px 0 0;
+  padding: 0 20px;
+ font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(15px, 1vw, 19px);
+  line-height: 1;
+  font-weight: 400;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #000;
+  color: #000000;
 }
 
 /* ---------- STORE STRIP ---------- */
@@ -175,7 +186,9 @@
   background: var(--surface);
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--hair);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica,
+    Arial, sans-serif;
 }
 
 .main-store h2 {
@@ -186,7 +199,7 @@
   gap: 8px;
   margin: 0;
   font-size: 0;
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
 
 .main-store h2 span {
@@ -194,7 +207,7 @@
   padding: 6px 12px;
   border: 1px solid var(--hair);
   background: transparent;
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-size: 10.5px;
   line-height: 14px;
   font-weight: 500;
@@ -203,7 +216,10 @@
   color: var(--ink-soft);
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .main-store h2 span:hover {
@@ -215,7 +231,7 @@
 .main-store h2 span:active {
   background: var(--brown);
   border-color: var(--brown);
-  color: #F4F5F5;
+  color: #f4f5f5;
 }
 
 /* ---------- BELT ---------- */
@@ -242,9 +258,16 @@
   will-change: scroll-position;
 }
 
-.belt-viewport::-webkit-scrollbar { display: none; }
-.belt-viewport.is-dragging { cursor: grabbing; }
-.belt-viewport.is-dragging .car-card { pointer-events: none; transition: none; }
+.belt-viewport::-webkit-scrollbar {
+  display: none;
+}
+.belt-viewport.is-dragging {
+  cursor: grabbing;
+}
+.belt-viewport.is-dragging .car-card {
+  pointer-events: none;
+  transition: none;
+}
 
 .belt-track {
   display: flex;
@@ -255,9 +278,14 @@
 }
 
 .belt-track > .car-card,
-.belt-track > .bridge-line { flex: 0 0 auto; }
+.belt-track > .bridge-line {
+  flex: 0 0 auto;
+}
 
-.belt-track img { -webkit-user-drag: none; user-drag: none; }
+.belt-track img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
 
 /* ---------- BELT ARROWS ---------- */
 .belt-arrow {
@@ -281,11 +309,18 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   animation: arrowIn 0.25s ease both;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.belt-arrow-left { left: 16px; }
-.belt-arrow-right { right: 16px; }
+.belt-arrow-left {
+  left: 16px;
+}
+.belt-arrow-right {
+  right: 16px;
+}
 
 .belt-arrow svg {
   display: block;
@@ -300,13 +335,31 @@
 }
 
 @media (hover: hover) {
-  .belt-arrow:hover { background: var(--ink); border-color: var(--ink); color: var(--light); }
+  .belt-arrow:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--light);
+  }
 }
 
-.belt-arrow:active { background: var(--brown); border-color: var(--brown); color: #F4F5F5; }
-.belt-arrow:focus-visible { outline: 1px dotted var(--ink); outline-offset: 3px; }
+.belt-arrow:active {
+  background: var(--brown);
+  border-color: var(--brown);
+  color: #f4f5f5;
+}
+.belt-arrow:focus-visible {
+  outline: 1px dotted var(--ink);
+  outline-offset: 3px;
+}
 
-@keyframes arrowIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes arrowIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* ---------- DRAG HINT ---------- */
 .drag-hint {
@@ -321,7 +374,7 @@
   padding: 9px 16px;
   background: var(--ink);
   color: var(--light);
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-size: 10.5px;
   line-height: 14px;
   font-weight: 500;
@@ -333,7 +386,9 @@
   transition: opacity 0.4s ease;
 }
 
-.drag-hint.show { opacity: 1; }
+.drag-hint.show {
+  opacity: 1;
+}
 
 .drag-hint svg {
   display: block;
@@ -346,11 +401,31 @@
   stroke-linejoin: round;
 }
 
-.drag-hint.show svg:first-child { animation: hintNudgeLeft 1.1s ease-in-out infinite; }
-.drag-hint.show svg:last-child { animation: hintNudgeRight 1.1s ease-in-out infinite; }
+.drag-hint.show svg:first-child {
+  animation: hintNudgeLeft 1.1s ease-in-out infinite;
+}
+.drag-hint.show svg:last-child {
+  animation: hintNudgeRight 1.1s ease-in-out infinite;
+}
 
-@keyframes hintNudgeLeft { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-4px); } }
-@keyframes hintNudgeRight { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+@keyframes hintNudgeLeft {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+}
+@keyframes hintNudgeRight {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
 
 .car-card {
   position: relative;
@@ -364,10 +439,16 @@
   overflow: hidden;
   box-sizing: border-box;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.car-card:hover { border-color: var(--brown); box-shadow: 0 0 0 1px var(--brown); }
+.car-card:hover {
+  border-color: var(--brown);
+  box-shadow: 0 0 0 1px var(--brown);
+}
 
 .car-image-container {
   position: relative;
@@ -400,7 +481,9 @@
   flex-wrap: wrap;
   gap: 6px 16px;
   margin-bottom: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica,
+    Arial, sans-serif;
   font-size: 15px;
   line-height: 20px;
   font-weight: 500;
@@ -408,7 +491,10 @@
   color: var(--ink-soft);
 }
 
-.car-meta-top span:first-child { font-weight: 600; color: var(--ink); }
+.car-meta-top span:first-child {
+  font-weight: 600;
+  color: var(--ink);
+}
 
 .car-title {
   margin: 0 0 12px;
@@ -428,7 +514,12 @@
   color: var(--ink);
 }
 
-.car-specs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+.car-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 22px;
+}
 
 .car-card .spec-chip {
   padding: 5px 10px;
@@ -449,7 +540,7 @@
 }
 
 .starting-label {
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-size: 11px;
   line-height: 14px;
   font-weight: 500;
@@ -469,7 +560,7 @@
 .car-finance {
   flex-basis: auto;
   margin-top: 4px;
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-size: 11px;
   line-height: 14px;
   font-weight: 500;
@@ -500,14 +591,31 @@
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.car-cta-row .inquire-btn { flex: 1 1 auto; width: auto; min-width: 0; }
-.car-cta-row .card-actions { flex: 0 0 auto; margin-right: 0; }
+.car-cta-row .inquire-btn {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+.car-cta-row .card-actions {
+  flex: 0 0 auto;
+  margin-right: 0;
+}
 
-.car-details .inquire-btn:hover { background-color: var(--ink); color: var(--light); }
-.car-details .inquire-btn:active { background-color: var(--brown); border-color: var(--brown); color: #F4F5F5; }
+.car-details .inquire-btn:hover {
+  background-color: var(--ink);
+  color: var(--light);
+}
+.car-details .inquire-btn:active {
+  background-color: var(--brown);
+  border-color: var(--brown);
+  color: #f4f5f5;
+}
 
 .bridge-line {
   flex-shrink: 0;
@@ -526,7 +634,9 @@
   scroll-margin-top: 20px;
 }
 
-.car-rows-container { width: 100%; }
+.car-rows-container {
+  width: 100%;
+}
 
 .store-empty {
   margin: 24px 0;
@@ -565,10 +675,17 @@
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.store-car-card:hover { transform: translateY(-4px); border-color: var(--brown); box-shadow: 0 0 0 1px var(--brown); }
+.store-car-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--brown);
+  box-shadow: 0 0 0 1px var(--brown);
+}
 
 .store-image-container {
   position: relative;
@@ -579,7 +696,11 @@
   background: var(--sunk);
 }
 
-.store-image-container img { width: 100%; height: 100%; object-fit: cover; }
+.store-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .store-car-details {
   display: flex;
@@ -589,15 +710,41 @@
   font-family: inherit;
 }
 
-.store-car-header { display: flex; align-items: baseline; gap: 8px; font-size: 16px; color: var(--ink); }
-.store-car-year { font-weight: 500; color: var(--ink); }
-.store-car-model { font-weight: 500; color: var(--ink); }
-.store-car-specs { display: flex; flex-wrap: wrap; gap: 6px; }
-.store-car-pricing { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
-.store-car-price { font-size: 20px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.store-car-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 16px;
+  color: var(--ink);
+}
+.store-car-year {
+  font-weight: 500;
+  color: var(--ink);
+}
+.store-car-model {
+  font-weight: 500;
+  color: var(--ink);
+}
+.store-car-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.store-car-pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+.store-car-price {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
 
 .store-car-finance {
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-size: 10.5px;
   line-height: 14px;
   font-weight: 500;
@@ -617,13 +764,28 @@
   letter-spacing: 1.5px;
   color: var(--ink);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.store-car-details .inquire-btn:hover { background-color: var(--ink); color: var(--light); }
-.store-car-details .inquire-btn:active { background-color: var(--brown); border-color: var(--brown); color: #F4F5F5; }
+.store-car-details .inquire-btn:hover {
+  background-color: var(--ink);
+  color: var(--light);
+}
+.store-car-details .inquire-btn:active {
+  background-color: var(--brown);
+  border-color: var(--brown);
+  color: #f4f5f5;
+}
 
-.discover-section { display: flex; justify-content: center; margin-top: 10px; margin-bottom: 20px; }
+.discover-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
 
 .discover-more-btn {
   background: transparent;
@@ -634,11 +796,21 @@
   letter-spacing: 1.5px;
   color: var(--ink);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.discover-more-btn:hover { background-color: var(--ink); color: var(--light); }
-.discover-more-btn:active { background-color: var(--brown); border-color: var(--brown); color: #F4F5F5; }
+.discover-more-btn:hover {
+  background-color: var(--ink);
+  color: var(--light);
+}
+.discover-more-btn:active {
+  background-color: var(--brown);
+  border-color: var(--brown);
+  color: #f4f5f5;
+}
 
 /* ---------- BRANDS ---------- */
 .brand-display {
@@ -652,7 +824,12 @@
   background: var(--surface);
 }
 
-.brand-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; width: 100%; }
+.brand-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  width: 100%;
+}
 
 .brand-card {
   position: relative;
@@ -667,35 +844,63 @@
   background: var(--surface);
   cursor: pointer;
   animation: brandFloat 7s ease-in-out infinite;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.brand-card:nth-child(2n) { animation-delay: -1.4s; }
-.brand-card:nth-child(3n) { animation-delay: -2.8s; }
-.brand-card:nth-child(5n) { animation-delay: -4.2s; }
+.brand-card:nth-child(2n) {
+  animation-delay: -1.4s;
+}
+.brand-card:nth-child(3n) {
+  animation-delay: -2.8s;
+}
+.brand-card:nth-child(5n) {
+  animation-delay: -4.2s;
+}
 
 .brand-card::before,
 .brand-card::after {
-  content: "";
+  content: '';
   position: absolute;
   z-index: 2;
   width: 0;
   height: 0;
   border: 0 solid var(--brown);
-  transition: width 0.35s ease, height 0.35s ease;
+  transition:
+    width 0.35s ease,
+    height 0.35s ease;
   pointer-events: none;
 }
 
-.brand-card::before { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
-.brand-card::after { right: -1px; bottom: -1px; border-right-width: 1px; border-bottom-width: 1px; }
+.brand-card::before {
+  top: -1px;
+  left: -1px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+.brand-card::after {
+  right: -1px;
+  bottom: -1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
 
 .brand-card:hover,
-.brand-card:focus-visible { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); animation-play-state: paused; outline: none; }
+.brand-card:focus-visible {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+  animation-play-state: paused;
+  outline: none;
+}
 
 .brand-card:hover::before,
 .brand-card:hover::after,
 .brand-card:focus-visible::before,
-.brand-card:focus-visible::after { width: 22px; height: 22px; }
+.brand-card:focus-visible::after {
+  width: 22px;
+  height: 22px;
+}
 
 .brand-bg {
   position: absolute;
@@ -707,12 +912,17 @@
   filter: blur(18px) saturate(1.1);
   opacity: 0.28;
   transform: scale(1.5);
-  transition: opacity 0.4s ease, transform 0.6s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.6s ease;
   pointer-events: none;
 }
 
 .brand-card:hover .brand-bg,
-.brand-card:focus-visible .brand-bg { opacity: 0.42; transform: scale(1.65); }
+.brand-card:focus-visible .brand-bg {
+  opacity: 0.42;
+  transform: scale(1.65);
+}
 
 .brand-logo-container {
   position: relative;
@@ -730,11 +940,16 @@
   max-height: 100%;
   object-fit: contain;
   filter: grayscale(0.35);
-  transition: transform 0.4s ease, filter 0.4s ease;
+  transition:
+    transform 0.4s ease,
+    filter 0.4s ease;
 }
 
 .brand-card:hover .brand-logo-container img,
-.brand-card:focus-visible .brand-logo-container img { transform: scale(1.07); filter: grayscale(0); }
+.brand-card:focus-visible .brand-logo-container img {
+  transform: scale(1.07);
+  filter: grayscale(0);
+}
 
 .brand-name {
   position: relative;
@@ -751,9 +966,20 @@
 }
 
 .brand-card:hover .brand-name,
-.brand-card:focus-visible .brand-name { background-size: 0 1px; background-position: right bottom; }
+.brand-card:focus-visible .brand-name {
+  background-size: 0 1px;
+  background-position: right bottom;
+}
 
-@keyframes brandFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes brandFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
 
 /* ---------- CARD ACTIONS ---------- */
 .card-actions {
@@ -782,7 +1008,9 @@
   -webkit-appearance: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .card-action svg {
@@ -806,17 +1034,32 @@
   pointer-events: none;
 }
 
-.card-action:focus-visible { outline: 1px dotted var(--ink); outline-offset: 2px; }
-
-@media (hover: hover) {
-  .card-action:hover { background-color: rgba(15, 16, 16, 0.08); }
-  .card-action.bookmark:hover { color: #790D16; }
-  .card-action.share:hover { color: var(--ok); }
+.card-action:focus-visible {
+  outline: 1px dotted var(--ink);
+  outline-offset: 2px;
 }
 
-.card-action.bookmark.active { color: #790D16; }
-.card-action.active svg { fill: currentColor; }
-.card-action.share.copied { color: var(--ok); }
+@media (hover: hover) {
+  .card-action:hover {
+    background-color: rgba(15, 16, 16, 0.08);
+  }
+  .card-action.bookmark:hover {
+    color: #790d16;
+  }
+  .card-action.share:hover {
+    color: var(--ok);
+  }
+}
+
+.card-action.bookmark.active {
+  color: #790d16;
+}
+.card-action.active svg {
+  fill: currentColor;
+}
+.card-action.share.copied {
+  color: var(--ok);
+}
 
 .store-finance-row {
   display: flex;
@@ -826,7 +1069,9 @@
   gap: 4px 10px;
 }
 
-.store-finance-row .card-actions { margin-left: auto; }
+.store-finance-row .card-actions {
+  margin-left: auto;
+}
 
 .copied-note {
   position: absolute;
@@ -836,7 +1081,7 @@
   padding: 6px 10px;
   background: var(--ink);
   color: var(--light);
-  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-size: 10.5px;
   line-height: 14px;
   font-weight: 500;
@@ -848,7 +1093,7 @@
 }
 
 .copied-note::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 100%;
   right: 38px;
@@ -856,10 +1101,21 @@
   border-top-color: var(--ink);
 }
 
-@keyframes noteIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes noteIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* ---------- HOVER VIDEO PREVIEW ---------- */
-.has-video { cursor: pointer; }
+.has-video {
+  cursor: pointer;
+}
 
 .video-hint {
   position: absolute;
@@ -895,7 +1151,9 @@
   transition: opacity 0.25s ease;
 }
 
-.hover-preview.ready { opacity: 1; }
+.hover-preview.ready {
+  opacity: 1;
+}
 
 /* ============================================================
    CLIENT REVIEWS — styled to match footer comment cards
@@ -906,16 +1164,16 @@
   width: 100%;
   padding: 60px 0 70px;
   box-sizing: border-box;
-  background: #D8DADB;
+  background: #d8dadb;
   border-top: 1px solid #000000;
   color: #000000;
-  font-family: "DM Mono", monospace;
+  font-family: 'DM Mono', monospace;
 }
 
 .reviews-title {
   margin: 0 0 40px;
   padding: 0 28px;
-  font-family: "DM Mono", monospace;
+  font-family: 'DM Mono', monospace;
   font-size: clamp(16px, 1.8vw, 22px);
   line-height: 1.2;
   font-weight: 500;
@@ -962,15 +1220,19 @@
 }
 
 @keyframes reviews-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .review-card {
   flex: 0 0 400px;
   width: 400px;
   margin-right: 30px;
-  background-color: #D8DADB;
+  background-color: #d8dadb;
   border: 1px solid #000000;
   border-radius: 4px;
   padding: 28px;
@@ -979,7 +1241,7 @@
   flex-direction: column;
   gap: 12px;
   color: #000000;
-  font-family: "DM Mono", monospace;
+  font-family: 'DM Mono', monospace;
 }
 
 .review-rating {
@@ -991,7 +1253,7 @@
 }
 
 .review-star {
-  color: #D4621A;
+  color: #d4621a;
 }
 
 .review-star.empty {
@@ -1000,18 +1262,18 @@
 
 .review-verified {
   margin-left: auto;
-  font-family: "DM Mono", monospace;
+  font-family: 'DM Mono', monospace;
   font-size: 0.75rem;
   text-transform: uppercase;
   color: #000000;
-  border: 1px solid #2A1A0E;
+  border: 1px solid #2a1a0e;
   padding: 2px 6px;
   border-radius: 2px;
   letter-spacing: 0.05em;
 }
 
 .review-card .review-quote {
-  font-family: "DM Mono", monospace;
+  font-family: 'DM Mono', monospace;
   font-size: 1.05rem;
   font-weight: 500;
   color: #000000;
@@ -1020,7 +1282,7 @@
 }
 
 .review-card .review-body {
-  font-family: "DM Mono", monospace;
+  font-family: 'DM Mono', monospace;
   font-size: 0.9rem;
   font-weight: 400;
   line-height: 1.6;
@@ -1053,14 +1315,25 @@
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 1100px) {
-  .brand-row { grid-template-columns: repeat(3, 1fr); }
+  .brand-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 900px) {
-  .main-store { padding: 14px 16px; gap: 12px; }
-  .discover-hero { gap: 28px; }
-  .body-filter { gap: 8px 20px; }
-  .reviews-line { display: none; }
+  .main-store {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .discover-hero {
+    gap: 28px;
+  }
+  .body-filter {
+    gap: 8px 20px;
+  }
+  .reviews-line {
+    display: none;
+  }
 
   .review-card {
     flex-basis: 300px;
@@ -1068,24 +1341,61 @@
     margin-right: 20px;
     padding: 22px;
   }
-  .reviews-track { animation-duration: 55s; }
+  .reviews-track {
+    animation-duration: 55s;
+  }
 }
 
 @media (max-width: 800px) {
-  .car-card { grid-template-columns: 1fr; width: 86vw; min-width: 300px; }
-  .car-image-container { min-height: 220px; border-right: none; border-bottom: 1px solid var(--ink); }
-  .car-details { padding: 24px 20px; }
-  .car-title { font-size: 26px; line-height: 32px; }
-  .car-price { font-size: 26px; line-height: 32px; }
-  .store-row { grid-template-columns: 1fr; }
-  .brand-display { padding: 16px; }
-  .brand-row { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .belt-arrow { width: 40px; height: 40px; }
-  .belt-arrow-left { left: 8px; }
-  .belt-arrow-right { right: 8px; }
-  .belt-arrow svg { width: 20px; height: 20px; }
+  .car-card {
+    grid-template-columns: 1fr;
+    width: 86vw;
+    min-width: 300px;
+  }
+  .car-image-container {
+    min-height: 220px;
+    border-right: none;
+    border-bottom: 1px solid var(--ink);
+  }
+  .car-details {
+    padding: 24px 20px;
+  }
+  .car-title {
+    font-size: 26px;
+    line-height: 32px;
+  }
+  .car-price {
+    font-size: 26px;
+    line-height: 32px;
+  }
+  .store-row {
+    grid-template-columns: 1fr;
+  }
+  .brand-display {
+    padding: 16px;
+  }
+  .brand-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .belt-arrow {
+    width: 40px;
+    height: 40px;
+  }
+  .belt-arrow-left {
+    left: 8px;
+  }
+  .belt-arrow-right {
+    right: 8px;
+  }
+  .belt-arrow svg {
+    width: 20px;
+    height: 20px;
+  }
 
-  .discover-hero { padding: 16px 0 4px; }
+  .discover-hero {
+    padding: 16px 0 4px;
+  }
 
   /* Phones: one swipeable row, every icon the same width. */
   .body-filter {
@@ -1100,28 +1410,58 @@
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
-  .body-filter::-webkit-scrollbar { display: none; }
-  .body-filter-btn { flex: 0 0 150px; width: 150px; max-width: none; }
-  .belt-title { padding: 0 16px; }
+  .body-filter::-webkit-scrollbar {
+    display: none;
+  }
+  .body-filter-btn {
+    flex: 0 0 150px;
+    width: 150px;
+    max-width: none;
+  }
+  .belt-title {
+    padding: 0 16px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .brand-card { animation: none; }
+  .brand-card {
+    animation: none;
+  }
   .brand-card::before,
   .brand-card::after,
   .brand-bg,
   .brand-logo-container img,
-  .brand-name { transition: none; }
-  .belt-arrow { animation: none; }
-  .drag-hint { transition: none; }
+  .brand-name {
+    transition: none;
+  }
+  .belt-arrow {
+    animation: none;
+  }
+  .drag-hint {
+    transition: none;
+  }
   .drag-hint.show svg:first-child,
-  .drag-hint.show svg:last-child { animation: none; }
-  .copied-note { animation: none; }
-  .hover-preview { transition: none; }
+  .drag-hint.show svg:last-child {
+    animation: none;
+  }
+  .copied-note {
+    animation: none;
+  }
+  .hover-preview {
+    transition: none;
+  }
   .body-filter-btn,
   .body-filter-btn::after,
-  .body-filter-img img { transition: none; }
+  .body-filter-img img {
+    transition: none;
+  }
 
-  .reviews-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
-  .reviews-track { animation: none; }
+  .reviews-marquee {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .reviews-track {
+    animation: none;
+  }
 }

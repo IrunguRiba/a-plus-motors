@@ -1,3 +1,6 @@
+/* Porsche-style typeface for the intro text (stand-in for Porsche Next) */
+@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&display=swap");
+
 .cookies {
   position: fixed !important;
   left: 0;
@@ -152,7 +155,8 @@
   z-index: 3;
   width: 100%;
   background: #E4E6E7;
-  box-shadow: 0 -24px 60px rgba(15, 16, 16, 0.18);
+
+
 }
 
 .item-1 {
@@ -218,7 +222,7 @@
 
 .into-txt {
   width: 100%;
-  max-width: 980px;
+  max-width: 900px;
   margin: 0 auto;
   background: #E4E6E7;
   padding: 80px 24px 0px;
@@ -229,9 +233,9 @@
 }
 
 .into-title {
-  margin: 0 0 2.5rem 0;
+  margin: 0 0 3rem 0;
   font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-  font-size: 2.2rem;
+  font-size: 2.5rem;
   line-height: 1.2;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -239,16 +243,19 @@
   text-transform: capitalize;
 }
 
+/* Intro paragraphs: Porsche-style typeface (Porsche Next if licensed, Barlow otherwise) */
 .into-txt p {
-  margin: 0 0 2rem 0;
-  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-  font-size: 1.45rem;
-  line-height: 1.65;
-  font-weight: 300;
-  letter-spacing: 0.02em;
+  max-width: 74ch;
+  margin: 0 auto 2rem;
+  font-family: "Porsche Next", "Barlow", "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.8rem;
+  line-height: 1.55;
+  font-weight: 400;
+  letter-spacing: 0;
   color: #080616;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
 }
 
 .into-txt p:last-child {
@@ -257,7 +264,8 @@
 
 .into-txt .highlight {
   color: #000000;
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .reveal {
@@ -269,12 +277,15 @@
 }
 
 .reveal.delay-1 { transition-delay: 0.15s; }
-.reveal.delay-2 { transition-delay: 0.3s; }
+.reveal.delay-2 { 
+
+  transition-delay: 0.3s; }
 
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
+
 
 .experience-container {
   --ring: 280px;
@@ -759,8 +770,8 @@ span {
   }
 
   .into-txt p {
-    font-size: 1.15rem;
-    line-height: 1.6;
+    font-size: 1.25rem;
+    line-height: 1.55;
   }
 
   .experience-container {
