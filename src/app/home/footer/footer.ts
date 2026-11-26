@@ -7,7 +7,7 @@ import {
   OnDestroy,
   inject,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SafeVideoUrlPipe } from '../portfolio/specs/safe-url.pipe';
 import { ApiServices } from '../../services/api-services';
@@ -44,7 +44,7 @@ interface FooterSlide {
 
 @Component({
   selector: 'app-footer',
-  imports: [SafeVideoUrlPipe],
+  imports: [SafeVideoUrlPipe, RouterLink],
   templateUrl: './footer.html',
   styleUrl: './footer.css',
 })
@@ -253,11 +253,6 @@ export class Footer implements OnInit, AfterViewInit, OnDestroy {
   go(target: FooterLink, event?: Event): void {
     event?.preventDefault();
     this.router.navigate([target.path], target.query ? { queryParams: target.query } : {});
-  }
-
-  goToPrivacy(event?: Event): void {
-    event?.preventDefault();
-    this.router.navigate([{ outlets: { privacy: ['privacy'] } }]);
   }
 
   goToFinancing(event?: Event): void {

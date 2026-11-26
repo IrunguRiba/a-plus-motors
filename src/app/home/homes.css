@@ -1081,14 +1081,15 @@ span {
   }
 }
 
-/* Low-DPI fallback */
+/* High-DPI displays */
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
   .experience-container {
     --ring-stroke: 0.5px;
   }
 }
 
-@media not all and ((-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi)) {
+/* Low-DPI fallback */
+@media (max-resolution: 143dpi) {
   .experience-container {
     --ring-stroke: 1px;
   }
