@@ -23,7 +23,10 @@
   --nav-gutter: 12px;
   --nav-max-w: 960px;
 
-  --filter-nav-height: 51px;
+  /* Filter bar height. Never taller than the app-nav bar (minus 4px),
+     so when it is tucked away it is completely covered. */
+  --filter-rows: 1;
+  --filter-nav-height: min(51px, calc(var(--nav-bar-h) - 4px));
 
   /* Filter "paper" is this fraction of the app-nav width */
   --filter-scale: 0.9;
@@ -51,9 +54,13 @@
 /* ------------------------------------------------------------------
    FILTER NAV — "paper in an envelope"
    Centered under the app-nav, 90% of its width, BEHIND it
-   (z-index 900 vs the app-nav's 1000). Hidden = translated up by its
-   own height so it is tucked entirely behind the app-nav bar.
-   Visible = slides down out of it. No opacity fade.
+   (z-index 900 vs the app-nav's 1000).
+   - Fixed height (--filter-nav-height) that is always smaller than the
+     app-nav bar, so the hidden paper sits fully inside the bar's area.
+   - Hidden = translated up by its own height AND visibility:hidden
+     (applied after the slide finishes) AND no shadow. The app-nav is
+     semi-transparent/blurred, so visibility is what guarantees the
+     paper can never show through it.
    ------------------------------------------------------------------ */
 .main-nav-wrapper {
   position: fixed;
@@ -61,30 +68,44 @@
   left: 0;
   right: 0;
   width: var(--filter-w);
+  height: var(--filter-nav-height);
   margin-inline: auto;
   box-sizing: border-box;
+  overflow: hidden;
   z-index: 900;
   background: #fff;
   border: var(--border-thin);
   border-top: none;
   border-radius: 0 0 6px 6px;
-  box-shadow: 0 10px 24px rgba(15, 16, 16, 0.10);
+  box-shadow: none;
 
-  /* tucked behind the app-nav (extra 2px hides border/shadow edges) */
+  /* tucked behind the app-nav (extra 2px hides border edges) */
   transform: translateY(calc(-100% - 2px));
+  visibility: hidden;
   pointer-events: none;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    visibility 0s linear 0.5s;
   will-change: transform;
 }
 
 .main-nav-wrapper.is-visible {
   transform: translateY(0);
+  visibility: visible;
   pointer-events: auto;
+  box-shadow: 0 10px 24px rgba(15, 16, 16, 0.10);
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    visibility 0s linear 0s;
 }
 
 .nav-filters {
   display: grid;
   grid-template-columns: 1fr 1.5fr 1.5fr 1.5fr;
+  grid-template-rows: repeat(var(--filter-rows), minmax(0, 1fr));
+  height: 100%;
   margin: 0 auto;
   background: #fff;
   border-radius: 0 0 5px 5px;
@@ -94,10 +115,12 @@
 .filter-item {
   display: flex;
   align-items: center;
-  padding: 15px 20px;
-  font-size: 13px;
+  min-width: 0;
+  padding: 0 clamp(8px, 1.6vw, 20px);
+  font-size: clamp(11px, 1.15vw, 13px);
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  color: var(--ink);
   background: transparent;
   border: 1px solid transparent;
   transition: border 0.2s ease;
@@ -111,14 +134,17 @@
 .filter-item.dropdown {
   position: relative;
   justify-content: center;
-  gap: 10px;
+  gap: clamp(6px, 0.8vw, 10px);
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
 }
 
 .filter-item.dropdown .filter-label {
+  min-width: 0;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .filter-item.dropdown svg {
@@ -133,7 +159,7 @@
 .filter-item.active,
 .filter-item.center.active,
 .filter-item.dropdown.active {
-  background-color: transparent;
+  background-color: #fff;
   margin: -1px;
   z-index: 1;
   border: 1px solid var(--ink);
@@ -577,7 +603,8 @@
     --nav-top: 8px;
     --nav-bar-h: 84px;
     --nav-gutter: 8px;
-    --filter-nav-height: 102px;
+    --filter-rows: 2;
+    --filter-nav-height: min(73px, calc(var(--nav-bar-h) - 4px));
   }
   .nav-filters {
     grid-template-columns: 1fr 1fr;
@@ -586,6 +613,13 @@
   }
   .filter-item {
     background: var(--light);
+  }
+  /* active cell must stay light/white: the grid behind it is ink-coloured
+     (used for the row line), so a transparent cell would turn black */
+  .filter-item.active,
+  .filter-item.center.active,
+  .filter-item.dropdown.active {
+    background-color: #fff;
   }
   .nav-filters > .filter-item:nth-child(2) {
     border-right: none;
@@ -620,15 +654,27 @@
   }
 }
 
-@media (max-width: 480px) {
+/* Mirrors nav.css: bar is 72px at <= 360px */
+@media (max-width: 360px) {
   :host {
-    --filter-nav-height: 96px;
+    --nav-bar-h: 72px;
   }
 }
 
-@media (max-width: 380px) {
+/* Mirrors nav.css: shorter bar on short screens (tablet / phone) */
+@media (max-width: 1100px) and (max-height: 700px) {
   :host {
-    --nav-bar-h: 78px;
+    --nav-bar-h: clamp(62px, 11vh, 76px);
+  }
+}
+
+/* Mirrors nav.css: landscape phones */
+@media (max-width: 1100px) and (max-height: 520px) and (orientation: landscape) {
+  :host {
+    --nav-bar-h: 54px;
+  }
+  .filter-item {
+    font-size: 11px;
   }
 }
 

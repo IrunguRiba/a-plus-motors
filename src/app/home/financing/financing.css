@@ -34,9 +34,10 @@
   --nav-gutter: 12px;
   --nav-max-w: 960px;
 
-  /* Tabs bar */
-  --tab-row-h: 48px;
-  --tabs-h: var(--tab-row-h);
+  /* Tabs bar. Never taller than the app-nav bar (minus 4px), so when it is
+     tucked away it is completely covered by the bar. */
+  --tab-rows: 1;
+  --tabs-h: min(48px, calc(var(--nav-bar-h) - 4px));
 
   /* Tabs "paper" is this fraction of the app-nav width */
   --tabs-scale: 0.9;
@@ -74,15 +75,20 @@ a { color: inherit; text-decoration: none; }
 
 /* ---------- Tabs — "paper in an envelope" ----------
    Centered under the app-nav, 90% of its width, BEHIND it
-   (z-index 900 vs the app-nav's 1000). Hidden = translated up by its
-   own height so it is tucked entirely behind the app-nav bar.
-   Visible = slides down out of it. No opacity fade.               */
+   (z-index 900 vs the app-nav's 1000).
+   - Fixed height (--tabs-h) that is always smaller than the app-nav bar,
+     so the hidden paper sits fully inside the bar's area.
+   - Hidden = translated up by its own height AND visibility:hidden
+     (applied after the slide finishes) AND no shadow. The app-nav is
+     semi-transparent/blurred, so visibility is what guarantees the
+     paper can never show through it.                                */
 .fn-tabs-wrapper {
   position: fixed;
   top: calc(var(--nav-top) + var(--nav-bar-h));
   left: 0;
   right: 0;
   width: var(--tabs-w);
+  height: var(--tabs-h);
   margin-inline: auto;
   z-index: 900;              /* below app-nav (1000), above page content */
   background: #fff;
@@ -90,23 +96,35 @@ a { color: inherit; text-decoration: none; }
   border-top: none;
   border-radius: 0 0 6px 6px;
   overflow: hidden;
-  box-shadow: 0 10px 24px rgba(15, 16, 16, 0.10);
+  box-shadow: none;
 
-  /* tucked behind the app-nav (extra 2px hides border/shadow edges) */
+  /* tucked behind the app-nav (extra 2px hides border edges) */
   transform: translateY(calc(-100% - 2px));
+  visibility: hidden;
   pointer-events: none;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    visibility 0s linear 0.5s;
   will-change: transform;
 }
 
 .fn-tabs-wrapper.is-visible {
   transform: translateY(0);
+  visibility: visible;
   pointer-events: auto;
+  box-shadow: 0 10px 24px rgba(15, 16, 16, 0.10);
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    visibility 0s linear 0s;
 }
 
 .fn-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(var(--tab-rows), minmax(0, 1fr));
+  height: 100%;
   margin: 0 auto;
 }
 
@@ -114,13 +132,16 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  height: var(--tab-row-h);
-  padding: 0 20px;
-  font-size: 12px;
+  min-width: 0;
+  padding: 0 clamp(8px, 1.6vw, 20px);
+  font-size: clamp(10.5px, 1.1vw, 12px);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-align: center;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: #000;
   background: #fff;
   border: 1px solid transparent;
@@ -131,23 +152,34 @@ a { color: inherit; text-decoration: none; }
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .fn-tab:not(:last-child) { border-right: 1px solid #000; }
-.fn-tab:hover,
+
+/* hover only on devices that really hover, so a tap on a phone does not
+   leave a tab stuck in its hover colours */
+@media (hover: hover) {
+  .fn-tab:hover {
+    background: #f0f2f3;
+    color: var(--navy);
+  }
+}
 .fn-tab:focus-visible {
   background: #f0f2f3;
   color: var(--navy);
-}
-.fn-tab:focus-visible {
   outline: 2px solid var(--navy);
   outline-offset: -4px;
 }
-/* Active tab: solid fill, unmistakable */
-.fn-tab.active {
+
+/* Active tab: solid fill, unmistakable. Declared after hover/focus so it
+   always wins, and its focus ring turns white so it stays visible. */
+.fn-tab.active,
+.fn-tab.active:hover,
+.fn-tab.active:focus-visible {
   margin: -1px;
   z-index: 1;
   border: 1px solid var(--navy);
   background: var(--navy);
   color: #fff;
 }
+.fn-tab.active:focus-visible { outline-color: #fff; }
 
 /* ---------- Body ---------- */
 .fn-body {
@@ -682,10 +714,14 @@ form > .fn-btn-solid.fn-btn-full,
   transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 .fn-seg button + button { border-left: 1px solid var(--navy); }
-.fn-seg button:hover,
-.fn-chips button:hover { background: #eef1f3; }
+@media (hover: hover) {
+  .fn-seg button:hover,
+  .fn-chips button:hover { background: #eef1f3; }
+}
 .fn-seg button.active,
-.fn-chips button.active {
+.fn-chips button.active,
+.fn-seg button.active:hover,
+.fn-chips button.active:hover {
   background: var(--navy);
   color: #fff;
   border-color: var(--navy);
@@ -918,6 +954,7 @@ form > .fn-btn-solid.fn-btn-full,
   outline-offset: 2px;
 }
 .fn-tab:focus-visible { outline-offset: -4px; }
+.fn-tab.active:focus-visible { outline-color: #fff; }
 
 /* ============================================================
    APPLY PANEL — black & white
@@ -957,8 +994,11 @@ form > .fn-btn-solid.fn-btn-full,
   border: 1px solid var(--navy);
 }
 .fn-apply .fn-seg button + button { border-left: 1px solid var(--navy); }
-.fn-apply .fn-seg button:hover { background: #eef1f3; }
-.fn-apply .fn-seg button.active {
+@media (hover: hover) {
+  .fn-apply .fn-seg button:hover { background: #eef1f3; }
+}
+.fn-apply .fn-seg button.active,
+.fn-apply .fn-seg button.active:hover {
   background: var(--navy);
   color: #fff;
   border-color: var(--navy);
@@ -988,6 +1028,7 @@ form > .fn-btn-solid.fn-btn-full,
   border-color: var(--danger);
   box-shadow: inset 0 0 0 1px var(--danger);
 }
+.fn-apply .fn-field.invalid label { color: var(--danger); }
 .fn-apply .fn-field.invalid small { color: var(--danger); }
 
 .fn-apply .fn-linked {
@@ -1128,20 +1169,23 @@ form > .fn-btn-solid.fn-btn-full,
 
 @media (max-width: 768px) {
   .fn-container {
-    --nav-top: 8px;
+    --nav-top: max(8px, env(safe-area-inset-top, 0px));
     --nav-bar-h: 84px;
     --nav-gutter: 8px;
-    /* two rows of tabs + the 1px gap between them */
-    --tabs-h: calc(var(--tab-row-h) * 2 + 1px);
+    /* two rows of tabs; never taller than the bar minus 4px */
+    --tab-rows: 2;
+    --tabs-h: min(97px, calc(var(--nav-bar-h) - 4px));
   }
   .fn-tabs {
     grid-template-columns: 1fr 1fr;
     row-gap: 1px;
-    background: #000;
+    background: #000;   /* shows only as the line between the two rows */
   }
   .fn-tab { background: #fff; padding: 0 8px; font-size: 11px; border: 0; }
   .fn-tab:not(:last-child) { border-right: 0; }
-  .fn-tab.active {
+  .fn-tab.active,
+  .fn-tab.active:hover,
+  .fn-tab.active:focus-visible {
     margin: 0;
     border: 0;
     background: var(--navy);
@@ -1181,10 +1225,28 @@ form > .fn-btn-solid.fn-btn-full,
   .fn-footer-link { font-size: 1.25em; padding: 8px 20px; }
 }
 
-@media (max-width: 380px) {
+/* Mirrors nav.css: bar is 72px at <= 360px
+   (the old <= 380px / 78px rule did not match the nav) */
+@media (max-width: 360px) {
   .fn-container {
-    --nav-bar-h: 78px;
+    --nav-bar-h: 72px;
   }
+  .fn-tab { font-size: 10.5px; letter-spacing: 0.12em; padding: 0 4px; }
+}
+
+/* Mirrors nav.css: shorter bar on short screens (tablet / phone) */
+@media (max-width: 1100px) and (max-height: 700px) {
+  .fn-container {
+    --nav-bar-h: clamp(62px, 11vh, 76px);
+  }
+}
+
+/* Mirrors nav.css: landscape phones */
+@media (max-width: 1100px) and (max-height: 520px) and (orientation: landscape) {
+  .fn-container {
+    --nav-bar-h: 54px;
+  }
+  .fn-tab { font-size: 10px; letter-spacing: 0.1em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1193,5 +1255,9 @@ form > .fn-btn-solid.fn-btn-full,
   .fn-container *::after {
     animation: none !important;
     transition-duration: 0.01ms !important;
+  }
+  .fn-tabs-wrapper,
+  .fn-tabs-wrapper.is-visible {
+    transition: none !important;
   }
 }
