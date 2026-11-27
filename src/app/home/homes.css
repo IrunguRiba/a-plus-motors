@@ -1,4 +1,3 @@
-
 @import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&display=swap");
 
 .cookies {
@@ -155,8 +154,6 @@
   z-index: 3;
   width: 100%;
   background: #E4E6E7;
-
-
 }
 
 .item-1 {
@@ -243,7 +240,6 @@
   text-transform: capitalize;
 }
 
-/* Intro paragraphs: Porsche-style typeface (Porsche Next if licensed, Barlow otherwise) */
 .into-txt p {
   max-width: 74ch;
   margin: 0 auto 2rem;
@@ -255,7 +251,6 @@
   color: #080616;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
 }
 
 .into-txt p:last-child {
@@ -277,15 +272,12 @@
 }
 
 .reveal.delay-1 { transition-delay: 0.15s; }
-.reveal.delay-2 { 
-
-  transition-delay: 0.3s; }
+.reveal.delay-2 { transition-delay: 0.3s; }
 
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
-
 
 .experience-container {
   --ring: 280px;
@@ -383,7 +375,9 @@
   to   { transform: translateZ(0) translateY(var(--amp)); }
 }
 
-
+/* ============================================================
+   SEARCH BAR — layout locked, fonts scale responsively
+   ============================================================ */
 .search {
   --icon-ink: #A7ABAB;
   --icon-toyota-logo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' shape-rendering='geometricPrecision'%3E%3Cellipse cx='12' cy='12' rx='10.5' ry='7.5'/%3E%3Cellipse cx='12' cy='12.5' rx='3.3' ry='5.6'/%3E%3Cellipse cx='12' cy='9' rx='6.8' ry='3'/%3E%3C/svg%3E");
@@ -394,8 +388,8 @@
   --icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' shape-rendering='geometricPrecision'%3E%3Ccircle cx='11' cy='11' r='6'/%3E%3Cpath d='M20 20L15.8 15.8'/%3E%3C/svg%3E");
 
   align-self: center;
-  height: clamp(100px, 13vh, 128px);
-  width: 68vw;
+  height: clamp(72px, 11vh, 128px);
+  width: 82vw;
   max-width: 1300px;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 0.8fr 1fr;
@@ -421,15 +415,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1em;
-  font-size: 1em;
+  gap: clamp(0.4em, 1.4vw, 1em);
+  font-size: clamp(0.65rem, 1.6vw, 1em);
   font-weight: 300;
   letter-spacing: 0.04em;
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   position: relative;
-  padding: 0 1em;
+  padding: 0 clamp(0.5em, 1.4vw, 1em);
   transition: background-color 0.35s ease, box-shadow 0.35s ease;
 }
 
@@ -456,11 +450,11 @@
 }
 
 .search-segment .segment-label {
-  font-size: 1.15em;
+  font-size: clamp(0.7rem, 1.8vw, 1.15em);
   font-weight: 300;
   letter-spacing: 0.04em;
   color: #D8DADB;
-  max-width: 180px;
+  max-width: clamp(70px, 14vw, 180px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -486,16 +480,16 @@
   line-height: 0;
   display: inline-block;
   flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
+  width: clamp(16px, 2.4vw, 24px);
+  height: clamp(16px, 2.4vw, 24px);
   background: var(--icon-ink);
   -webkit-mask: var(--icon-generic, var(--icon-pin)) center / 100% 100% no-repeat;
   mask: var(--icon-generic, var(--icon-pin)) center / 100% 100% no-repeat;
 }
 
 .search-segment.model > .material-symbols-outlined:first-child {
-  width: 32px;
-  height: 14px;
+  width: clamp(22px, 3.2vw, 32px);
+  height: clamp(10px, 1.4vw, 14px);
   -webkit-mask-image: var(--icon-toyota-car);
   mask-image: var(--icon-toyota-car);
 }
@@ -544,8 +538,8 @@
 .search .search-segment .arrow.material-symbols-outlined {
   font-size: 0;
   line-height: 0;
-  width: 8px;
-  height: 8px;
+  width: clamp(6px, 0.8vw, 8px);
+  height: clamp(6px, 0.8vw, 8px);
   flex: 0 0 auto;
   overflow: hidden;
   margin-right: 4px;
@@ -573,7 +567,7 @@
   top: auto;
   left: 0;
   min-width: 100%;
-  max-width: 320px;
+  max-width: clamp(160px, 26vw, 320px);
   background: rgba(15, 16, 16, 0.88);
   -webkit-backdrop-filter: blur(6px) saturate(130%);
   backdrop-filter: blur(6px) saturate(130%);
@@ -592,7 +586,7 @@
 }
 
 .dropdown-list {
-  max-height: 280px;
+  max-height: clamp(160px, 28vh, 280px);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0.5em;
@@ -611,8 +605,8 @@
 }
 
 .dropdown-item {
-  padding: 0.65em 1em;
-  font-size: 0.95em;
+  padding: clamp(0.5em, 1.2vw, 0.65em) clamp(0.7em, 1.6vw, 1em);
+  font-size: clamp(0.7rem, 1.5vw, 0.95em);
   font-weight: 300;
   letter-spacing: 0.04em;
   color: #D8DADB;
@@ -659,12 +653,12 @@ span {
   align-items: center;
   justify-content: center;
   margin: 0;
-  padding: 0 1em;
+  padding: 0 clamp(0.5em, 1.4vw, 1em);
   background: transparent;
   border: none;
   border-radius: 0;
   font: inherit;
-  font-size: 0.95em;
+  font-size: clamp(0.65rem, 1.5vw, 0.95em);
   font-weight: 300;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -707,6 +701,7 @@ span {
 .search > .find-car span {
   color: var(--find-text);
   font-weight: 400;
+  font-size: clamp(0.7rem, 1.7vw, 1em);
 }
 
 .search > .find-car:hover,
@@ -717,376 +712,34 @@ span {
 /* Message under the search bar */
 .search-hint {
   margin: 14px 0 0;
-  font-size: 0.85rem;
+  font-size: clamp(0.7rem, 1.6vw, 0.85rem);
   font-weight: 300;
   letter-spacing: 0.08em;
   text-align: center;
   color: var(--light);
 }
 
-@media (max-width: 768px) {
-  .hero-container {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    --hero-h: 100svh;
-    height: var(--hero-h);
-    min-height: 0;
-    padding: 0 18px 40px;
-    color: #F4F5F5;
-    color: var(--hero-fg);
-  }
-
-  .side-bar-spacer,
-  .item-1 {
-    display: none;
-  }
-
-  .item-2 {
-    flex: 1;
-    width: 100%;
-    justify-self: stretch;
-    justify-content: flex-start;
-    align-items: center;
-    gap: clamp(24px, 5svh, 44px);
-    cursor: default;
-  }
-
-  .logo-wrapper-spacer {
-    height: clamp(75px, 11svh, 97px);
-    flex: 0 0 auto;
-  }
-
-  .into-txt {
-    padding: 30px 20px 20px;
-    border-top: none;
-  }
-
-  .into-title {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .into-txt p {
-    font-size: 1.25rem;
-    line-height: 1.55;
-  }
-
-  .experience-container {
-    --ring: min(82vw, 40svh, 420px);
-    width: var(--ring);
-    height: var(--ring);
-    flex: 0 0 auto;
-    margin: 0;
-  }
-
-  .circle-0,
-  .circle-1,
-  .circle-2 {
-    width: var(--ring);
-    height: var(--ring);
-  }
-
-  .circle-0 {
-    --amp: calc(var(--ring) * 0.07);
-  }
-
-  .circle-1 {
-    width: calc(var(--ring) * 0.94);
-    height: calc(var(--ring) * 0.94);
-    --amp: calc(var(--ring) * 0.06);
-  }
-
-  .circle-2::before {
-    inset: 4%;
-    --amp: calc(var(--ring) * 0.065);
-  }
-
-  .circle-2 {
-    justify-content: center;
-    text-align: center;
-  }
-
-  .circle-2 p {
-    margin: 0;
-    font-family: "Cormorant Garamond", "Playfair Display", "Times New Roman", Georgia, serif;
-    font-size: clamp(1.6rem, 7.3vw, 2.15rem);
-    font-weight: 500;
-    line-height: 1.3;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--hero-fg);
-  }
-
-  .circle-2 p span {
-    font-size: inherit;
-    font-weight: inherit;
-    color: var(--hero-fg);
-  }
-
-  .hero-container::after {
-    content: none;
-  }
-
-  .search {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 528px;
-    height: auto;
-    align-self: center;
-    background: transparent;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-    overflow: visible;
-    z-index: 10;
-  }
-
-  .search > .search-segment,
-  .search > .search-extra {
-    flex: 0 0 auto;
-    background: var(--glass-fill);
-    -webkit-backdrop-filter: blur(6px) saturate(150%);
-    backdrop-filter: blur(6px) saturate(150%);
-    border: 1px solid var(--glass-hair);
-    border-top: none;
-    box-shadow: inset 1px 1px 0 var(--glass-edge);
-    color: var(--ink);
-  }
-
-  .search > .search-segment {
-    height: clamp(62px, 8.6svh, 72px);
-    padding: 0 22px;
-    gap: 18px;
-    justify-content: flex-start;
-    border-radius: 0;
-  }
-
-  .search > .search-segment.make {
-    border-top: 1px solid var(--glass-hair);
-  }
-
-  .search > .search-segment:hover {
-    background: var(--soft-hover);
-  }
-
-  .search > .search-segment.active,
-  .search > .search-segment.active:hover,
-  .search > .search-segment:active {
-    background: var(--glass-fill);
-    box-shadow: inset 0 0 0 1px var(--active-ring);
-  }
-
-  .search > .search-extra .extra-btn:active {
-    background: transparent;
-    box-shadow: inset 0 0 0 1px var(--active-ring);
-  }
-
-  .search > .search-segment > .material-symbols-outlined:first-child,
-  .search-segment.has-value > .material-symbols-outlined:first-child {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    background: #A7ABAB;
-    transform: none;
-  }
-
-  .search > .search-segment.model > .material-symbols-outlined:first-child {
-    width: 32px;
-    height: 14px;
-  }
-
-  .search > .search-segment:hover > .material-symbols-outlined:first-child {
-    background: #D8DADB;
-  }
-
-  .search > .find-car .material-symbols-outlined {
-    display: none;
-  }
-
+/* Very small screens — fonts only, structure unchanged */
+@media (max-width: 480px) {
   .search-segment .segment-label {
-    flex: 1;
-    max-width: none;
-    text-align: left;
-    font-size: 0.92rem;
-    font-weight: 300;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .search-segment.has-value .segment-label {
-    color: var(--light);
-    font-weight: 400;
-  }
-
-  .search .search-segment .arrow.material-symbols-outlined {
-    font-size: 0;
-    line-height: 0;
-    width: 8px;
-    height: 8px;
-    flex: 0 0 auto;
-    overflow: hidden;
-    margin-right: 4px;
-    background: none;
-    color: #A7ABAB;
-    border-right: 1px solid #A7ABAB;
-    border-bottom: 1px solid #A7ABAB;
-    transform: rotate(45deg);
-    transition: transform 0.3s ease;
-  }
-
-  .search .search-segment .arrow.rotated {
-    transform: rotate(225deg);
-  }
-
-  .search > .search-extra {
-    display: flex;
-    flex-direction: row;
-    flex: 0 0 auto;
-    height: clamp(52px, 7.4svh, 62px);
-    margin-top: 10px;
-    border-radius: 0;
+    font-size: clamp(0.58rem, 2.6vw, 0.72rem);
+    letter-spacing: 0.02em;
+    max-width: clamp(52px, 13vw, 90px);
   }
 
   .search-extra .extra-btn {
-    flex: 1 1 50%;
-    padding: 0 10px;
-    font-size: 0.8rem;
-    font-weight: 300;
-    letter-spacing: 0.16em;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .search-extra .extra-btn + .extra-btn {
-    border-top: none;
-    border-left: 1px solid var(--glass-divider);
-  }
-
-  .search-extra .extra-btn:hover,
-  .search-extra .extra-btn:active {
-    color: #F4F5F5;
-  }
-
-  .search > .find-car,
-  .search > .find-car:last-child {
-    position: relative;
-    flex: 0 0 auto;
-    height: clamp(46px, 6.2svh, 54px);
-    width: 60%;
-    align-self: center;
-    margin: 15px auto 0;
-    padding: 0;
-    border: none;
-    border-radius: 0 !important;
-    background: var(--find);
-    justify-content: center;
-    transition: background-color 0.25s ease, transform 0.15s ease;
+    font-size: clamp(0.55rem, 2.4vw, 0.68rem);
+    letter-spacing: 0.02em;
   }
 
   .search > .find-car span {
-    font-size: 0.81rem;
-    font-weight: 400;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--find-text);
+    font-size: clamp(0.58rem, 2.6vw, 0.72rem);
   }
 
-  .search > .find-car:hover,
-  .search > .find-car:active {
-    background: var(--find);
-  }
-
-  .dropdown,
-  .search > .search-segment:nth-child(3) .dropdown,
-  .search > .search-segment:last-of-type .dropdown {
-    left: 0;
-    right: 0;
-    min-width: 100%;
-    max-width: none;
-    background: rgba(15, 16, 16, 0.9);
-    border: 1px solid var(--glass-hair);
-    border-radius: 0;
-    box-shadow: inset 0 1px 0 var(--glass-edge);
-  }
-
-  .dropdown-list {
-    max-height: 242px;
-    padding: 0;
-    scrollbar-color: var(--gold) transparent;
-  }
-
-  .dropdown-list::-webkit-scrollbar-thumb {
-    background-color: var(--gold);
-  }
-
-  .dropdown-item {
-    padding: 0.95em 1.25em;
-    font-size: 0.88rem;
-    font-weight: 300;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #D8DADB;
-    border: none;
-    border-bottom: 1px solid var(--glass-divider);
-    border-radius: 0;
-  }
-
-  .dropdown-item:hover {
-    background: rgba(216, 218, 219, 0.1);
-    color: #F4F5F5;
-    border: none;
-    border-bottom: 1px solid var(--glass-divider);
-  }
-
-  .dropdown-item:active,
-  .dropdown-item.selected {
-    background: transparent;
-    box-shadow: inset 0 0 0 1px var(--active-ring);
-    color: #F4F5F5;
-  }
-
-  .recommended {
-    padding-top: 20px;
-  }
-}
-
-@media (max-width: 380px) {
-  .hero-container {
-    padding: 0 13px 40px;
-  }
-
-  .search > .search-segment {
-    height: 57px;
-    padding: 0 18px;
-    gap: 13px;
-  }
-
-  .search-segment .segment-label {
-    font-size: 0.79rem;
-    letter-spacing: 0.12em;
-  }
-
-  .search > .find-car {
-    height: 44px;
-  }
-
-  .hero-container::after {
-    content: none;
-  }
-}
-
-@media (max-width: 768px) and (max-height: 640px) {
-  .experience-container {
-    --ring: min(60vw, 230px);
-    width: var(--ring);
-    height: var(--ring);
-  }
-  .circle-2 p {
-    font-size: 1.27rem;
+  .search .search-segment .arrow.material-symbols-outlined {
+    width: 5px;
+    height: 5px;
+    margin-right: 2px;
   }
 }
 
