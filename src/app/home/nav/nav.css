@@ -1639,7 +1639,7 @@ a.contact-row:focus-visible span:last-child {
   .feature-sub { font-size: 0.64rem; -webkit-line-clamp: 2; }
   .feature-more { padding: 0.2rem 0.6rem; font-size: 0.58rem; }
 
-  .image-icon { height: 30px; }
+  .image-icon { height: 31px; }
   .slogan { font-size: 0.34rem; }
 
   .item-1-label { bottom: 6px; }
