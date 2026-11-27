@@ -251,13 +251,6 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
-
-  /**
-   * Slowly turns the hero into the portfolio colour while the page scrolls up.
-   * --hero-mix goes 0 → 1: the dark shade fades out, the portfolio-coloured
-   * layer fades in over the video, and the hero text/rings go from light to dark.
-   * The look itself is in homes.css (everything reads --hero-mix).
-   */
   private setupHeroColor(): void {
     gsap.fromTo(
       '#hero',
